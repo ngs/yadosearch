@@ -7,14 +7,19 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		854FBE9D19C6484D00DA7BE2 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 854FBE9C19C6484D00DA7BE2 /* AppDelegate.swift */; };
+		0E45F43746E840A1B077D405 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 68227E082A48468291122D70 /* libPods.a */; };
 		854FBEA019C6484D00DA7BE2 /* YadoSearch.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 854FBE9E19C6484D00DA7BE2 /* YadoSearch.xcdatamodeld */; };
-		854FBEA219C6484D00DA7BE2 /* MasterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 854FBEA119C6484D00DA7BE2 /* MasterViewController.swift */; };
-		854FBEA419C6484D00DA7BE2 /* DetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 854FBEA319C6484D00DA7BE2 /* DetailViewController.swift */; };
 		854FBEA719C6484D00DA7BE2 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 854FBEA519C6484D00DA7BE2 /* Main.storyboard */; };
 		854FBEA919C6484D00DA7BE2 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 854FBEA819C6484D00DA7BE2 /* Images.xcassets */; };
 		854FBEAC19C6484D00DA7BE2 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 854FBEAA19C6484D00DA7BE2 /* LaunchScreen.xib */; };
 		854FBEB819C6484D00DA7BE2 /* YadoSearchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 854FBEB719C6484D00DA7BE2 /* YadoSearchTests.swift */; };
+		854FBECB19C6544500DA7BE2 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 854FBEC619C6544500DA7BE2 /* AppDelegate.swift */; };
+		854FBECC19C6544500DA7BE2 /* DetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 854FBEC919C6544500DA7BE2 /* DetailViewController.swift */; };
+		854FBECD19C6544500DA7BE2 /* MasterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 854FBECA19C6544500DA7BE2 /* MasterViewController.swift */; };
+		854FBED119C70B3E00DA7BE2 /* MapKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 854FBED019C70B3E00DA7BE2 /* MapKit.framework */; };
+		854FBED319C70B7800DA7BE2 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 854FBED219C70B7800DA7BE2 /* CoreLocation.framework */; };
+		854FBED519C70EF000DA7BE2 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 854FBED419C70EF000DA7BE2 /* UIKit.framework */; };
+		854FBED719C70EF800DA7BE2 /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 854FBED619C70EF800DA7BE2 /* CoreData.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -28,18 +33,26 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		2CD681F8C4F442309E02C55C /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
+		68227E082A48468291122D70 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		854FBE9719C6484D00DA7BE2 /* YadoSearch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = YadoSearch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		854FBE9B19C6484D00DA7BE2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		854FBE9C19C6484D00DA7BE2 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		854FBE9F19C6484D00DA7BE2 /* YadoSearch.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = YadoSearch.xcdatamodel; sourceTree = "<group>"; };
-		854FBEA119C6484D00DA7BE2 /* MasterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MasterViewController.swift; sourceTree = "<group>"; };
-		854FBEA319C6484D00DA7BE2 /* DetailViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailViewController.swift; sourceTree = "<group>"; };
 		854FBEA619C6484D00DA7BE2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		854FBEA819C6484D00DA7BE2 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		854FBEAB19C6484D00DA7BE2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
 		854FBEB119C6484D00DA7BE2 /* YadoSearchTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = YadoSearchTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		854FBEB619C6484D00DA7BE2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		854FBEB719C6484D00DA7BE2 /* YadoSearchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YadoSearchTests.swift; sourceTree = "<group>"; };
+		854FBEC619C6544500DA7BE2 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		854FBEC919C6544500DA7BE2 /* DetailViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DetailViewController.swift; sourceTree = "<group>"; };
+		854FBECA19C6544500DA7BE2 /* MasterViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MasterViewController.swift; sourceTree = "<group>"; };
+		854FBECE19C6548800DA7BE2 /* YadoSearch-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "YadoSearch-Bridging-Header.h"; sourceTree = "<group>"; };
+		854FBECF19C70B1A00DA7BE2 /* YadoSearch.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = YadoSearch.entitlements; sourceTree = "<group>"; };
+		854FBED019C70B3E00DA7BE2 /* MapKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MapKit.framework; path = System/Library/Frameworks/MapKit.framework; sourceTree = SDKROOT; };
+		854FBED219C70B7800DA7BE2 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
+		854FBED419C70EF000DA7BE2 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		854FBED619C70EF800DA7BE2 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -47,6 +60,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				854FBED719C70EF800DA7BE2 /* CoreData.framework in Frameworks */,
+				854FBED519C70EF000DA7BE2 /* UIKit.framework in Frameworks */,
+				854FBED319C70B7800DA7BE2 /* CoreLocation.framework in Frameworks */,
+				854FBED119C70B3E00DA7BE2 /* MapKit.framework in Frameworks */,
+				0E45F43746E840A1B077D405 /* libPods.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -60,12 +78,26 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1EB2DE6A5D784BAEBF0F36FC /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				854FBED619C70EF800DA7BE2 /* CoreData.framework */,
+				854FBED419C70EF000DA7BE2 /* UIKit.framework */,
+				854FBED219C70B7800DA7BE2 /* CoreLocation.framework */,
+				854FBED019C70B3E00DA7BE2 /* MapKit.framework */,
+				68227E082A48468291122D70 /* libPods.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		854FBE8E19C6484D00DA7BE2 = {
 			isa = PBXGroup;
 			children = (
 				854FBE9919C6484D00DA7BE2 /* YadoSearch */,
 				854FBEB419C6484D00DA7BE2 /* YadoSearchTests */,
 				854FBE9819C6484D00DA7BE2 /* Products */,
+				2CD681F8C4F442309E02C55C /* Pods.xcconfig */,
+				1EB2DE6A5D784BAEBF0F36FC /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -81,9 +113,10 @@
 		854FBE9919C6484D00DA7BE2 /* YadoSearch */ = {
 			isa = PBXGroup;
 			children = (
-				854FBE9C19C6484D00DA7BE2 /* AppDelegate.swift */,
-				854FBEA119C6484D00DA7BE2 /* MasterViewController.swift */,
-				854FBEA319C6484D00DA7BE2 /* DetailViewController.swift */,
+				854FBECF19C70B1A00DA7BE2 /* YadoSearch.entitlements */,
+				854FBECE19C6548800DA7BE2 /* YadoSearch-Bridging-Header.h */,
+				854FBEC519C6544500DA7BE2 /* App */,
+				854FBEC819C6544500DA7BE2 /* ViewControllers */,
 				854FBEA519C6484D00DA7BE2 /* Main.storyboard */,
 				854FBEA819C6484D00DA7BE2 /* Images.xcassets */,
 				854FBEAA19C6484D00DA7BE2 /* LaunchScreen.xib */,
@@ -118,6 +151,23 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
+		854FBEC519C6544500DA7BE2 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				854FBEC619C6544500DA7BE2 /* AppDelegate.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		854FBEC819C6544500DA7BE2 /* ViewControllers */ = {
+			isa = PBXGroup;
+			children = (
+				854FBEC919C6544500DA7BE2 /* DetailViewController.swift */,
+				854FBECA19C6544500DA7BE2 /* MasterViewController.swift */,
+			);
+			path = ViewControllers;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -125,9 +175,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 854FBEBB19C6484D00DA7BE2 /* Build configuration list for PBXNativeTarget "YadoSearch" */;
 			buildPhases = (
+				699E274557D541E5957196CA /* Check Pods Manifest.lock */,
 				854FBE9319C6484D00DA7BE2 /* Sources */,
 				854FBE9419C6484D00DA7BE2 /* Frameworks */,
 				854FBE9519C6484D00DA7BE2 /* Resources */,
+				706EC761AF6E46CAB6ECC5E5 /* Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -167,6 +219,15 @@
 				TargetAttributes = {
 					854FBE9619C6484D00DA7BE2 = {
 						CreatedOnToolsVersion = 6.0;
+						DevelopmentTeam = 3Y8APYUG2G;
+						SystemCapabilities = {
+							com.apple.Maps.iOS = {
+								enabled = 1;
+							};
+							com.apple.iCloud = {
+								enabled = 1;
+							};
+						};
 					};
 					854FBEB019C6484D00DA7BE2 = {
 						CreatedOnToolsVersion = 6.0;
@@ -213,15 +274,48 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		699E274557D541E5957196CA /* Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		706EC761AF6E46CAB6ECC5E5 /* Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Pods-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		854FBE9319C6484D00DA7BE2 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				854FBECD19C6544500DA7BE2 /* MasterViewController.swift in Sources */,
+				854FBECC19C6544500DA7BE2 /* DetailViewController.swift in Sources */,
+				854FBECB19C6544500DA7BE2 /* AppDelegate.swift in Sources */,
 				854FBEA019C6484D00DA7BE2 /* YadoSearch.xcdatamodeld in Sources */,
-				854FBE9D19C6484D00DA7BE2 /* AppDelegate.swift in Sources */,
-				854FBEA219C6484D00DA7BE2 /* MasterViewController.swift in Sources */,
-				854FBEA419C6484D00DA7BE2 /* DetailViewController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -344,21 +438,36 @@
 		};
 		854FBEBC19C6484D00DA7BE2 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 2CD681F8C4F442309E02C55C /* Pods.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = YadoSearch/YadoSearch.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = YadoSearch/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "YadoSearch/YadoSearch-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
 		};
 		854FBEBD19C6484D00DA7BE2 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 2CD681F8C4F442309E02C55C /* Pods.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = YadoSearch/YadoSearch.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				INFOPLIST_FILE = YadoSearch/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
+				SWIFT_OBJC_BRIDGING_HEADER = "YadoSearch/YadoSearch-Bridging-Header.h";
 			};
 			name = Release;
 		};
@@ -415,6 +524,7 @@
 				854FBEBD19C6484D00DA7BE2 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		854FBEBE19C6484D00DA7BE2 /* Build configuration list for PBXNativeTarget "YadoSearchTests" */ = {
 			isa = XCConfigurationList;
@@ -423,6 +533,7 @@
 				854FBEC019C6484D00DA7BE2 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 
