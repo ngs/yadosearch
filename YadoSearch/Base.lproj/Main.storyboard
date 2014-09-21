@@ -141,7 +141,7 @@
         <scene sceneID="ZNf-z5-eZv">
             <objects>
                 <splitViewController title="検索" id="bi3-jZ-rZI" sceneMemberID="viewController">
-                    <tabBarItem key="tabBarItem" title="検索" id="RNA-kJ-Y0O"/>
+                    <tabBarItem key="tabBarItem" title="検索" image="Search" id="RNA-kJ-Y0O"/>
                     <connections>
                         <segue destination="jxh-jZ-o2q" kind="relationship" relationship="masterViewController" id="6K6-5k-rfc"/>
                         <segue destination="yDN-I4-GTX" kind="relationship" relationship="detailViewController" id="ffr-3r-grN"/>
@@ -181,7 +181,7 @@
         <scene sceneID="xpI-bb-MqC">
             <objects>
                 <navigationController title="検索" id="jxh-jZ-o2q" sceneMemberID="viewController">
-                    <tabBarItem key="tabBarItem" title="検索" id="BlJ-ap-SpF"/>
+                    <tabBarItem key="tabBarItem" title="検索" image="Search" selectedImage="SearchSelected" id="BlJ-ap-SpF"/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="taX-dQ-0Nh">
                         <rect key="frame" x="0.0" y="0.0" width="320" height="44"/>
                         <autoresizingMask key="autoresizingMask"/>
@@ -198,7 +198,7 @@
         <scene sceneID="Nki-YV-4Qg">
             <objects>
                 <splitViewController id="H1p-Uh-vWS" sceneMemberID="viewController">
-                    <tabBarItem key="tabBarItem" title="Item" id="BNt-LX-KrD"/>
+                    <tabBarItem key="tabBarItem" title="Item" image="Search" id="BNt-LX-KrD"/>
                     <toolbarItems/>
                     <connections>
                         <segue destination="RMx-3f-FxP" kind="relationship" relationship="masterViewController" id="BlO-5A-QYV"/>
@@ -508,6 +508,10 @@
             <point key="canvasLocation" x="2835" y="-809"/>
         </scene>
     </scenes>
+    <resources>
+        <image name="Search" width="28" height="28"/>
+        <image name="SearchSelected" width="28" height="28"/>
+    </resources>
     <inferredMetricsTieBreakers>
         <segue reference="Tll-UG-LXB"/>
         <segue reference="Oiy-Kw-DO2"/>

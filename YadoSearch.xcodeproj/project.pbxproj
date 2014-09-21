@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		0E45F43746E840A1B077D405 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 68227E082A48468291122D70 /* libPods.a */; };
-		852445BE19CD9B4A0015FC41 /* 1Password.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 852445BD19CD9B4A0015FC41 /* 1Password.xcassets */; };
 		852445C319CF02E70015FC41 /* SearchRootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 852445C219CF02E70015FC41 /* SearchRootViewController.swift */; };
 		852445C519CF030C0015FC41 /* KeywordSearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 852445C419CF030C0015FC41 /* KeywordSearchViewController.swift */; };
 		852445C719CF034C0015FC41 /* CurrentLocationSearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 852445C619CF034C0015FC41 /* CurrentLocationSearchViewController.swift */; };
@@ -17,9 +16,6 @@
 		852445CD19CF04A30015FC41 /* RailwaySearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 852445CC19CF04A30015FC41 /* RailwaySearchViewController.swift */; };
 		852445CF19CF0B290015FC41 /* Environment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 852445CE19CF0B290015FC41 /* Environment.swift */; };
 		854FBEA019C6484D00DA7BE2 /* YadoSearch.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 854FBE9E19C6484D00DA7BE2 /* YadoSearch.xcdatamodeld */; };
-		854FBEA719C6484D00DA7BE2 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 854FBEA519C6484D00DA7BE2 /* Main.storyboard */; };
-		854FBEA919C6484D00DA7BE2 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 854FBEA819C6484D00DA7BE2 /* Images.xcassets */; };
-		854FBEAC19C6484D00DA7BE2 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 854FBEAA19C6484D00DA7BE2 /* LaunchScreen.xib */; };
 		854FBEB819C6484D00DA7BE2 /* YadoSearchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 854FBEB719C6484D00DA7BE2 /* YadoSearchTests.swift */; };
 		854FBECB19C6544500DA7BE2 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 854FBEC619C6544500DA7BE2 /* AppDelegate.swift */; };
 		854FBECC19C6544500DA7BE2 /* DetailViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 854FBEC919C6544500DA7BE2 /* DetailViewController.swift */; };
@@ -28,6 +24,10 @@
 		854FBED319C70B7800DA7BE2 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 854FBED219C70B7800DA7BE2 /* CoreLocation.framework */; };
 		854FBED519C70EF000DA7BE2 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 854FBED419C70EF000DA7BE2 /* UIKit.framework */; };
 		854FBED719C70EF800DA7BE2 /* CoreData.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 854FBED619C70EF800DA7BE2 /* CoreData.framework */; };
+		85C09B9D19CF405D00D67ED9 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 854FBEA519C6484D00DA7BE2 /* Main.storyboard */; };
+		85C09B9F19CF407A00D67ED9 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 854FBEAA19C6484D00DA7BE2 /* LaunchScreen.xib */; };
+		85C09BA319CF40C500D67ED9 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 85C09BA219CF40C500D67ED9 /* Images.xcassets */; };
+		85C09BA719CF46C500D67ED9 /* 1Password.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 85C09BA619CF46C500D67ED9 /* 1Password.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -43,7 +43,6 @@
 /* Begin PBXFileReference section */
 		2CD681F8C4F442309E02C55C /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
 		68227E082A48468291122D70 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		852445BD19CD9B4A0015FC41 /* 1Password.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = 1Password.xcassets; path = Pods/1PasswordExtension/1Password.xcassets; sourceTree = SOURCE_ROOT; };
 		852445C219CF02E70015FC41 /* SearchRootViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SearchRootViewController.swift; sourceTree = "<group>"; };
 		852445C419CF030C0015FC41 /* KeywordSearchViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeywordSearchViewController.swift; sourceTree = "<group>"; };
 		852445C619CF034C0015FC41 /* CurrentLocationSearchViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CurrentLocationSearchViewController.swift; sourceTree = "<group>"; };
@@ -55,7 +54,6 @@
 		854FBE9B19C6484D00DA7BE2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		854FBE9F19C6484D00DA7BE2 /* YadoSearch.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = YadoSearch.xcdatamodel; sourceTree = "<group>"; };
 		854FBEA619C6484D00DA7BE2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		854FBEA819C6484D00DA7BE2 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		854FBEAB19C6484D00DA7BE2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
 		854FBEB119C6484D00DA7BE2 /* YadoSearchTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = YadoSearchTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		854FBEB619C6484D00DA7BE2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -69,6 +67,8 @@
 		854FBED219C70B7800DA7BE2 /* CoreLocation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreLocation.framework; path = System/Library/Frameworks/CoreLocation.framework; sourceTree = SDKROOT; };
 		854FBED419C70EF000DA7BE2 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		854FBED619C70EF800DA7BE2 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
+		85C09BA219CF40C500D67ED9 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		85C09BA619CF46C500D67ED9 /* 1Password.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = 1Password.xcassets; path = ../Pods/1PasswordExtension/1Password.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -145,10 +145,10 @@
 				854FBEC519C6544500DA7BE2 /* App */,
 				854FBEC819C6544500DA7BE2 /* ViewControllers */,
 				854FBEA519C6484D00DA7BE2 /* Main.storyboard */,
-				852445BD19CD9B4A0015FC41 /* 1Password.xcassets */,
-				854FBEA819C6484D00DA7BE2 /* Images.xcassets */,
 				854FBEAA19C6484D00DA7BE2 /* LaunchScreen.xib */,
 				854FBE9E19C6484D00DA7BE2 /* YadoSearch.xcdatamodeld */,
+				85C09BA219CF40C500D67ED9 /* Images.xcassets */,
+				85C09BA619CF46C500D67ED9 /* 1Password.xcassets */,
 				854FBE9A19C6484D00DA7BE2 /* Supporting Files */,
 				852445CE19CF0B290015FC41 /* Environment.swift */,
 			);
@@ -291,10 +291,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				854FBEA719C6484D00DA7BE2 /* Main.storyboard in Resources */,
-				854FBEAC19C6484D00DA7BE2 /* LaunchScreen.xib in Resources */,
-				852445BE19CD9B4A0015FC41 /* 1Password.xcassets in Resources */,
-				854FBEA919C6484D00DA7BE2 /* Images.xcassets in Resources */,
+				85C09BA719CF46C500D67ED9 /* 1Password.xcassets in Resources */,
+				85C09BA319CF40C500D67ED9 /* Images.xcassets in Resources */,
+				85C09B9F19CF407A00D67ED9 /* LaunchScreen.xib in Resources */,
+				85C09B9D19CF405D00D67ED9 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
