@@ -4,3 +4,4 @@
 #import <CoreLocation/CoreLocation.h>
 #import <MapKit/MapKit.h>
 #import <UIKit/UIKit.h>
+#import <1PasswordExtension/OnePasswordExtension.h>

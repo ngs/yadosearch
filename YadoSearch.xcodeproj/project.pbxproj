@@ -8,6 +8,13 @@
 
 /* Begin PBXBuildFile section */
 		0E45F43746E840A1B077D405 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 68227E082A48468291122D70 /* libPods.a */; };
+		852445BE19CD9B4A0015FC41 /* 1Password.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 852445BD19CD9B4A0015FC41 /* 1Password.xcassets */; };
+		852445C319CF02E70015FC41 /* SearchRootViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 852445C219CF02E70015FC41 /* SearchRootViewController.swift */; };
+		852445C519CF030C0015FC41 /* KeywordSearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 852445C419CF030C0015FC41 /* KeywordSearchViewController.swift */; };
+		852445C719CF034C0015FC41 /* CurrentLocationSearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 852445C619CF034C0015FC41 /* CurrentLocationSearchViewController.swift */; };
+		852445C919CF03770015FC41 /* SearchFormViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 852445C819CF03770015FC41 /* SearchFormViewController.swift */; };
+		852445CB19CF048A0015FC41 /* AreaSearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 852445CA19CF048A0015FC41 /* AreaSearchViewController.swift */; };
+		852445CD19CF04A30015FC41 /* RailwaySearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 852445CC19CF04A30015FC41 /* RailwaySearchViewController.swift */; };
 		854FBEA019C6484D00DA7BE2 /* YadoSearch.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 854FBE9E19C6484D00DA7BE2 /* YadoSearch.xcdatamodeld */; };
 		854FBEA719C6484D00DA7BE2 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 854FBEA519C6484D00DA7BE2 /* Main.storyboard */; };
 		854FBEA919C6484D00DA7BE2 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 854FBEA819C6484D00DA7BE2 /* Images.xcassets */; };
@@ -35,6 +42,13 @@
 /* Begin PBXFileReference section */
 		2CD681F8C4F442309E02C55C /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
 		68227E082A48468291122D70 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		852445BD19CD9B4A0015FC41 /* 1Password.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = 1Password.xcassets; path = Pods/1PasswordExtension/1Password.xcassets; sourceTree = SOURCE_ROOT; };
+		852445C219CF02E70015FC41 /* SearchRootViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SearchRootViewController.swift; sourceTree = "<group>"; };
+		852445C419CF030C0015FC41 /* KeywordSearchViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = KeywordSearchViewController.swift; sourceTree = "<group>"; };
+		852445C619CF034C0015FC41 /* CurrentLocationSearchViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CurrentLocationSearchViewController.swift; sourceTree = "<group>"; };
+		852445C819CF03770015FC41 /* SearchFormViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SearchFormViewController.swift; sourceTree = "<group>"; };
+		852445CA19CF048A0015FC41 /* AreaSearchViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AreaSearchViewController.swift; sourceTree = "<group>"; };
+		852445CC19CF04A30015FC41 /* RailwaySearchViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RailwaySearchViewController.swift; sourceTree = "<group>"; };
 		854FBE9719C6484D00DA7BE2 /* YadoSearch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = YadoSearch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		854FBE9B19C6484D00DA7BE2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		854FBE9F19C6484D00DA7BE2 /* YadoSearch.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = YadoSearch.xcdatamodel; sourceTree = "<group>"; };
@@ -90,6 +104,19 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		852445C119CF02E70015FC41 /* Search */ = {
+			isa = PBXGroup;
+			children = (
+				852445C219CF02E70015FC41 /* SearchRootViewController.swift */,
+				852445C819CF03770015FC41 /* SearchFormViewController.swift */,
+				852445C419CF030C0015FC41 /* KeywordSearchViewController.swift */,
+				852445C619CF034C0015FC41 /* CurrentLocationSearchViewController.swift */,
+				852445CA19CF048A0015FC41 /* AreaSearchViewController.swift */,
+				852445CC19CF04A30015FC41 /* RailwaySearchViewController.swift */,
+			);
+			path = Search;
+			sourceTree = "<group>";
+		};
 		854FBE8E19C6484D00DA7BE2 = {
 			isa = PBXGroup;
 			children = (
@@ -113,11 +140,10 @@
 		854FBE9919C6484D00DA7BE2 /* YadoSearch */ = {
 			isa = PBXGroup;
 			children = (
-				854FBECF19C70B1A00DA7BE2 /* YadoSearch.entitlements */,
-				854FBECE19C6548800DA7BE2 /* YadoSearch-Bridging-Header.h */,
 				854FBEC519C6544500DA7BE2 /* App */,
 				854FBEC819C6544500DA7BE2 /* ViewControllers */,
 				854FBEA519C6484D00DA7BE2 /* Main.storyboard */,
+				852445BD19CD9B4A0015FC41 /* 1Password.xcassets */,
 				854FBEA819C6484D00DA7BE2 /* Images.xcassets */,
 				854FBEAA19C6484D00DA7BE2 /* LaunchScreen.xib */,
 				854FBE9E19C6484D00DA7BE2 /* YadoSearch.xcdatamodeld */,
@@ -129,6 +155,8 @@
 		854FBE9A19C6484D00DA7BE2 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				854FBECF19C70B1A00DA7BE2 /* YadoSearch.entitlements */,
+				854FBECE19C6548800DA7BE2 /* YadoSearch-Bridging-Header.h */,
 				854FBE9B19C6484D00DA7BE2 /* Info.plist */,
 			);
 			name = "Supporting Files";
@@ -162,6 +190,7 @@
 		854FBEC819C6544500DA7BE2 /* ViewControllers */ = {
 			isa = PBXGroup;
 			children = (
+				852445C119CF02E70015FC41 /* Search */,
 				854FBEC919C6544500DA7BE2 /* DetailViewController.swift */,
 				854FBECA19C6544500DA7BE2 /* MasterViewController.swift */,
 			);
@@ -215,7 +244,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 0600;
-				ORGANIZATIONNAME = "Atsushi Nagase";
+				ORGANIZATIONNAME = "LittleApps Inc.";
 				TargetAttributes = {
 					854FBE9619C6484D00DA7BE2 = {
 						CreatedOnToolsVersion = 6.0;
@@ -261,6 +290,7 @@
 			files = (
 				854FBEA719C6484D00DA7BE2 /* Main.storyboard in Resources */,
 				854FBEAC19C6484D00DA7BE2 /* LaunchScreen.xib in Resources */,
+				852445BE19CD9B4A0015FC41 /* 1Password.xcassets in Resources */,
 				854FBEA919C6484D00DA7BE2 /* Images.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -314,7 +344,13 @@
 			files = (
 				854FBECD19C6544500DA7BE2 /* MasterViewController.swift in Sources */,
 				854FBECC19C6544500DA7BE2 /* DetailViewController.swift in Sources */,
+				852445CD19CF04A30015FC41 /* RailwaySearchViewController.swift in Sources */,
+				852445CB19CF048A0015FC41 /* AreaSearchViewController.swift in Sources */,
+				852445C919CF03770015FC41 /* SearchFormViewController.swift in Sources */,
+				852445C319CF02E70015FC41 /* SearchRootViewController.swift in Sources */,
 				854FBECB19C6544500DA7BE2 /* AppDelegate.swift in Sources */,
+				852445C719CF034C0015FC41 /* CurrentLocationSearchViewController.swift in Sources */,
+				852445C519CF030C0015FC41 /* KeywordSearchViewController.swift in Sources */,
 				854FBEA019C6484D00DA7BE2 /* YadoSearch.xcdatamodeld in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

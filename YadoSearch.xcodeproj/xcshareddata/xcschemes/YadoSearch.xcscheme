@@ -20,6 +20,20 @@
                ReferencedContainer = "container:YadoSearch.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "854FBEB019C6484D00DA7BE2"
+               BuildableName = "YadoSearchTests.xctest"
+               BlueprintName = "YadoSearchTests"
+               ReferencedContainer = "container:YadoSearch.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -28,6 +42,16 @@
       shouldUseLaunchSchemeArgsEnv = "YES"
       buildConfiguration = "Debug">
       <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "854FBEB019C6484D00DA7BE2"
+               BuildableName = "YadoSearchTests.xctest"
+               BlueprintName = "YadoSearchTests"
+               ReferencedContainer = "container:YadoSearch.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
       <MacroExpansion>
          <BuildableReference

@@ -3,7 +3,7 @@
 //  YadoSearch
 //
 //  Created by Atsushi Nagase on 9/15/14.
-//  Copyright (c) 2014 Atsushi Nagase. All rights reserved.
+//  Copyright (c) 2014 LittleApps Inc. All rights reserved.
 //
 
 import UIKit
