@@ -27,3 +27,5 @@ Pods/
 
 *.dSYM.zip
 *.xcuserdatad
+Environment.swift
+.env

@@ -15,6 +15,7 @@
 		852445C919CF03770015FC41 /* SearchFormViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 852445C819CF03770015FC41 /* SearchFormViewController.swift */; };
 		852445CB19CF048A0015FC41 /* AreaSearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 852445CA19CF048A0015FC41 /* AreaSearchViewController.swift */; };
 		852445CD19CF04A30015FC41 /* RailwaySearchViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 852445CC19CF04A30015FC41 /* RailwaySearchViewController.swift */; };
+		852445CF19CF0B290015FC41 /* Environment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 852445CE19CF0B290015FC41 /* Environment.swift */; };
 		854FBEA019C6484D00DA7BE2 /* YadoSearch.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 854FBE9E19C6484D00DA7BE2 /* YadoSearch.xcdatamodeld */; };
 		854FBEA719C6484D00DA7BE2 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 854FBEA519C6484D00DA7BE2 /* Main.storyboard */; };
 		854FBEA919C6484D00DA7BE2 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 854FBEA819C6484D00DA7BE2 /* Images.xcassets */; };
@@ -49,6 +50,7 @@
 		852445C819CF03770015FC41 /* SearchFormViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SearchFormViewController.swift; sourceTree = "<group>"; };
 		852445CA19CF048A0015FC41 /* AreaSearchViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AreaSearchViewController.swift; sourceTree = "<group>"; };
 		852445CC19CF04A30015FC41 /* RailwaySearchViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RailwaySearchViewController.swift; sourceTree = "<group>"; };
+		852445CE19CF0B290015FC41 /* Environment.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Environment.swift; sourceTree = "<group>"; };
 		854FBE9719C6484D00DA7BE2 /* YadoSearch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = YadoSearch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		854FBE9B19C6484D00DA7BE2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		854FBE9F19C6484D00DA7BE2 /* YadoSearch.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = YadoSearch.xcdatamodel; sourceTree = "<group>"; };
@@ -148,6 +150,7 @@
 				854FBEAA19C6484D00DA7BE2 /* LaunchScreen.xib */,
 				854FBE9E19C6484D00DA7BE2 /* YadoSearch.xcdatamodeld */,
 				854FBE9A19C6484D00DA7BE2 /* Supporting Files */,
+				852445CE19CF0B290015FC41 /* Environment.swift */,
 			);
 			path = YadoSearch;
 			sourceTree = "<group>";
@@ -349,6 +352,7 @@
 				852445C919CF03770015FC41 /* SearchFormViewController.swift in Sources */,
 				852445C319CF02E70015FC41 /* SearchRootViewController.swift in Sources */,
 				854FBECB19C6544500DA7BE2 /* AppDelegate.swift in Sources */,
+				852445CF19CF0B290015FC41 /* Environment.swift in Sources */,
 				852445C719CF034C0015FC41 /* CurrentLocationSearchViewController.swift in Sources */,
 				852445C519CF030C0015FC41 /* KeywordSearchViewController.swift in Sources */,
 				854FBEA019C6484D00DA7BE2 /* YadoSearch.xcdatamodeld in Sources */,

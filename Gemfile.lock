@@ -90,5 +90,6 @@ PLATFORMS
 
 DEPENDENCIES
   cocoapods
+  dotenv
   rake
   shenzhen
