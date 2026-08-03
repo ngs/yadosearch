@@ -118,6 +118,24 @@ let project = Project(
                 .package(product: "YadoSearchPlatform"),
                 .package(product: "YadoSearchUI")
             ]
+        ),
+        // Captures the App Store screenshots. Driven by Scripts/screenshots.sh,
+        // never by CI's test run: it is a photo shoot, not a test. It depends
+        // on YadoSearchUI for the accessibility identifiers it navigates by.
+        .target(
+            name: "YadoSearchScreenshots",
+            destinations: [.iPhone, .iPad, .mac],
+            product: .uiTests,
+            bundleId: "org.ngsdev.iphone.YadoScreenshots",
+            deploymentTargets: .multiplatform(
+                iOS: "26.0",
+                macOS: "26.0"
+            ),
+            sources: ["Tests/Screenshots/**"],
+            dependencies: [
+                .target(name: "YadoSearch"),
+                .package(product: "YadoSearchUI")
+            ]
         )
     ],
     schemes: [
@@ -138,6 +156,13 @@ let project = Project(
                     .launchArgument(name: "-APIHost localhost:8080", isEnabled: true)
                 ])
             )
+        ),
+        // Not for running by hand: without the config Scripts/screenshots.sh
+        // writes, the capture test stops at launch and says so.
+        .scheme(
+            name: "YadoSearchScreenshots",
+            buildAction: .buildAction(targets: ["YadoSearch", "YadoSearchScreenshots"]),
+            testAction: .targets(["YadoSearchScreenshots"], configuration: .debug)
         ),
         .scheme(
             name: "YadoSearch",

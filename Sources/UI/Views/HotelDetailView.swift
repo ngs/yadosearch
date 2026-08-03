@@ -60,6 +60,7 @@ struct HotelDetailView: View {
                         systemImage: isFavorite ? "heart.fill" : "heart"
                     )
                 }
+                .accessibilityIdentifier(YadoAccessibilityID.hotelFavorite)
                 .disabled(model?.profile == nil)
             }
             if let url = model?.bookingURL {
@@ -114,7 +115,9 @@ private extension HotelDetailView {
                 }
             )) {
                 ForEach(providers) { provider in
-                    Text(provider.title).tag(provider)
+                    Text(provider.title)
+                        .tag(provider)
+                        .accessibilityIdentifier(YadoAccessibilityID.hotelProvider(provider.rawValue))
                 }
             }
             .pickerStyle(.segmented)
@@ -249,6 +252,7 @@ private extension HotelDetailView {
             StayConditionsEditor(stay: Binding(get: { model.stay }, set: { model.stay = $0 }))
             plans(model)
         }
+        .accessibilityIdentifier(YadoAccessibilityID.hotelPlans)
     }
 
     @ViewBuilder

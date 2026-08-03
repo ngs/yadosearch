@@ -135,6 +135,7 @@ struct SearchView: View {
     private var conditionsSection: some View {
         Section("検索条件") {
             ForEach(conditionRows, id: \.title) { row in
+                .accessibilityIdentifier(YadoAccessibilityID.searchSubmit)
                 Button {
                     isEditingFilters = true
                 } label: {
@@ -144,6 +145,10 @@ struct SearchView: View {
             }
         }
     }
+        // The name field is near the top and the keyboard covers the conditions
+        // and the search button, so scrolling has to be able to put it away —
+        // the keyboard's own key runs the search rather than dismissing it.
+        .scrollDismissesKeyboard(.immediately)
 
     private struct ConditionRow {
         let title: String
@@ -302,6 +307,7 @@ private extension SearchView {
             } label: {
                 pickerLabel(title: "地域", value: chosenArea?.name)
             }
+                .accessibilityIdentifier(YadoAccessibilityID.searchKeyword)
             .buttonStyle(.plain)
         } header: {
             Text("地域から")

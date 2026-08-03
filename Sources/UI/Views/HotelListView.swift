@@ -62,12 +62,13 @@ struct HotelListView: View {
     private func list(_ model: HotelSearchViewModel) -> some View {
         List {
             Section {
-                ForEach(model.listings) { listing in
+                ForEach(Array(model.listings.enumerated()), id: \.element.id) { index, listing in
                     if let reference = HotelReference(listing: listing) {
                         NavigationLink(value: SearchRoute.hotel(reference)) {
                             HotelRow(listing: listing, distance: model.distance(to: listing))
                         }
                         .task {
+                        .accessibilityIdentifier(YadoAccessibilityID.hotelRow(index))
                             await model.loadMoreIfNeeded(currentItem: listing)
                         }
                     }
