@@ -37,7 +37,7 @@ jobs:
     name: Regenerate profiles
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v7.0.0
+      - uses: actions/checkout@v7.0.1
 
       - name: Setup SSH for the match repository
         run: |
@@ -47,7 +47,7 @@ jobs:
           ssh-keyscan github.com >> ~/.ssh/known_hosts
 
       - name: Setup Ruby
-        uses: ruby/setup-ruby@v1.316.0
+        uses: ruby/setup-ruby@v1.321.0
         with:
           bundler-cache: true
 

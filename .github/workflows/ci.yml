@@ -27,7 +27,7 @@ jobs:
             buildNumberSuffix: ".2"
 
     steps:
-      - uses: actions/checkout@v7.0.0
+      - uses: actions/checkout@v7.0.1
 
       - name: Select Xcode 26
         run: |
@@ -40,7 +40,7 @@ jobs:
           sudo xcode-select -s "$XCODE_PATH"
 
       - name: Install tuist (mise)
-        uses: jdx/mise-action@v4.2.0
+        uses: jdx/mise-action@v4.2.4
 
       - name: Generate Xcode project and workspace
         run: tuist generate --no-open
@@ -76,7 +76,7 @@ jobs:
     name: Swift tests
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v7.0.0
+      - uses: actions/checkout@v7.0.1
 
       - name: Select Xcode 26
         run: |
@@ -95,7 +95,7 @@ jobs:
     # that cannot parse modern Swift.
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v7.0.0
+      - uses: actions/checkout@v7.0.1
 
       - name: Install SwiftLint
         run: brew install swiftlint
@@ -107,7 +107,7 @@ jobs:
     name: Periphery scan
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v7.0.0
+      - uses: actions/checkout@v7.0.1
 
       - name: Select Xcode 26
         run: |
@@ -118,7 +118,7 @@ jobs:
           sudo xcode-select -s "$XCODE_PATH"
 
       - name: Install tuist (mise)
-        uses: jdx/mise-action@v4.2.0
+        uses: jdx/mise-action@v4.2.4
 
       - name: Install periphery
         run: brew install --formula periphery
@@ -135,10 +135,10 @@ jobs:
     name: RuboCop
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7.0.0
+      - uses: actions/checkout@v7.0.1
 
       - name: Setup Ruby
-        uses: ruby/setup-ruby@v1.316.0
+        uses: ruby/setup-ruby@v1.321.0
         with:
           bundler-cache: true
 
@@ -160,7 +160,7 @@ jobs:
             buildNumberSuffix: ".4"
 
     steps:
-      - uses: actions/checkout@v7.0.0
+      - uses: actions/checkout@v7.0.1
 
       - name: Select Xcode 26
         run: |
@@ -171,7 +171,7 @@ jobs:
           sudo xcode-select -s "$XCODE_PATH"
 
       - name: Install tuist (mise)
-        uses: jdx/mise-action@v4.2.0
+        uses: jdx/mise-action@v4.2.4
 
       - name: Generate Xcode project and workspace
         run: tuist generate --no-open
