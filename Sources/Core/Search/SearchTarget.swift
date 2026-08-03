@@ -87,12 +87,4 @@ public struct StayConditions: Sendable, Hashable, Codable {
         self.rooms = max(rooms, 1)
         self.party = party
     }
-
-    /// Both services run on Japan time, so a check-in date is broken up there
-    /// rather than in whatever zone the device happens to be in.
-    static let calendar: Calendar = {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(identifier: "Asia/Tokyo") ?? .gmt
-        return calendar
-    }()
 }
