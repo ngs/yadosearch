@@ -28,31 +28,33 @@
 
 - Xcode 26.0 以降
 - [Tuist](https://tuist.io)（`mise install` で `mise.toml` のバージョンが入ります）
+- [direnv](https://direnv.net)
 - SwiftLint（`brew install swiftlint`）、Periphery（`brew install periphery`）
 - じゃらん Web サービスのアプリケーションキー
 
 ### 手順
 
 ```bash
-cp .env.example .env      # JALAN_API_KEY を書く
-Scripts/generate.sh       # Xcode プロジェクトを生成して開く
+echo 'export TUIST_JALAN_API_KEY=…' > .envrc   # 発行されたキーを書く
+direnv allow                                   # 初回のみ
+tuist generate                                 # Xcode プロジェクトを生成して開く
 ```
 
-`Scripts/generate.sh` は `.env` を読んで `TUIST_JALAN_API_KEY` として渡し、Tuist が `Info.plist` の `JalanAPIKey` に埋め込みます。キーはリポジトリには入りません。
+Tuist が `TUIST_JALAN_API_KEY` を `Info.plist` の `JalanAPIKey` に埋め込みます。`.envrc` は gitignore されているのでキーはリポジトリに入りません。
 
-**キーがなくてもビルドは通ります。** その場合アプリは「APIキーが未設定です」と表示します。CI がまさにその状態でビルドしています。
+**キーがないビルドは起動時に `fatalError` で落ちます。** 全画面が API に依存するため、動かないビルドを黙って動かすより、出荷前に気づけるようにしています。ビルド自体は通るので、CI（キーなし）のビルドとテストには影響しません。
 
 ## 開発コマンド
 
 ```bash
-Scripts/generate.sh --no-open   # プロジェクト生成のみ（CI と同じ）
+tuist generate --no-open        # プロジェクト生成のみ（CI と同じ）
 swift test                      # SPM のテスト（Core と ViewModel）
 xcodebuild test -workspace YadoSearch.xcworkspace -scheme YadoSearch \
   -destination "id=$(Scripts/latest-ios-simulator.sh)"
 Scripts/lint.sh strict          # SwiftLint（CI は --strict）
 periphery scan --strict         # 未使用コード検出
 bundle exec rubocop             # Ruby（Fastfile など）
-swift Scripts/generate-icons.swift  # アプリアイコンを描き直す
+open Resources/AppIcon.icon        # アプリアイコンを Icon Composer で編集
 ```
 
 ## 構成
@@ -66,11 +68,11 @@ YadoSearch/
 │   ├── Core/       # YadoSearchCore: じゃらん API クライアントとモデル（Foundation のみ）
 │   ├── Platform/   # YadoSearchPlatform: SwiftData / Core Location / MapKit
 │   └── UI/         # YadoSearchUI: SwiftUI の画面とビューモデル
-├── Resources/      # Assets.xcassets、entitlements
+├── Resources/      # AppIcon.icon、Assets.xcassets、entitlements
 ├── Tests/
 │   ├── YadoSearchCoreTests/  # 実レスポンスのフィクスチャによるパーサテスト
 │   └── YadoSearchUITests/    # ビューモデルと永続化のテスト
-├── Scripts/        # 生成・lint・アイコン
+├── Scripts/        # lint とシミュレータ選択
 ├── fastlane/       # match / TestFlight / App Store
 └── .github/        # CI・リリース・provision ワークフロー
 ```
@@ -181,4 +183,4 @@ GitHub Actions（`.github/workflows/`）:
 ## 現状わかっている制限
 
 - **ローカライズは日本語のみ。** じゃらんが日本国内専用のサービスであるため、開発言語を `ja` にして日本語リテラルで書いています。英語化する場合は String Catalog の導入が必要です。なお逆ジオコーディングだけは端末の言語に追随するので、英語環境では "Chiyoda, Tokyo" と出ます。
-- **アプリアイコンは暫定**（`Scripts/generate-icons.swift` の CoreGraphics 描画）です。
+- **アプリアイコンは調整中。** `Resources/AppIcon.icon` は Icon Composer で開いて編集できる形式（`icon.json` ＋ `Assets/onsen.svg`）です。温泉マークを白、背景をアクセントカラーのベタ、レイヤーは Liquid Glass 有効にした状態から始めています。

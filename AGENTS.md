@@ -72,24 +72,24 @@ Every outbound jalan.net link goes through ValueCommerce (`JalanAffiliate`, `sid
 
 ## The application key
 
-Never in the repository. `.env` (gitignored) → `Scripts/generate.sh` → `TUIST_JALAN_API_KEY` → `Info.plist`'s `JalanAPIKey`, read by `JalanAPIClient.Configuration.fromBundle(_:)`.
+Never in the repository. `.envrc` (gitignored, direnv) exports `TUIST_JALAN_API_KEY` → Tuist writes it into `Info.plist` as `JalanAPIKey` → `JalanAPIClient.Configuration.fromBundle(_:)` reads it. CI sets the variable straight from a repository secret, so nothing there needs direnv.
 
-A build without a key is a supported state, not a failure: `YadoSearchEnvironment.isConfigured` is false and the UI shows `NotConfiguredView`. Every CI build runs this way on pull requests from forks. Do not add code that assumes a key exists.
+**A build without a key traps at launch** (`YadoSearchEnvironment.init(bundle:)`). Every screen needs the API, so an unconfigured build is broken rather than degraded, and the trap is what stops one shipping. Do not add a "not configured" state back. Building and testing without a key still works — nothing in the test targets launches the app, and the environment's default value carries an empty key so previews fail on the network instead of trapping.
 
 The committed test fixtures were captured live and had the key scrubbed to `TEST_KEY` — it appears inside every `HotelDetailURL` the service returns, so re-capturing fixtures means scrubbing again.
 
 ## Commands
 
 ```bash
-Scripts/generate.sh                 # generate and open (reads .env)
-Scripts/generate.sh --no-open       # what CI runs
+tuist generate                      # generate and open (direnv supplies the key)
+tuist generate --no-open            # what CI runs
 swift test                          # SPM tests
 xcodebuild test -workspace YadoSearch.xcworkspace -scheme YadoSearch \
   -destination "id=$(Scripts/latest-ios-simulator.sh)"
 Scripts/lint.sh strict              # SwiftLint (CI runs --strict)
 periphery scan --strict             # unused code
 bundle exec rubocop                 # Ruby
-swift Scripts/generate-icons.swift  # redraw the app icon
+open Resources/AppIcon.icon         # edit the app icon in Icon Composer
 ```
 
 `Scripts/latest-ios-simulator.sh` exists because runner images keep iOS 18 runtimes around, and picking the first iPhone in the list yields a destination `xcodebuild` rejects against an iOS 26 deployment target.
@@ -137,5 +137,7 @@ Against the 2010 release specifically:
 In general:
 
 - **Japanese only.** Development region is `ja` and UI strings are literals. Adding English means a String Catalog in the UI package plus `bundle: .module` at every call site. Reverse-geocoded place names are the exception — they follow the device language.
-- **The app icon is provisional** — a CoreGraphics render in `Scripts/generate-icons.swift`.
+- **The app icon is still being tuned.** `Resources/AppIcon.icon` is an Icon Composer package (`icon.json` plus `Assets/onsen.svg`) — edit it there, not by hand. There is no `AppIcon.appiconset` any more; the `.icon` supersedes it, and `actool` still emits the legacy PNGs from it.
+  - The layer's `fill` in `icon.json` is what colours the glyph. `actool` treats the SVG as a monochrome vector and ignores fills inside it, so changing the SVG's own `fill` does nothing.
+  - Rendering it without a full build: `xcrun actool Resources/AppIcon.icon --compile <dir> --platform iphoneos --minimum-deployment-target 26.0 --app-icon AppIcon --include-all-app-icons --output-partial-info-plist <dir>/partial.plist`. A plain `xcodebuild build` caches the compiled catalogue and will not pick up an icon change.
 - No App Store metadata (`fastlane/metadata/`) or screenshot automation yet.
