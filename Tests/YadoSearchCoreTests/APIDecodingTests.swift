@@ -114,8 +114,12 @@ enum APIFixture {
             withExtension: "json",
             subdirectory: "Fixtures/api"
         ) else {
-            throw Fixture.FixtureError.missing(name)
+            throw MissingFixture(name: name)
         }
         return try Data(contentsOf: url)
+    }
+
+    struct MissingFixture: Error {
+        let name: String
     }
 }

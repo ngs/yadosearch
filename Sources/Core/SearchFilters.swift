@@ -326,28 +326,6 @@ public struct SearchFilters: Sendable, Hashable, Codable {
             .map(\.title)
             .joined(separator: "・")
     }
-
-    var queryItems: [URLQueryItem] {
-        var items: [URLQueryItem] = []
-        if sortOrder != .unspecified {
-            items.append(URLQueryItem(name: "order", value: String(sortOrder.rawValue)))
-        }
-        if let hotelType {
-            items.append(URLQueryItem(name: "h_type", value: String(hotelType.rawValue)))
-        }
-        if let minimumRate {
-            items.append(URLQueryItem(name: "min_rate", value: String(minimumRate)))
-        }
-        if let maximumRate {
-            items.append(URLQueryItem(name: "max_rate", value: String(maximumRate)))
-        }
-        // Sorted so the same filter set always builds the same URL, which keeps
-        // the request cacheable and the tests stable.
-        for amenity in amenities.sorted(by: { $0.rawValue < $1.rawValue }) {
-            items.append(URLQueryItem(name: amenity.rawValue, value: "1"))
-        }
-        return items
-    }
 }
 
 extension Int {

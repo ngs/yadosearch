@@ -40,10 +40,10 @@ struct PresentationTests {
     func passesServiceErrorsThrough() {
         let message = "宿名による宿の検索結果が200件を越えています。検索キーワードを変更してください。"
 
-        #expect(searchErrorMessage(for: JalanAPIError.service(message: message)) == message)
-        #expect(searchErrorMessage(for: JalanAPIError.service(message: "")).contains("応答"))
+        #expect(searchErrorMessage(for: APIError.service(message: message)) == message)
+        #expect(searchErrorMessage(for: APIError.service(message: "")).contains("応答"))
         // Nothing the user sees mentions the API key.
-        for error: JalanAPIError in [.service(message: ""), .malformedResponse, .transport(description: "x")] {
+        for error: APIError in [.service(message: ""), .malformedResponse, .transport(description: "x")] {
             #expect(!searchErrorMessage(for: error).contains("APIキー"))
         }
     }

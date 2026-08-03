@@ -1,42 +1,30 @@
+import Foundation
 import Testing
 @testable import YadoSearchCore
 
-@Suite("Coordinates and datums")
+@Suite("Coordinates")
 struct GeoTests {
-    /// The Imperial Hotel Tokyo is the reference that pinned the datum down: the
-    /// API places it at 35.669046 N, 139.761581 E, and the building stands at
-    /// 35.67225 N, 139.75892 E on a WGS 84 map — ~400 m apart, the size of the
-    /// Tokyo-datum shift over Kantō.
-    @Test("The API's coordinates convert onto the WGS 84 position")
-    func imperialHotelConvertsToWorldDatum() {
-        let fromAPI = GeoCoordinate(latitude: 35.669046, longitude: 139.761581)
-        let world = TokyoDatum.toWorld(fromAPI)
+    /// Tokyo Station to the Tokyo Station Hotel, which stands inside it. The
+    /// proxy reports 142 m for the same pair, measured server-side against a
+    /// live search — so this is the figure the distance labels agree with.
+    ///
+    /// The datum conversion this suite used to pin down now happens in the
+    /// proxy: everything the app sees is WGS 84.
+    @Test("Measures the short distances the results screen shows")
+    func measuresShortDistances() {
+        let station = GeoCoordinate(latitude: 35.681236, longitude: 139.767125)
+        let hotel = GeoCoordinate(latitude: 35.680661, longitude: 139.765715)
 
-        #expect(abs(world.latitude - 35.67225) < 0.0005)
-        #expect(abs(world.longitude - 139.75892) < 0.001)
+        let metres = station.distance(to: hotel)
+
+        #expect(metres > 100)
+        #expect(metres < 200)
     }
 
-    @Test("Converting to WGS 84 and back returns the original")
-    func roundTripsThroughWorldDatum() {
-        let tokyo = GeoCoordinate(latitude: 35.669046, longitude: 139.761581)
-        let roundTripped = TokyoDatum.fromWorld(TokyoDatum.toWorld(tokyo))
+    @Test("A point is no distance from itself")
+    func measuresNothingFromItself() {
+        let point = GeoCoordinate(latitude: 35.0, longitude: 139.0)
 
-        #expect(abs(roundTripped.latitude - tokyo.latitude) < 0.00001)
-        #expect(abs(roundTripped.longitude - tokyo.longitude) < 0.00001)
-    }
-
-    @Test("Thousandths of an arcsecond convert to degrees")
-    func decodesTheAPICoordinateUnit() {
-        #expect(abs(JalanCoordinateUnit.degrees(fromMilliseconds: 503_276_825) - 139.799118) < 0.000001)
-        #expect(JalanCoordinateUnit.milliseconds(fromDegrees: 139.799118) == 503_276_825)
-    }
-
-    @Test("Distance between two points is metres")
-    func measuresDistance() {
-        let tokyoStation = GeoCoordinate(latitude: 35.681236, longitude: 139.767125)
-        let shinagawa = GeoCoordinate(latitude: 35.628471, longitude: 139.738760)
-
-        // ~6.4 km as the crow flies.
-        #expect(abs(tokyoStation.distance(to: shinagawa) - 6_400) < 200)
+        #expect(point.distance(to: point) < 0.001)
     }
 }

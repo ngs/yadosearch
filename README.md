@@ -30,19 +30,24 @@
 - [Tuist](https://tuist.io)（`mise install` で `mise.toml` のバージョンが入ります）
 - [direnv](https://direnv.net)
 - SwiftLint（`brew install swiftlint`）、Periphery（`brew install periphery`）
-- じゃらん Web サービスのアプリケーションキー
+
+**API キーは不要です。** 上流の資格情報は [yadosearch-api](https://github.com/ngs/yadosearch-api) プロキシが持っています。
 
 ### 手順
 
 ```bash
-echo 'export TUIST_JALAN_API_KEY=…' > .envrc   # 発行されたキーを書く
-direnv allow                                   # 初回のみ
 tuist generate                                 # Xcode プロジェクトを生成して開く
 ```
 
-Tuist が `TUIST_JALAN_API_KEY` を `Info.plist` の `JalanAPIKey` に埋め込みます。`.envrc` は gitignore されているのでキーはリポジトリに入りません。
+接続先は既定で Cloud Run のホストです。ローカルのプロキシに向けるには **`YadoSearch (Local)` スキーム**を選びます。起動引数 `-APIHost localhost:8080` が渡ります。
 
-**キーがないビルドは起動時に `fatalError` で落ちます。** 全画面が API に依存するため、動かないビルドを黙って動かすより、出荷前に気づけるようにしています。ビルド自体は通るので、CI（キーなし）のビルドとテストには影響しません。
+```bash
+cd ../yadosearch-api && make run               # プロキシを :8080 で起動
+```
+
+**実機で試すときはこの起動引数を Mac の名前か IP に変えてください。** 端末上の `localhost` は端末自身を指します。
+
+接続先が解決できないビルドは起動時に `fatalError` で落ちます。全画面が API に依存するため、動かないビルドを黙って動かすより、出荷前に気づけるようにしています。
 
 ## 開発コマンド
 
@@ -77,7 +82,7 @@ YadoSearch/
 └── .github/        # CI・リリース・provision ワークフロー
 ```
 
-- **YadoSearchCore** — `JalanAPIClient`、`XMLTree`（XMLParser ベースの軽量 DOM）、`Hotel` / `Plan` / `AreaTree`、`SearchFilters` / `GuestParty` / `SavedSearch`、`JalanAffiliate`、測地系変換
+- **YadoSearchCore** — `Sources/Core/API/`（契約の Codable モデルと `YadoSearchAPIClient`）、`SearchTarget` / `SearchFilters` / `GuestParty` / `SavedSearch`、`AreaTree`、`GeoCoordinate`。Foundation のみ・依存なし
 - **YadoSearchPlatform** — `StoredHotel`（お気に入りと閲覧履歴を1テーブルで）、`StoredSearch`（検索条件の履歴）、`AreaCatalog`（地域ツリーのディスクキャッシュ）、`CurrentLocationProvider`、`ReverseGeocoder`、`StationSearchService`
 - **YadoSearchUI** — 検索画面、絞り込みシート、結果一覧、宿詳細、お気に入り、履歴、設定
 
@@ -99,55 +104,39 @@ Developer Portal 側の設定は済んでいます。App ID `org.ngsdev.iphone.Y
 
 プロビジョニングプロファイルにも capability が反映済みなので、`provision.yml` の再実行は不要です。プロファイルは発行時点の entitlements のスナップショットなのでかつては課題でしたが、`MATCH_READONLY=true` のまま署名した Release ビルドが iCloud・APNs の entitlements 込みで App Store Connect に受理されており、古いプロファイルではそうなりません。
 
-## じゃらん Web サービスについて
+## API について
 
-現在も応答するエンドポイントは3つで、アプリはその3つだけを使っています。
+すべて [yadosearch-api](https://github.com/ngs/yadosearch-api) プロキシ経由です。**じゃらん・楽天のどちらにもアプリから直接アクセスしません。**
 
 | 用途 | パス |
 |---|---|
-| 宿検索 | `APIAdvance/HotelSearch/V1/` |
-| 空室・プラン検索 | `APIAdvance/StockSearch/V1/` |
-| 地域ツリー | `APICommon/AreaSearch/V1/` |
+| 検索（両サービス統合） | `GET /v1/hotels` |
+| 宿1件＋もう一方の同じ宿 | `GET /v1/hotels/{provider}/{id}` |
+| 1宿のプラン・空室 | `GET /v1/hotels/{provider}/{id}/plans` |
+| じゃらんのエリア階層 | `GET /v1/areas/jalan` |
 
-実装するうえで効いてくる、ドキュメントに書かれていない挙動が3つあります。
+契約はプロキシ側の `openapi.json` で、`Sources/Core/API/APIModels.swift` がその写しです。デコードのテストはプロキシにコミットされている実レスポンス例を読むので、契約が動けばこちら側も落ちます。
 
-### 1. 座標は日本測地系（Tokyo Datum）
+### プロキシ側で解決していること
 
-レスポンスの `<X>` / `<Y>` はミリ秒（1/1000 秒）単位で、**日本測地系**です。帝国ホテル東京は API 上 35.669046N, 139.761581E ですが、実際の WGS 84 の位置は 35.67225N, 139.75892E ——約400m ずれています。そのまま MapKit に渡すとピンが1ブロック外れます。
+- **測地系** — じゃらんの座標は日本測地系で、WGS 84 とは約400m ずれます。変換はサーバ側で完結し、アプリに届くのは常に WGS 84 です（東京駅の座標で検索して東京ステーションホテルが 142m、という実測で確認しています）
+- **アフィリエイト** — `detailUrl` は ValueCommerce のリファラルに包まれた状態で返ります
+- **HTTPS** — じゃらんは 80 番しか開いていませんが、そこはプロキシが終端します。アプリの ATS 例外はローカル開発用の `NSAllowsLocalNetworking` だけです
+- **資格情報** — 両サービスのキーはサーバに閉じています
 
-`TokyoDatum.toWorld(_:)` / `.fromWorld(_:)` が変換します。検索の中心座標も変換して送ります（`datum` パラメータは送っても受けても観測できる差がありません）。
+### アプリ側で効いてくること
 
-### 2. `range` は距離ではなくコード
-
-`range` は 1〜8 のコードで、意味は公開されていません。東京駅を中心にした検索の全結果を各コードで取得し、最も遠い宿までの距離を測った結果がこれです。
-
-| code | 実測半径 |
-|---|---|
-| 1 | 約 1.1 km |
-| 2 | 約 2.5 km |
-| 4 | 約 5.1 km |
-| 6 | 約 7.3 km |
-| 8 | 約 10.0 km |
-
-`SearchRadius` はこの5つを公開しています。UI が「約」と書いているのはこのためです。
-
-### 3. HTTP のみ
-
-`jws.jalan.net` は 80 番しか開いておらず、443 は閉じています。TLS の代替エンドポイントは存在しないため、そのホストに限定した App Transport Security 例外を `Info.plist` に入れています。写真（`www.jalan.net`）や予約ページは HTTPS のままです。
-
-このため **App Store 審査で `NSExceptionAllowsInsecureHTTPLoads` の説明を求められる可能性があります**。API キーが平文で流れる点も含め、提出前に把握しておいてください。
-
-そのほか:
-
-- 宿名検索は該当が200件を超えるとサーバが結果ではなくエラーを返します。エラー本文は日本語の説明文なので、アプリはそのまま表示します。
-- 駅を指定する API パラメータはありません。駅検索は MapKit で座標を引いてから座標検索に流しています。
-- `order`（並び順）のコードの意味は公開されていませんが、2010 年版が `FilterConditions_jalan.plist` に持っていた対応表（0 指定なし / 1 50音順 / 2 参考料金の安い順 / 3 参考料金の高い順 / 4 じゃらんnet人気順）が今も有効なことをライブで確認しています。「指定なし」のときは `order` 自体を送らず、座標検索の既定＝近い順を活かします。
-- `stay_date` は宿名・広域・都道府県検索では拒否されます。日付指定は空室検索（StockSearch）側だけで使っています。
-- 温泉地検索（`o_area_id` / `o_id`）は、温泉地コードを引く API が消えているため実装していません。
+- **片方のサービスの失敗はエラーではありません。** レスポンスは `results` と `errors` を同時に返します（楽天の 429 は普通に踏みます）。結果は残したまま、下に注記を出します
+- **エラーはステータスではなく本文** — `{"error": "…"}` で、多くは上流の日本語メッセージそのままです。だから `searchErrorMessage(for:)` はサービスのメッセージを加工せず表示します
+- **`count` はサービスごとの件数** — 同じ宿が両方にあると1行に統合されるので、30 件要求しても行数はそれより少なくなります。ページングは行数ではなくサービス別の総数で判断します
+- **絞り込みはじゃらんにしか渡りません** — `amenities` / `hotelType` / `minRate` / `maxRate` / `order` に楽天の対応物がないためです。一覧にその旨を表示します
+- **エリア検索は構造上どちらか一方** — じゃらんの階層と楽天の区分はコード体系が別物です
+- **楽天には日付なしモードがありません** — プランには `checkIn` が必須です。じゃらんは省略すると参考料金を返します。日付未指定で楽天を選んだ場合は、エラーではなく日付入力を促します
+- **検索半径はメートル** — `SearchRadius` は保存済み検索のデコード互換のためにじゃらんの旧コードを rawValue に残していますが、送るのは `approximateMetres` です。**楽天は 3km が上限**です
 
 ## アフィリエイト
 
-じゃらん net への外部リンクは ValueCommerce のリファラルを通します（`JalanAffiliate`）。
+じゃらん net・楽天トラベルへの外部リンクは、**プロキシ側で** ValueCommerce のリファラルに包まれて返ってきます。アプリは組み立てません。
 
 ```
 https://www.jalan.net/yad384352/?dateUndecided=1&adultNum=2&roomCount=1
@@ -156,10 +145,10 @@ https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=2462325&pid=892671706
   &vc_url=https%3A%2F%2Fwww.jalan.net%2Fyad384352%2F%3FdateUndecided%3D1%26adultNum%3D2%26roomCount%3D1
 ```
 
-- `vc_url` は URL 全体を percent-encode したものです。`:` と `/` も含めて予約文字をすべて encode し、残るのは非予約文字（英数字と `-._~`）だけです。
-- 宿ページは API の `HotelDetailURL`（`JwsRedirect.do` 経由で API キーを含む）ではなく、`HotelID` から組み立てた canonical な `https://www.jalan.net/yad{HotelID}/` を使います。プランは `PlanCommonDetailURL`（素の jalan.net URL）側を包みます。
-- jalan.net 以外のホストは変換せずそのまま返します。
-- リファラルの応答は JavaScript でリダイレクトする計測ページなので、`URLSession` ではなくブラウザ（`Link`）で開く必要があります。
+URL の組み立て規則はプロキシ側の `docs/affiliate.md` にあります。アプリ側で守るべきことは2つだけです。
+
+- **リファラルの応答は JavaScript の計測ページ**なので、`URLSession` で取得せずブラウザで開きます。
+- **`Link` ではなく `SafariLink` を使います。** jalan.net は universal link を公開しているため、システムに渡すとリダイレクトが じゃらんアプリに奪われ、リファラルが完了せず報酬対象になりません。`SFSafariViewController` は universal link を尊重しないので、ブラウザ内で完結します。macOS には じゃらんアプリも `SFSafariViewController` も無いので `Link` にフォールバックします。アフィリエイト以外のリンク（マップ、App Store）は素の `Link` のままです。
 
 ## CI / CD
 
@@ -170,19 +159,22 @@ GitHub Actions（`.github/workflows/`）:
 - **provision.yml** — 署名プロファイルの再発行（手動）
 - **ci-actions-versions.yml** — Actions のバージョン追随チェック（Dependabot が PR を出す）
 
-必要な Secrets: `JALAN_API_KEY`、`APP_STORE_CONNECT_API_KEY_*`、`MATCH_GIT_URL`、`MATCH_PASSWORD`、`MATCH_DEPLOY_KEY`。
+必要な Secrets: `APP_STORE_CONNECT_API_KEY_*`、`MATCH_GIT_URL`、`MATCH_PASSWORD`、`MATCH_DEPLOY_KEY`。じゃらんのキーは不要になりました（`JALAN_API_KEY` は削除して構いません）。
 
 ## 2010 年リリース版からの差分
 
 引き継いだもの: 4タブ構成（さがす／お気に入り／履歴／設定）、地域ドリルダウン、現在地検索、フリーワード（宿名）検索、駅まわりの検索、絞り込み条件一式、ValueCommerce アフィリエイト。
 
+**楽天トラベル**も、プロキシ経由で復活しています。当時は2サービスを切り替える形でしたが、今回は検索結果で同じ宿を名寄せして並べ、予約先は詳細画面のセグメントで選ぶ形にしています。
+
 引き継いでいないもの:
 
-- **楽天トラベル** — 当時は じゃらん／楽天トラベル の2サービスを切り替えられました。今回はじゃらんのみです（楽天ウェブサービスのアプリ ID が別途必要）。
 - **路線からの駅選択・観光地検索** — 当時は駅と観光地の SQLite を同梱していました。今回は MapKit の検索で駅の座標を引く方式にして、同梱データを持たないようにしています。路線から辿る UX は失われています。
 - **共有（ShareKit / Evernote）・広告（AdSense）・Google Analytics** — いずれも現在は使えないか、入れるべきでないものです。
 
 ## 現状わかっている制限
 
 - **ローカライズは日本語のみ。** じゃらんが日本国内専用のサービスであるため、開発言語を `ja` にして日本語リテラルで書いています。英語化する場合は String Catalog の導入が必要です。なお逆ジオコーディングだけは端末の言語に追随するので、英語環境では "Chiyoda, Tokyo" と出ます。
+- **App Store 上のレコードは販売停止（`CANNOT_SELL`）です。** 2020年1月に Apple の App Store Improvements（更新されていないアプリの削除）で削除されました。**この状態では TestFlight のインストールも 404 で失敗します** — ビルドの問題ではなく、ストアがアプリを配信できないためです。復帰には 3.0.0 を審査に通す必要があります。
+- **アップロードのたびに `ITMS-90076` が出ますが無視して構いません。** 2010年版はチーム `24UH5JK9Q6` で署名されており、現在は `3Y8APYUG2G` なので、キーチェーンアクセスグループの prefix が変わるという警告です。このアプリはキーチェーンを一切使っていません（iCloud/CloudKit と SwiftData のデータにも影響しません）。旧 prefix で署名することはできないので、この警告は消せません。
 - **アプリアイコンは調整中。** `Resources/AppIcon.icon` は Icon Composer で開いて編集できる形式（`icon.json` ＋ `Assets/onsen.svg`）です。温泉マークを白、背景をアクセントカラーのベタ、レイヤーは Liquid Glass 有効にした状態から始めています。

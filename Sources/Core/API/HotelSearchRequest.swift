@@ -157,9 +157,6 @@ public extension HotelSearchRequest {
         case let .around(centre, searchRadius):
             coordinate = centre
             radius = Int(searchRadius.approximateMetres)
-        case .hotel:
-            // A single inn is fetched by provider and ID, not searched for.
-            break
         }
 
         amenities = filters.amenities.map(\.rawValue)
@@ -171,12 +168,16 @@ public extension HotelSearchRequest {
         order = filters.sortOrder == .unspecified ? nil : filters.sortOrder.rawValue
 
         if let party {
+            // Zeroes are left out rather than sent as `0`: the four preschooler
+            // bands are only meaningful when somebody is in them, and an empty
+            // band is the same as not mentioning it.
+            func counted(_ value: Int) -> Int? { value > 0 ? value : nil }
             adults = party.adults
-            schoolChildren = party.elementarySchoolChildren
-            preschoolersWithBedAndMeal = party.preschoolersWithBedAndMeal
-            preschoolersWithMealOnly = party.preschoolersWithMealOnly
-            preschoolersWithBedOnly = party.preschoolersWithBedOnly
-            preschoolersWithNeither = party.preschoolersWithNeither
+            schoolChildren = counted(party.elementarySchoolChildren)
+            preschoolersWithBedAndMeal = counted(party.preschoolersWithBedAndMeal)
+            preschoolersWithMealOnly = counted(party.preschoolersWithMealOnly)
+            preschoolersWithBedOnly = counted(party.preschoolersWithBedOnly)
+            preschoolersWithNeither = counted(party.preschoolersWithNeither)
         }
     }
 }

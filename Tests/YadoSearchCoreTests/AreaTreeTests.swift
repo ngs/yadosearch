@@ -4,8 +4,13 @@ import Testing
 
 @Suite("Area tree")
 struct AreaTreeTests {
+    /// The whole tree as the proxy serves it, captured live. The example
+    /// committed alongside the contract is trimmed to one region, which is no
+    /// use for asking whether all 47 prefectures are there.
     private func tree() throws -> AreaTree {
-        AreaTree(element: try XMLTree.parse(Fixture.data("area-tree")))
+        try JSONDecoder()
+            .decode(JalanAreaTreeResponse.self, from: APIFixture.data("areas_jalan_full"))
+            .areaTree
     }
 
     @Test("Covers the whole country")
@@ -46,12 +51,15 @@ struct AreaTreeTests {
         #expect(tokyo.largeAreas.contains { !$0.smallAreas.isEmpty })
     }
 
-    @Test("A search narrows to the most specific code set")
-    func narrowsToMostSpecificCode() {
+    @Test("A search sends every level it was given")
+    func sendsEveryLevel() {
         let selection = AreaSelection(regionID: "15", prefectureID: "130000", largeAreaID: "136700")
+        let request = HotelSearchRequest(target: .area(selection))
 
-        #expect(selection.queryItem?.name == "l_area")
-        #expect(selection.queryItem?.value == "136700")
-        #expect(AreaSelection().queryItem == nil)
+        // The proxy takes the levels as they are and picks the finest itself,
+        // so nothing here has to decide which one wins.
+        #expect(request.jalanLargeArea == "136700")
+        #expect(request.jalanPrefecture == "130000")
+        #expect(request.jalanSmallArea == nil)
     }
 }

@@ -12,9 +12,6 @@ public struct YadoSearchEnvironment: Sendable {
     public let client: YadoSearchAPIClient
     public let areaCatalog: AreaCatalog
     public let stationSearch = StationSearchService()
-    /// Every outbound jalan.net link goes through this, so a booking made from
-    /// the app is credited. It needs no key of its own — the IDs are public.
-    public let affiliate = JalanAffiliate.littleApps
 
     public init(configuration: YadoSearchAPIClient.Configuration) {
         let client = YadoSearchAPIClient(configuration: configuration)
