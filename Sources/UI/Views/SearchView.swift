@@ -111,18 +111,7 @@ struct SearchView: View {
             case .station: stationSection
             }
 
-            Section {
-                Button {
-                    isEditingFilters = true
-                } label: {
-                    LabeledContent("絞り込み") {
-                        Text(filters.isEmpty ? "なし" : "\(filters.activeCount)件")
-                            .foregroundStyle(filters.isEmpty ? .secondary : .primary)
-                    }
-                }
-                .buttonStyle(.plain)
-                LabeledContent("人数", value: party.summary)
-            }
+            conditionsSection
 
             Section {
                 Button {
@@ -145,6 +134,62 @@ struct SearchView: View {
         .formStyle(.grouped)
     }
 
+    /// What the search will be narrowed by, one line per condition that is
+    /// actually in effect. Every row opens the same editing sheet — there is no
+    /// separate "絞り込み" row to find first.
+    private var conditionsSection: some View {
+        Section("検索条件") {
+            ForEach(conditionRows, id: \.title) { row in
+                Button {
+                    isEditingFilters = true
+                } label: {
+                    conditionLabel(title: row.title, value: row.value)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    private struct ConditionRow {
+        let title: String
+        let value: String
+    }
+
+    /// The party is always shown — a search always has one — and the rest appear
+    /// only once they are set, so the section stays short when nothing is.
+    private var conditionRows: [ConditionRow] {
+        var rows = [ConditionRow(title: "人数", value: party.summary)]
+        if filters.sortOrder != .unspecified {
+            rows.append(ConditionRow(title: "並び順", value: filters.sortOrder.title))
+        }
+        if let hotelType = filters.hotelType {
+            rows.append(ConditionRow(title: "宿の種類", value: hotelType.title))
+        }
+        if let budget = filters.budgetSummary {
+            rows.append(ConditionRow(title: "予算", value: budget))
+        }
+        if let amenities = filters.amenitySummary {
+            rows.append(ConditionRow(title: "こだわり", value: amenities))
+        }
+        return rows
+    }
+
+    /// `contentShape` is what makes the whole row tappable. Without it a
+    /// `.plain` button in a form only responds where the text actually is.
+    private func conditionLabel(title: String, value: String) -> some View {
+        HStack {
+            Text(title)
+            Spacer(minLength: 12)
+            Text(value)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.trailing)
+            Image(systemName: "chevron.forward")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(.tertiary)
+        }
+        .contentShape(Rectangle())
+    }
+
     @ViewBuilder
     private var recentSearchesSection: some View {
         if !recentSearches.isEmpty {
@@ -163,6 +208,8 @@ struct SearchView: View {
                                         .foregroundStyle(.secondary)
                                 }
                             }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
                     }
@@ -258,10 +305,7 @@ private extension SearchView {
             Button {
                 isPickingArea = true
             } label: {
-                LabeledContent("地域") {
-                    Text(chosenArea?.name ?? "えらぶ")
-                        .foregroundStyle(chosenArea == nil ? .secondary : .primary)
-                }
+                pickerLabel(title: "地域", value: chosenArea?.name)
             }
             .buttonStyle(.plain)
         } header: {
@@ -276,10 +320,7 @@ private extension SearchView {
             Button {
                 isPickingStation = true
             } label: {
-                LabeledContent("駅") {
-                    Text(chosenStation?.name ?? "えらぶ")
-                        .foregroundStyle(chosenStation == nil ? .secondary : .primary)
-                }
+                pickerLabel(title: "駅", value: chosenStation?.name)
             }
             .buttonStyle(.plain)
             radiusPicker
@@ -289,6 +330,22 @@ private extension SearchView {
             // The API has no station parameter; this is what actually happens.
             Text("駅の位置を地図から調べ、そのまわりの宿をさがします。")
         }
+    }
+
+    /// A row that opens a picker sheet. Shaped like the condition rows, and made
+    /// tappable across its whole width for the same reason.
+    func pickerLabel(title: String, value: String?) -> some View {
+        HStack {
+            Text(title)
+            Spacer(minLength: 12)
+            Text(value ?? "えらぶ")
+                .foregroundStyle(value == nil ? .secondary : .primary)
+                .multilineTextAlignment(.trailing)
+            Image(systemName: "chevron.forward")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(.tertiary)
+        }
+        .contentShape(Rectangle())
     }
 
     var radiusPicker: some View {

@@ -74,29 +74,12 @@ public extension SavedSearch {
         if let hotelType = filters.hotelType {
             parts.append(hotelType.title)
         }
-        switch (filters.minimumRate, filters.maximumRate) {
-        case let (minimum?, maximum?):
-            parts.append("\(minimum.formattedThousands)〜\(maximum.formattedThousands)円")
-        case let (minimum?, nil):
-            parts.append("\(minimum.formattedThousands)円〜")
-        case let (nil, maximum?):
-            parts.append("〜\(maximum.formattedThousands)円")
-        case (nil, nil):
-            break
+        if let budget = filters.budgetSummary {
+            parts.append(budget)
         }
-        parts += filters.amenities
-            .sorted { $0.rawValue < $1.rawValue }
-            .prefix(3)
-            .map(\.title)
-        if filters.amenities.count > 3 {
-            parts.append("ほか\(filters.amenities.count - 3)件")
+        if let amenities = filters.amenitySummary {
+            parts.append(amenities)
         }
         return parts.joined(separator: "・")
-    }
-}
-
-private extension Int {
-    var formattedThousands: String {
-        formatted(.number.grouping(.automatic))
     }
 }

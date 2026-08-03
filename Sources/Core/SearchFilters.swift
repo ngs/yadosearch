@@ -308,6 +308,25 @@ public struct SearchFilters: Sendable, Hashable, Codable {
         self = SearchFilters()
     }
 
+    /// "8,000〜20,000円", or one open end, or `nil` when the budget is not set.
+    public var budgetSummary: String? {
+        switch (minimumRate, maximumRate) {
+        case let (minimum?, maximum?): "\(minimum.groupedDigits)〜\(maximum.groupedDigits)円"
+        case let (minimum?, nil): "\(minimum.groupedDigits)円〜"
+        case let (nil, maximum?): "〜\(maximum.groupedDigits)円"
+        case (nil, nil): nil
+        }
+    }
+
+    /// Every chosen amenity, named in full. `nil` when nothing is chosen.
+    public var amenitySummary: String? {
+        guard !amenities.isEmpty else { return nil }
+        return amenities
+            .sorted { $0.rawValue < $1.rawValue }
+            .map(\.title)
+            .joined(separator: "・")
+    }
+
     var queryItems: [URLQueryItem] {
         var items: [URLQueryItem] = []
         if sortOrder != .unspecified {
@@ -328,5 +347,11 @@ public struct SearchFilters: Sendable, Hashable, Codable {
             items.append(URLQueryItem(name: amenity.rawValue, value: "1"))
         }
         return items
+    }
+}
+
+extension Int {
+    var groupedDigits: String {
+        formatted(.number.grouping(.automatic))
     }
 }

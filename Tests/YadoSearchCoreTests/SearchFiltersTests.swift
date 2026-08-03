@@ -82,6 +82,34 @@ struct SearchFiltersTests {
         }
     }
 
+    /// These drive the rows of the 検索条件 section, which lists only what is
+    /// actually set.
+    @Test("Summarises the budget, both ends and one")
+    func summarisesBudget() {
+        #expect(SearchFilters().budgetSummary == nil)
+        #expect(SearchFilters(minimumRate: 8_000, maximumRate: 20_000).budgetSummary == "8,000〜20,000円")
+        #expect(SearchFilters(minimumRate: 10_000).budgetSummary == "10,000円〜")
+        #expect(SearchFilters(maximumRate: 10_000).budgetSummary == "〜10,000円")
+    }
+
+    /// Every chosen amenity is named — the list is never abbreviated.
+    @Test("Summarises the amenities in full")
+    func summarisesAmenities() throws {
+        #expect(SearchFilters().amenitySummary == nil)
+        #expect(SearchFilters(amenities: [.hotSpring]).amenitySummary == "温泉")
+
+        let many = SearchFilters(
+            amenities: [.hotSpring, .sauna, .petsAllowed, .freeParking, .nonSmokingRoom]
+        )
+        let summary = try #require(many.amenitySummary)
+
+        #expect(summary.split(separator: "・").count == 5)
+        #expect(!summary.contains("ほか"))
+        for amenity in many.amenities {
+            #expect(summary.contains(amenity.title))
+        }
+    }
+
     @Test("Resetting clears everything")
     func resets() {
         var filters = SearchFilters(sortOrder: .popularity, amenities: [.hotSpring])

@@ -97,16 +97,15 @@ struct SavedSearchTests {
         #expect(some.conditionsSummary.contains("温泉"))
     }
 
-    /// A long amenity list would otherwise run off the row.
-    @Test("A long amenity list is abbreviated")
-    func abbreviatesLongAmenityLists() {
-        let summary = search(
-            filters: SearchFilters(
-                amenities: [.hotSpring, .sauna, .petsAllowed, .freeParking, .nonSmokingRoom]
-            )
-        ).conditionsSummary
+    @Test("Every amenity is named, however many there are")
+    func namesEveryAmenity() {
+        let amenities: Set<Amenity> = [.hotSpring, .sauna, .petsAllowed, .freeParking, .nonSmokingRoom]
+        let summary = search(filters: SearchFilters(amenities: amenities)).conditionsSummary
 
-        #expect(summary.contains("ほか2件"))
+        #expect(!summary.contains("ほか"))
+        for amenity in amenities {
+            #expect(summary.contains(amenity.title))
+        }
     }
 
     @Test("An open-ended budget reads as open-ended")
