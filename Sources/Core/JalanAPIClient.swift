@@ -25,11 +25,10 @@ public struct JalanAPIClient: Sendable {
 
         /// The configuration baked into the app at project-generation time.
         ///
-        /// direnv exports `TUIST_JALAN_API_KEY` from `.env` (CI sets it from a
-        /// repository secret) and Tuist writes it into `Info.plist`. A build made
-        /// without one — every CI build, since the key is a secret the pull
-        /// request workflows do not get — yields `nil` here, and the app says so
-        /// rather than issuing requests that would all come back rejected.
+        /// direnv exports `TUIST_JALAN_API_KEY` (CI sets it from a repository
+        /// secret) and Tuist writes it into `Info.plist`. `nil` means the build
+        /// has no key at all, which `YadoSearchEnvironment.init(bundle:)` treats
+        /// as fatal — it is a broken build, not something to explain to a user.
         public static func fromBundle(_ bundle: Bundle) -> Configuration? {
             guard
                 let key = bundle.object(forInfoDictionaryKey: "JalanAPIKey") as? String,
@@ -74,9 +73,6 @@ public struct JalanAPIClient: Sendable {
 
 private extension JalanAPIClient {
     func url(for endpoint: Endpoint, query: [URLQueryItem]) throws -> URL {
-        guard !configuration.applicationKey.isEmpty else {
-            throw JalanAPIError.missingApplicationKey
-        }
         var components = URLComponents()
         components.scheme = "http"
         components.host = configuration.host

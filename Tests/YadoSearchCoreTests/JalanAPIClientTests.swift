@@ -205,13 +205,15 @@ struct JalanAPIClientTests {
         #expect(tree.regions.count == 12)
     }
 
-    @Test("A build without a key never reaches the network")
-    func refusesWithoutKey() async {
-        await #expect(throws: JalanAPIError.missingApplicationKey) {
-            try await makeClient(key: "").searchHotels(
-                HotelSearchQuery(target: .area(AreaSelection(prefectureID: "130000")))
-            )
-        }
+    /// An empty key is only ever a preview or a test; the request goes out and
+    /// the service turns it away, and that message is what surfaces.
+    @Test("An empty key still sends the request")
+    func sendsWithoutKey() async throws {
+        _ = try await makeClient(key: "").searchHotels(
+            HotelSearchQuery(target: .area(AreaSelection(prefectureID: "130000")))
+        )
+
+        #expect(StubURLProtocol.queryItems(forPath: "/APIAdvance/HotelSearch/V1/")["key"] == nil)
     }
 
     /// A rejection is a 400 whose body explains itself; the message is what the
