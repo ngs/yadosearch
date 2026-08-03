@@ -4,7 +4,7 @@
 
 ## Overview
 
-**YadoSearch（宿さがし）** — an app for finding Japanese inns and hotels on iPhone, iPad and Mac, backed by the Jalan Web Service.
+**YadoSearch（宿さがし）** — an app for finding Japanese inns and hotels on iPhone, iPad and Mac, backed by the [yadosearch-api](https://github.com/ngs/yadosearch-api) proxy, which merges じゃらん and 楽天トラベル into one JSON API.
 
 It is the successor to the app that shipped on the App Store in 2010 as 宿さがし 2.0.4 (App Store ID 347959354). The bundle identifier is that release's — `org.ngsdev.iphone.Yado` — so this ships as an update to the existing record, not as a new app. **Do not change it.** This repository's own history holds an abandoned 2014 UIKit rewrite (v3); the 2010 release, not that skeleton, is the behavioural reference.
 
@@ -19,13 +19,13 @@ Four search axes, carried over from that release: by inn name, near you, by area
 - **Project generation**: Tuist (`Project.swift`) + SwiftPM (`Package.swift`)
 - **Code quality**: SwiftLint / Periphery / RuboCop (for the Fastfile)
 - **CI/CD**: GitHub Actions + fastlane
-- **Localization**: Japanese only, written as literals (see "Known gaps")
+- **Localization**: Japanese and English, through `Resources/Localizable.xcstrings`
 
 ### Modules
 
 | Module | Path | Contents |
 |---|---|---|
-| `YadoSearchCore` | `Sources/Core/` | Jalan API client, XML tree, `Hotel`/`Plan`/`AreaTree`, `SearchFilters`/`GuestParty`, `JalanAffiliate`, datum conversion. **Foundation only.** |
+| `YadoSearchCore` | `Sources/Core/` | `Sources/Core/API/` — the proxy's contract as Codable types plus `YadoSearchAPIClient`; `SearchTarget`/`SearchFilters`/`GuestParty`/`SavedSearch`, `AreaTree`, `GeoCoordinate`. **Foundation only, no dependencies.** |
 | `YadoSearchPlatform` | `Sources/Platform/` | SwiftData `StoredHotel` (favourites and visit history in one table) and `StoredSearch` (recent searches), area-tree disk cache, Core Location, MapKit station search and reverse geocoding |
 | `YadoSearchUI` | `Sources/UI/` | SwiftUI views and view models |
 
@@ -34,53 +34,64 @@ Four search axes, carried over from that release: by inn name, near you, by area
 | `YadoSearch` | app | `Sources/App/` | iPhone / iPad / Mac |
 | `YadoSearchTests` | unitTests | `Tests/YadoSearchUITests/` | iPhone / iPad / Mac |
 
-## The API, and what is not obvious about it
+## The API
 
-Only three Jalan endpoints still answer, and those are the three in use:
-`APIAdvance/HotelSearch/V1/`, `APIAdvance/StockSearch/V1/`, `APICommon/AreaSearch/V1/`.
-Anything else under `/APIAdvance/` (`AreaCode`, `OnsenCode`, `HotelDetail`, …) returns Jalan's "page not found" HTML.
+Everything goes through the proxy. **Neither じゃらん nor 楽天 is reached directly**, and the app holds no credentials of its own.
 
-**Coordinates are in the Tokyo datum.** `<X>`/`<Y>` are thousandths of an arcsecond in the *old Japanese datum*, and nothing in the response says so. The Imperial Hotel Tokyo comes back at 35.669046 N, 139.761581 E; it stands at 35.67225 N, 139.75892 E on a WGS 84 map. `TokyoDatum` converts both ways, and `SearchTarget.queryItems` converts the search centre on the way out. Skipping this misplaces every pin by ~400 m — verified end to end: a proximity search on Tokyo Station's WGS 84 position returns the Tokyo Station Hotel at 142 m.
+| Purpose | Path |
+|---|---|
+| Search, both providers merged | `GET /v1/hotels` |
+| One inn, plus its match on the other provider | `GET /v1/hotels/{provider}/{id}` |
+| Plans and vacancy for one inn | `GET /v1/hotels/{provider}/{id}/plans` |
+| Jalan's area hierarchy | `GET /v1/areas/jalan` |
 
-The `datum` request parameter makes no observable difference to either the request or the response. Sending Tokyo-datum coordinates is correct whether or not the server honours it.
+`openapi.json` in the proxy repository is the contract, and `Sources/Core/API/APIModels.swift` is that contract in Swift. The decoding tests read the proxy's own committed examples (`internal/httpapi/testdata/examples/`), so a change on that side shows up as a failure here.
 
-**`range` is an opaque code, not a distance.** Codes 1–8, undocumented. The radii in `SearchRadius` were measured by fetching every result of a Tokyo Station search at each code and recording the farthest inn: 1.1 / 2.5 / 3.7 / 5.1 / 6.3 / 7.3 / 8.7 / 10.0 km. The enum exposes five of them, and the UI says "約" because they are approximations.
+**What the proxy takes care of, so this side does not have to:**
 
-**HTTP only.** `jws.jalan.net` listens on port 80; 443 is closed. `Project.swift` declares an ATS exception scoped to that host. This is an App Store review exposure — see the README.
+- **The datum.** じゃらん reports coordinates in the old Japanese datum, ~400 m from where WGS 84 puts them. The proxy converts both ways; everything the app sees is WGS 84. (Verified end to end: a search on Tokyo Station's position reports the Tokyo Station Hotel at 142 m.)
+- **Affiliate links.** `detailUrl` on an offer or a plan arrives already wrapped for ValueCommerce. See "Affiliate links" below.
+- **HTTPS.** じゃらん answers on port 80 only; the proxy terminates that, so the app declares no App Transport Security exception for a real host.
+- **The credentials.** Both services' keys stay on the server.
 
-**Other behaviours worth knowing:**
+**What is still worth knowing:**
 
-- Name search (`h_name`) refuses outright above 200 matches. The error body is Japanese prose written for the caller, so `searchErrorMessage(for:)` passes service messages through verbatim rather than replacing them.
-- Errors arrive as HTTP 400 with `<Error><Message>…</Message></Error>`. The client reads the body, not the status code.
-- There is no station parameter. Station search resolves a coordinate with MapKit, then runs a proximity search.
-- **`order`'s codes are undocumented but known.** The 2010 release shipped the mapping in `FilterConditions_jalan.plist` (0 指定なし / 1 50音順 / 2 参考料金の安い順 / 3 参考料金の高い順 / 4 じゃらんnet人気順) and all five still work — `HotelSortOrder` is that table. `.unspecified` sends no `order` at all, which is what leaves a proximity search sorted nearest-first.
-- **The whole filter vocabulary still works too**: `h_type`, `min_rate`/`max_rate`, `sc_num`/`lc_num_*`, and ~60 flag parameters, all verified live against the list in the 2010 release's `Misc/docs/jws.txt`. `SearchFilters` and `GuestParty` carry them.
-- `stay_date` is rejected on name, region and prefecture searches ("宿名検索、広域、都道府県検索時は宿泊開始日を指定することはできません"), so dates are only sent to `StockSearch`.
-- 温泉地 search (`o_area_id`/`o_id`) is not implemented: the endpoint that listed 温泉地 codes is gone, and the parameter rejects anything else.
-- `HotelSearch` and `StockSearch` return different subsets of the `<Hotel>` fields (access directions and check-in times vs rating and kana). Everything either one omits is optional on `Hotel`, and one decoder serves both.
+- **`Provider` must be `CodingKeyRepresentable`.** `totals`, `errors` and `counterparts` are all `[Provider: …]`, and without that conformance a dictionary whose key is neither `String` nor `Int` decodes from a JSON *array* of alternating keys and values. It compiles either way and fails at runtime, so `Provider.swift` carries the reason.
+- **One provider failing is not an error.** A response carries `results` and an `errors` map together — a side can rate-limit (楽天 429 is easy to hit) or refuse while the other answers. The results screen shows both.
+- **Errors are the body, not the status.** A refused request is `{"error": "…"}`, often verbatim from the upstream service in Japanese, which is why `searchErrorMessage(for:)` passes service messages through.
+- **`count` is per provider.** Asking for 30 can return fewer merged rows, because the same inn found on both sides is one row. Paging is decided from the per-provider totals, not from the row count.
+- **Filters reach じゃらん only.** `amenities`, `hotelType`, `minRate`/`maxRate`, `order` have no 楽天 equivalent, so a filtered search returns a narrowed じゃらん half and an unnarrowed 楽天 half. The list says so.
+- **Area search is single-provider by construction.** じゃらん's hierarchy and 楽天's classification share no codes, so sending じゃらん codes searches じゃらん alone.
+- **楽天 has no undated mode.** `checkIn` is required for its plans; じゃらん without one quotes guide prices. Selecting 楽天 with no date prompts for one instead of reporting a failure.
+- Name search still refuses above 200 matches, with じゃらん's own wording.
+- **Radius is metres now.** `SearchRadius` still carries じゃらん's old opaque codes as raw values (so stored searches keep decoding), but what is sent is `approximateMetres`. **楽天 caps its own search at 3 km.**
 
 ## Affiliate links
 
-Every outbound jalan.net link goes through ValueCommerce (`JalanAffiliate`, `sid=2462325` / `pid=892671706`). The 2010 release did the same — `kVCURLFormat` in its `AppConfig.h` — under an older program ID.
+Every outbound jalan.net and rakuten link is affiliate-wrapped **by the proxy**, and arrives ready to open: `Offer.detailURL`, `HotelProfile.detailURL`, `StayPlan.detailURL`. The app builds none of it — `JalanAffiliate` and its ValueCommerce URL construction are gone, and `docs/affiliate.md` in the proxy repository is where that logic now lives and is documented.
 
-- `vc_url` is the destination percent-encoded **whole**, `:` and `/` included; only the unreserved set survives. It is built by string concatenation, not `URLComponents.queryItems`, which would re-encode the percent signs.
-- The inn link is built from `HotelID` as `https://www.jalan.net/yad{HotelID}/`, not from the API's `HotelDetailURL` — that one goes through `JwsRedirect.do` and carries the API key in its query. For plans, `PlanCommonDetailURL` (a plain jalan.net address) is wrapped and `PlanDetailURL` is the unwrapped fallback.
-- Non-jalan.net URLs are returned unchanged; the programme pays for one merchant.
-- The redirect answers with a JavaScript tracking page, so these URLs must be opened in a browser, never fetched with `URLSession`.
-- **Opened with `SafariLink`, not `Link`.** jalan.net publishes a universal link: handing the redirect to the system opens the じゃらん app instead of the browser, and the referral never completes, so the click earns nothing. `SFSafariViewController` ignores universal links, so the redirect stays in the browser. `SafariLink` falls back to `Link` on macOS, where neither the app nor `SFSafariViewController` exists. Non-affiliate links (Maps, the App Store, jalan.net in 設定) stay plain `Link`s.
+Two things still matter on this side:
 
-## The application key
+- **Open these in a browser, never fetch them.** The redirect answers with a JavaScript tracking page.
+- **Use `SafariLink`, not `Link`.** jalan.net publishes a universal link, so handing the redirect to the system opens the じゃらん app and the referral never completes — the click earns nothing. `SFSafariViewController` ignores universal links, so the redirect stays in the browser. `SafariLink` falls back to `Link` on macOS, where neither the app nor `SFSafariViewController` exists. Non-affiliate links (Maps, the App Store) stay plain `Link`s.
 
-Never in the repository. `.envrc` (gitignored, direnv) exports `TUIST_JALAN_API_KEY` → Tuist writes it into `Info.plist` as `JalanAPIKey` → `JalanAPIClient.Configuration.fromBundle(_:)` reads it. CI sets the variable straight from a repository secret, so nothing there needs direnv.
+## The API host
 
-**A build without a key traps at launch** (`YadoSearchEnvironment.init(bundle:)`). Every screen needs the API, so an unconfigured build is broken rather than degraded, and the trap is what stops one shipping. Do not add a "not configured" state back. Building and testing without a key still works — nothing in the test targets launches the app, and the environment's default value carries an empty key so previews fail on the network instead of trapping.
+There is no application key any more. What the app needs to know is *where the proxy is*, and it resolves that from two places, in order:
 
-The committed test fixtures were captured live and had the key scrubbed to `TEST_KEY` — it appears inside every `HotelDetailURL` the service returns, so re-capturing fixtures means scrubbing again.
+1. **A launch argument**, `-APIHost host:port`. Xcode puts `-key value` pairs into `UserDefaults`, so `APIHost.baseURL(bundle:defaults:)` needs no parsing of its own.
+2. **`APIHost` in `Info.plist`**, written by Tuist from the `API_HOST` build setting in `Project.swift`.
+
+The host is bare, without a scheme: `http` is chosen for `localhost`, `127.0.0.1` and `*.local`, `https` for everything else. `NSAllowsLocalNetworking` covers exactly the first case, and no other ATS exception exists.
+
+**A build that cannot resolve a host traps at launch** (`YadoSearchEnvironment.init(bundle:)`). Every screen needs the API, so an unconfigured build is broken rather than degraded. Do not add a "not configured" state back.
+
+The `YadoSearch (Local)` scheme passes `-APIHost localhost:8080`. **On a device that argument is the knob to turn** — `localhost` there means the phone, so testing against a proxy on the Mac means naming the Mac.
 
 ## Commands
 
 ```bash
-tuist generate                      # generate and open (direnv supplies the key)
+tuist generate                      # generate and open
 tuist generate --no-open            # what CI runs
 swift test                          # SPM tests
 xcodebuild test -workspace YadoSearch.xcworkspace -scheme YadoSearch \
@@ -95,8 +106,10 @@ open Resources/AppIcon.icon         # edit the app icon in Icon Composer
 
 ## Testing
 
-- `Tests/YadoSearchCoreTests/` — parsing against `Fixtures/*.xml`, real captured responses; request building, filter and affiliate URL construction, and error mapping through a `URLProtocol` stub
-- `Tests/YadoSearchUITests/` — view-model paging and failure handling through `StubJalanServer`, favourites and history against an in-memory SwiftData container, and presentation formatting
+- `Tests/YadoSearchCoreTests/` — decoding against `Fixtures/api/*.json`, which are the proxy's own committed examples; request building and filter mapping
+- `Tests/YadoSearchUITests/` — view-model paging and failure handling through `StubProxyServer` (a `URLProtocol` serving canned JSON keyed by `page`), favourites and history against an in-memory SwiftData container, and presentation formatting
+
+`Fixtures/api/areas_jalan_full.json` is captured live rather than copied: the contract's own area example is trimmed to one region, which cannot answer whether all 47 prefectures are there.
 
 Both run under `swift test`; `YadoSearchTests` (the Tuist target) runs `Tests/YadoSearchUITests/` under `xcodebuild test`.
 
@@ -110,7 +123,7 @@ Favourites, visit history and recent searches mirror through the CloudKit privat
 - `YadoSearchModelContainer.make(inMemory:)` walks a ladder: CloudKit → local → in-memory. A build without the entitlement (CI, and any simulator not signed into iCloud) simply lands on a lower rung, so nothing here may assume sync is on.
 - `aps-environment` comes from `$(APS_ENVIRONMENT)`, set per configuration in `Project.swift` (Debug `development`, Release `production`). A Release build claiming `development` registers against the APNs sandbox, where CloudKit's pushes never arrive — the app would then only sync when opened.
 - The portal side is already set up: `org.ngsdev.iphone.Yado` has the iCloud (CloudKit) and Push Notifications capabilities, with `iCloud.org.ngsdev.iphone.Yado` assigned. The identifier is pinned in `CloudKitSchemaTests`; if it ever moves, the entitlements file has to move with it or signing fails.
-- What is still outstanding: `provision.yml` run once with `MATCH_READONLY=false`. A provisioning profile is a snapshot of the entitlements at issue time, so profiles cut before the capabilities were added do not carry them.
+- The match profiles already carry the capabilities, so `provision.yml` does not need re-running. A profile is a snapshot of the entitlements at issue time, which is why this was once outstanding; the Release builds now on App Store Connect were signed with `MATCH_READONLY=true` and accepted as `VALID` with the iCloud and APNs entitlements, which they could not have been against a stale profile.
 - Push is only ever the silent kind. The app has no notification code at all — `NSPersistentCloudKitContainer` uses the pushes to learn that another device changed something. Without them sync still works, but only when the app is opened.
 
 ## Search state
@@ -131,14 +144,23 @@ Favourites, visit history and recent searches mirror through the CloudKit privat
 
 Against the 2010 release specifically:
 
-- **Rakuten Travel is gone.** That version could switch between Jalan and 楽天トラベル (`RWSHotelRequestModel`). Adding it back needs a Rakuten Web Service application ID and a second client behind a provider abstraction.
+Rakuten Travel is back, by way of the proxy — the 2010 release switched between the two services, and the merged search restores that.
+
 - **No line-by-line station picker, no sightseeing-spot search.** The 2010 app bundled `eki.sqlite` (stations, lines) and a spot database. Station search here resolves a coordinate through MapKit instead, which carries no data to maintain but loses the 路線→駅 drill-down.
 - Sharing (ShareKit/Evernote), AdSense and Google Analytics are deliberately not carried over.
 
 In general:
 
-- **Japanese only.** Development region is `ja` and UI strings are literals. Adding English means a String Catalog in the UI package plus `bundle: .module` at every call site. Reverse-geocoded place names are the exception — they follow the device language.
+- **Japanese is the source language, and the Japanese string is the key.** `Text("お気に入り")` stays as it is; `Resources/Localizable.xcstrings` maps that key to itself in `ja` and to "Favourites" in `en`.
+  - **The catalogue lives in the app target, not in the UI package.** SwiftUI resolves a `LocalizedStringKey` against `Bundle.main` unless told otherwise, so a catalogue in the app bundle serves every module without `bundle: .module` at hundreds of call sites. The cost is that previews and `swift test` see no catalogue and fall back to the key, which is the Japanese text — the same thing they showed before.
+  - **Anything typed `String` needs `String(localized:)`.** `Text` and friends take a `LocalizedStringKey` and look themselves up; a plain `String` does not. That is why `Amenity.title`, `Provider.title`, `SearchRadius.label`, the `SavedSearch` titles and `searchErrorMessage(for:)` all wrap their literals. Core can do this because `String(localized:)` is Foundation, and it reads `Bundle.main` too.
+  - **Interpolation changes the key.** `Text("\(count)件")` looks up `%lld件`, not `\(count)件`; a `String` interpolation is `%@`. When a translation reorders two arguments it has to use positional specifiers (`%1$@`).
+  - `Resources/InfoPlist.xcstrings` carries the display name and the location prompt.
+  - Reverse-geocoded place names follow the device language on their own. **What the proxy returns — inn names, area names, service error messages — is Japanese whatever the device is set to**, because that is all the upstream services have.
 - **The app icon is still being tuned.** `Resources/AppIcon.icon` is an Icon Composer package (`icon.json` plus `Assets/onsen.svg`) — edit it there, not by hand. There is no `AppIcon.appiconset` any more; the `.icon` supersedes it, and `actool` still emits the legacy PNGs from it.
   - The layer's `fill` in `icon.json` is what colours the glyph. `actool` treats the SVG as a monochrome vector and ignores fills inside it, so changing the SVG's own `fill` does nothing.
   - Rendering it without a full build: `xcrun actool Resources/AppIcon.icon --compile <dir> --platform iphoneos --minimum-deployment-target 26.0 --app-icon AppIcon --include-all-app-icons --output-partial-info-plist <dir>/partial.plist`. A plain `xcodebuild build` caches the compiled catalogue and will not pick up an icon change.
-- No App Store metadata (`fastlane/metadata/`) or screenshot automation yet.
+- **No screenshot automation.** `fastlane/metadata/` is written and delivered by the Metadata workflow, but every screenshot set is still uploaded by hand — `skip_screenshots: true` is deliberate, because that path goes through iTMSTransporter and fails often enough to make the workflow untrustworthy for the part that does work.
+- **A pull request checks the metadata with `Scripts/validate-metadata.rb`, not with `deliver`.** `deliver`'s `verify_only` sounds like a metadata check and is not one — it verifies a *binary* package, and a metadata-only lane passes no ipa or pkg, so it dies in `IpaUploadPackageBuilder` with `no implicit conversion of nil into String` before reading a single field. The script reads the files offline instead (character limits, required and unrecognised fields, https URLs, category keys, locales that do not match each other), so it needs no App Store Connect credentials, and the Metadata workflow gates every upload on it.
+- **`ITMS-90076` on every upload, and it is safe to ignore.** Apple's mail claims the application-identifier prefix moved from `24UH5JK9Q6` to `3Y8APYUG2G` and that keychain access will be lost. **It is a false positive of long standing** — the same mail arrived for uploads years before this rewrite, no team transfer or re-enrolment ever happened, and the app uses the keychain for nothing at all. Do not try to "fix" it by adding a `keychain-access-groups` entitlement.
+- **The App Store record is `CANNOT_SELL`.** Apple removed 宿さがし in January 2020 under the App Store Improvements programme (outdated app). **TestFlight installs fail with a 404 while that holds** — the build is fine; the store simply cannot vend the app. Reinstating it means shipping 3.0.0 through review.

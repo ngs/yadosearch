@@ -1,0 +1,80 @@
+name: Metadata
+
+# Pushes fastlane/metadata to App Store Connect.
+#
+# Manual on purpose. This writes straight onto the store listing, and a typo
+# pushed by a merge would be live in the editable version before anyone read
+# it — so a pull request only validates, and applying is a deliberate act.
+#
+# Screenshots are not part of this. See the Fastfile for why.
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: "Platform whose listing to update"
+        required: true
+        type: choice
+        options: [all, ios, mac]
+        default: all
+      verify_only:
+        description: "Only validate fastlane/metadata, do not upload"
+        required: false
+        type: boolean
+        default: false
+
+  pull_request:
+    paths:
+      - "fastlane/metadata/**"
+      - "fastlane/Fastfile"
+      - "Scripts/validate-metadata.rb"
+      - ".github/workflows/metadata.yml"
+
+env:
+  FASTLANE_SKIP_UPDATE_CHECK: "1"
+  APP_STORE_CONNECT_API_KEY_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY_ID }}
+  APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
+  APP_STORE_CONNECT_API_KEY_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY_KEY }}
+  APP_STORE_CONNECT_API_KEY_IS_KEY_CONTENT_BASE64: "true"
+
+jobs:
+  deliver:
+    name: ${{ inputs.verify_only && 'Verify' || github.event_name == 'pull_request' && 'Verify' || 'Upload' }} metadata
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1.321.0
+        with:
+          bundler-cache: true
+
+      # A pull request never uploads, whatever it was dispatched with.
+      - name: Set mode
+        id: mode
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" || "${{ inputs.verify_only }}" == "true" ]]; then
+            echo "upload=false" >> $GITHUB_OUTPUT
+          else
+            echo "upload=true" >> $GITHUB_OUTPUT
+          fi
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "platform=all" >> $GITHUB_OUTPUT
+          else
+            echo "platform=${{ inputs.platform }}" >> $GITHUB_OUTPUT
+          fi
+
+      # The whole of the pull-request check, and the gate on an upload. It
+      # reads the files and nothing else, so it needs no App Store Connect
+      # credentials — `deliver`'s `verify_only` is a *binary* check and cannot
+      # stand in for this.
+      - name: Validate metadata
+        run: ruby Scripts/validate-metadata.rb
+
+      - name: iOS listing
+        if: steps.mode.outputs.upload == 'true' && (steps.mode.outputs.platform == 'all' || steps.mode.outputs.platform == 'ios')
+        run: bundle exec fastlane ios deliver_metadata
+
+      - name: macOS listing
+        if: steps.mode.outputs.upload == 'true' && (steps.mode.outputs.platform == 'all' || steps.mode.outputs.platform == 'mac')
+        run: bundle exec fastlane mac deliver_metadata

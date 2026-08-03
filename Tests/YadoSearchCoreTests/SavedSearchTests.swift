@@ -67,8 +67,7 @@ struct SavedSearchTests {
         let targets: [SearchTarget] = [
             .name("星野"),
             .area(AreaSelection(regionID: "15", prefectureID: "130000", largeAreaID: "136700")),
-            .around(GeoCoordinate(latitude: 35.0, longitude: 139.0), radius: .aboutOneKilometre),
-            .hotel(id: "300002")
+            .around(GeoCoordinate(latitude: 35.0, longitude: 139.0), radius: .aboutOneKilometre)
         ]
 
         for target in targets {

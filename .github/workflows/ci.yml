@@ -6,11 +6,6 @@ on:
   pull_request:
     branches: [main, master, develop]
 
-env:
-  # Absent on pull requests from forks, and that is fine: the app builds and
-  # tests without a key, and reports the missing key at runtime instead.
-  TUIST_JALAN_API_KEY: ${{ secrets.JALAN_API_KEY }}
-
 jobs:
   test:
     name: Test ${{ matrix.platform }}

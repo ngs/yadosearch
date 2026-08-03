@@ -35,8 +35,8 @@ struct StoredHotelListView: View {
                 }
             }
             .navigationDestination(for: SearchRoute.self) { route in
-                if case let .hotel(hotel) = route {
-                    HotelDetailView(hotel: hotel)
+                if case let .hotel(reference) = route {
+                    HotelDetailView(reference: reference)
                 }
             }
         }
@@ -53,7 +53,9 @@ struct StoredHotelListView: View {
     private var list: some View {
         List {
             ForEach(entries) { entry in
-                NavigationLink(value: SearchRoute.hotel(entry.hotel)) {
+                NavigationLink(value: SearchRoute.hotel(
+                    HotelReference(provider: entry.provider, id: entry.hotelID)
+                )) {
                     HotelRow(
                         name: entry.name,
                         area: entry.areaSummary,
@@ -79,8 +81,8 @@ struct StoredHotelListView: View {
 extension StoredHotel.Kind {
     var title: String {
         switch self {
-        case .favorite: "お気に入り"
-        case .history: "履歴"
+        case .favorite: String(localized: "お気に入り")
+        case .history: String(localized: "履歴")
         }
     }
 
@@ -93,15 +95,15 @@ extension StoredHotel.Kind {
 
     var emptyTitle: String {
         switch self {
-        case .favorite: "お気に入りはまだありません"
-        case .history: "見た宿はまだありません"
+        case .favorite: String(localized: "お気に入りはまだありません")
+        case .history: String(localized: "見た宿はまだありません")
         }
     }
 
     var emptyDescription: String {
         switch self {
-        case .favorite: "宿の詳細画面のハートを押すと、ここに残ります。"
-        case .history: "宿の詳細画面を開くと、ここに残ります。"
+        case .favorite: String(localized: "宿の詳細画面のハートを押すと、ここに残ります。")
+        case .history: String(localized: "宿の詳細画面を開くと、ここに残ります。")
         }
     }
 }

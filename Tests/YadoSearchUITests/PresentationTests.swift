@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-import YadoSearchCore
+@testable import YadoSearchCore
 import YadoSearchPlatform
 @testable import YadoSearchUI
 
@@ -27,21 +27,11 @@ struct PresentationTests {
 
     @Test("The area summary names the prefecture and the large area")
     func summarisesArea() {
-        let full = Hotel(
-            id: "1",
-            name: "宿",
-            address: "東京都",
-            area: Hotel.Area(region: "首都圏", prefecture: "東京都", largeArea: "浅草", smallArea: "浅草")
-        )
-        let bare = Hotel(
-            id: "2",
-            name: "宿",
-            address: "東京都",
-            area: Hotel.Area(region: nil, prefecture: nil, largeArea: nil, smallArea: nil)
-        )
+        let full = AreaNames(region: "首都圏", prefecture: "東京都", large: "浅草", small: "浅草")
+        let bare = AreaNames(region: nil, prefecture: nil, large: nil, small: nil)
 
-        #expect(full.areaSummary == "東京都・浅草")
-        #expect(bare.areaSummary == nil)
+        #expect(full.summary == "東京都・浅草")
+        #expect(bare.summary == nil)
     }
 
     /// The service's own refusals carry the reason and the fix, so they must not
@@ -50,10 +40,10 @@ struct PresentationTests {
     func passesServiceErrorsThrough() {
         let message = "宿名による宿の検索結果が200件を越えています。検索キーワードを変更してください。"
 
-        #expect(searchErrorMessage(for: JalanAPIError.service(message: message)) == message)
-        #expect(searchErrorMessage(for: JalanAPIError.service(message: "")).contains("応答"))
+        #expect(searchErrorMessage(for: APIError.service(message: message)) == message)
+        #expect(searchErrorMessage(for: APIError.service(message: "")).contains("応答"))
         // Nothing the user sees mentions the API key.
-        for error: JalanAPIError in [.service(message: ""), .malformedResponse, .transport(description: "x")] {
+        for error: APIError in [.service(message: ""), .malformedResponse, .transport(description: "x")] {
             #expect(!searchErrorMessage(for: error).contains("APIキー"))
         }
     }

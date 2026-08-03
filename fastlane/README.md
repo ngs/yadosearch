@@ -13,6 +13,14 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 # Available Actions
 
+### validate_metadata
+
+```sh
+[bundle exec] fastlane validate_metadata
+```
+
+Check fastlane/metadata against App Store Connect limits, without uploading
+
 ### setup_app_store_connect_api_key
 
 ```sh
@@ -64,7 +72,7 @@ Publish the app to TestFlight
 [bundle exec] fastlane ios deliver_metadata
 ```
 
-Update the App Store metadata
+Update the App Store metadata. Run validate_metadata first to check it without uploading.
 
 ----
 
@@ -86,6 +94,14 @@ Match App Store provisioning profiles for macOS
 ```
 
 Build the app for macOS release
+
+### mac deliver_metadata
+
+```sh
+[bundle exec] fastlane mac deliver_metadata
+```
+
+Update the App Store metadata for macOS. Run validate_metadata first to check it without uploading.
 
 ### mac release_upload
 

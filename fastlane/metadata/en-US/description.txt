@@ -1,62 +1,49 @@
-Useful for traveling, when you have missed the last train.
+Find a place to stay in Japan from wherever you are, whether you are travelling or have just missed the last train.
 
-This application uses the following APIs.
- * Jalan Web Service's "Yado Search API".
- * Rakuten Webservice's "Travel API".
+YadoSearch searches Jalan net and Rakuten Travel at the same time, merges an inn carried by both into a single row, and shows the lowest price from each.
 
-You can search hotels in the following way
- * By hotel name
- * By railway ( Area>Line>Station )
- * By current location
- * By landmarks (Area>Prefecture>LargeArea>Landmarks)
- * By area ( Area>Prefecture>LargeArea>SmallArea )
+The interface is in Japanese, and both booking sites are Japanese services.
 
-You can reserve hotels using your iPhone / iPad.
-Also the following web services are supported, for rechecking on your Mac / PC.
- * Delicious
- * Evernote
- * Facebook
- * Twitter
- * Instapaper
- * Tumblr
- * Twitter
+■ Four ways to search
 
-etc...
+・By the inn's name
+・Around you (from about 1km to about 10km)
+・By area (region → prefecture → large area → small area)
+・Around a station
+
+■ Filters
+
+・Property type, lower and upper guide price
+・Party size (adults, primary school children, and preschoolers in four bands by bedding and meals)
+・About 60 conditions including hot spring, open-air bath, parking and pets allowed
+・Sort order (price ascending or descending, Jalan net popularity, kana)
+
+Filters apply to the Jalan net half of the results.
+
+■ Inn details
+
+・Vacancy and plans, with the rate for each night
+・Map and directions
+・Switch between Jalan net and Rakuten Travel
+
+■ Favourites and history
+
+Favourites, the inns you have looked at, and your past searches sync through iCloud.
+
+Search on an iPhone, book on a Mac.
+
+■ Requirements
+
+iPhone, iPad and Mac.
 
 ----
 
+Inn information comes from Jalan Web Service and Rakuten Web Service. Please check those sites for accuracy.
+
+Links to booking pages use affiliate programmes.
+
 Jalan Web Service
-  http://jws.jalan.net/
+https://www.jalan.net/jw/
 
-Jalan net
-  http://www.jalan.net/
-  
-Rakuten WebService
-  http://webservice.rakuten.co.jp/
-
-Rakuten Travel
-  http://travel.rakuten.co.jp/
-
-Developer : Atsushi Nagase
-  http://ngsdev.org/
-
-== Version History ==
-[ 2.0.4 ]
- * Fixed area listing issue ( Rakuten > Osaka-city area )
- * Fixed date picker displaying bug in Japanese date time locale.
-[ 2.0.3 ]
- * Rakuten Travel hotel search support.
- * Implement search by landmark name.
- * Implement save plan list to Evernote ( Jalan only ).
-[ 2.0.2 ]
- * Evernote support
- * Added price, number of person and some detail conditions to filtering conditions.
- * Added forum link to detail screen.
- * Added AdSense.
-[ 2.0.1 ]
- * Fixed map plotting issue.
- * Delicious support.
-[ 2.0 ]
- * Refactored. Support for iPad and iOS 4. Fixed many issues.
-[ 1.0 ]
- * Initial release.
+Rakuten Web Service
+https://webservice.rakuten.co.jp/

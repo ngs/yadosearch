@@ -45,21 +45,4 @@ public struct GuestParty: Sendable, Hashable, Codable {
     }
 
     public var totalCount: Int { adults + childCount }
-
-    /// Zero counts are left out rather than sent as `0`: the service treats an
-    /// explicit zero as a constraint on some parameters.
-    var queryItems: [URLQueryItem] {
-        var items = [URLQueryItem(name: "adult_num", value: String(adults))]
-        let optional: [(String, Int)] = [
-            ("sc_num", elementarySchoolChildren),
-            ("lc_num_bed_meal", preschoolersWithBedAndMeal),
-            ("lc_num_meal_only", preschoolersWithMealOnly),
-            ("lc_num_bed_only", preschoolersWithBedOnly),
-            ("lc_num_no_bed_meal", preschoolersWithNeither)
-        ]
-        for (name, count) in optional where count > 0 {
-            items.append(URLQueryItem(name: name, value: String(count)))
-        }
-        return items
-    }
 }

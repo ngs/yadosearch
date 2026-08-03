@@ -5,30 +5,43 @@ import YadoSearchCore
 import YadoSearchPlatform
 
 /// Everything known about one inn, and what it costs to stay there.
+///
+/// The inn is one place, but it is sold by up to two sites, and the price, the
+/// plans and the booking link all belong to whichever one is selected. The
+/// segmented control at the top is that selection; switching it re-runs the
+/// plan search against the other site.
 struct HotelDetailView: View {
-    let hotel: Hotel
+    let reference: HotelReference
 
     @Environment(\.yadoSearch) private var yadoSearch
     @Environment(\.modelContext) private var modelContext
     @State private var model: HotelDetailViewModel?
     @State private var isFavorite = false
 
-    private var shown: Hotel { model?.hotel ?? hotel }
+    private var name: String {
+        model?.profile?.name ?? model?.listing?.name ?? ""
+    }
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
-                header
-                if let map = mapSection { map }
-                factsSection
-                if !shown.access.isEmpty { accessSection }
-                if let caption = shown.caption { captionSection(caption) }
-                plansSection
-                bookingButton
+                if let model {
+                    providerPicker(model)
+                    header(model)
+                    if let map = mapSection(model) { map }
+                    factsSection(model)
+                    accessSection(model)
+                    captionSection(model)
+                    plansSection(model)
+                    bookingButton(model)
+                } else {
+                    ProgressView()
+                        .frame(maxWidth: .infinity)
+                }
             }
             .padding()
         }
-        .navigationTitle(shown.name)
+        .navigationTitle(name)
         #if !os(macOS)
         .navigationBarTitleDisplayMode(.inline)
         #endif
@@ -39,78 +52,116 @@ struct HotelDetailView: View {
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
                 Button {
-                    isFavorite = StoredHotelStore.toggleFavorite(shown, in: modelContext)
+                    guard let profile = model?.profile else { return }
+                    isFavorite = StoredHotelStore.toggleFavorite(profile, in: modelContext)
                 } label: {
                     Label(
                         isFavorite ? "お気に入りから削除" : "お気に入りに追加",
                         systemImage: isFavorite ? "heart.fill" : "heart"
                     )
                 }
+                .disabled(model?.profile == nil)
             }
-            if let url = bookingURL {
+            if let url = model?.bookingURL {
                 ToolbarItem(placement: .primaryAction) {
                     SafariLink(destination: url) {
-                        Label("じゃらんで予約", systemImage: "calendar.badge.plus")
+                        Label("予約する", systemImage: "calendar.badge.plus")
                     }
                 }
             }
         }
         .task {
-            isFavorite = StoredHotelStore.contains(kind: .favorite, hotelID: hotel.id, in: modelContext)
-            StoredHotelStore.recordVisit(hotel, in: modelContext)
             guard model == nil else { return }
-            let model = HotelDetailViewModel(hotel: hotel, client: yadoSearch.client)
+            let model = HotelDetailViewModel(
+                provider: reference.provider,
+                listing: reference.listing,
+                client: yadoSearch.client
+            )
             self.model = model
             await model.load()
+            refreshFavorite(model)
+            if let profile = model.profile {
+                StoredHotelStore.recordVisit(profile, in: modelContext)
+            }
         }
     }
 
-    /// The inn's page on jalan.net, carrying the stay being looked at and routed
-    /// through the affiliate redirect.
-    private var bookingURL: URL? {
-        yadoSearch.affiliate.referralURL(hotelID: shown.id, stay: model?.stay)
+    /// Favourites are per site, because a booking is: the same inn on the other
+    /// site is a different record.
+    private func refreshFavorite(_ model: HotelDetailViewModel) {
+        guard let id = model.hotelID else { return }
+        isFavorite = StoredHotelStore.contains(
+            kind: .favorite,
+            provider: model.provider,
+            hotelID: id,
+            in: modelContext
+        )
     }
 }
 
 // MARK: - Sections
 
 private extension HotelDetailView {
-    var header: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            if shown.pictureURL != nil {
-                RemoteImage(url: shown.pictureURL)
+    @ViewBuilder
+    func providerPicker(_ model: HotelDetailViewModel) -> some View {
+        let providers = model.availableProviders
+        if providers.count > 1 {
+            Picker("予約サイト", selection: Binding(
+                get: { model.provider },
+                set: { provider in
+                    model.provider = provider
+                    refreshFavorite(model)
+                }
+            )) {
+                ForEach(providers) { provider in
+                    Text(provider.title).tag(provider)
+                }
+            }
+            .pickerStyle(.segmented)
+        }
+    }
+
+    func header(_ model: HotelDetailViewModel) -> some View {
+        let profile = model.profile
+        return VStack(alignment: .leading, spacing: 10) {
+            if let url = profile?.pictureURL ?? model.listing?.pictureURL {
+                RemoteImage(url: url)
                     .frame(height: 220)
                     .frame(maxWidth: .infinity)
                     .clipShape(.rect(cornerRadius: 14))
             }
-            if let catchCopy = shown.catchCopy {
+            if let catchCopy = profile?.catchCopy ?? model.listing?.catchCopy {
                 Text(catchCopy)
                     .font(.headline)
             }
             HStack(spacing: 10) {
-                if let type = shown.type {
-                    Text(type)
+                if let kind = profile?.kind ?? model.listing?.kind {
+                    Text(kind)
                         .font(.caption)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 3)
                         .background(.quaternary, in: .capsule)
                 }
-                if let rating = shown.rating {
-                    Label(String(format: "%.1f", rating), systemImage: "star.fill")
+                // Only Rakuten scores its inns, so this is empty on the Jalan
+                // side of the control rather than zero.
+                if let review = profile?.review {
+                    Label(String(format: "%.1f", review.average), systemImage: "star.fill")
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                }
-                if let count = shown.numberOfRatings {
-                    Text("（\(count)件）")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
+                    if let count = review.count {
+                        Text("（\(count)件）")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                    }
                 }
             }
         }
     }
 
-    var mapSection: (some View)? {
-        guard let coordinate = shown.coordinate else { return Optional<AnyView>.none }
+    func mapSection(_ model: HotelDetailViewModel) -> (some View)? {
+        guard let coordinate = model.profile?.coordinate ?? model.listing?.coordinate else {
+            return Optional<AnyView>.none
+        }
         let point = CLLocationCoordinate2D(latitude: coordinate.latitude, longitude: coordinate.longitude)
         return AnyView(
             VStack(alignment: .leading, spacing: 8) {
@@ -121,13 +172,13 @@ private extension HotelDetailView {
                         longitudinalMeters: 600
                     )
                 )) {
-                    Marker(shown.name, systemImage: "bed.double.fill", coordinate: point)
+                    Marker(name, systemImage: "bed.double.fill", coordinate: point)
                 }
                 .frame(height: 180)
                 .clipShape(.rect(cornerRadius: 14))
                 .allowsHitTesting(false)
 
-                if let url = shown.mapsURL {
+                if let url = mapsURL(name: name, coordinate: coordinate) {
                     Link("マップで開く", destination: url)
                         .font(.footnote)
                 }
@@ -135,56 +186,68 @@ private extension HotelDetailView {
         )
     }
 
-    var factsSection: some View {
+    @ViewBuilder
+    func factsSection(_ model: HotelDetailViewModel) -> some View {
+        let profile = model.profile
         VStack(alignment: .leading, spacing: 8) {
             sectionTitle("基本情報")
-            LabeledContent("住所") {
-                Text(shown.postCode.map { "〒\($0)\n\(shown.address)" } ?? shown.address)
-                    .multilineTextAlignment(.trailing)
+            if let address = profile?.address ?? model.listing?.address {
+                LabeledContent("住所") {
+                    Text(profile?.postalCode.map { "〒\($0)\n\(address)" } ?? address)
+                        .multilineTextAlignment(.trailing)
+                }
             }
-            if let checkIn = shown.checkIn {
+            if let checkIn = profile?.checkIn {
                 LabeledContent("チェックイン", value: checkIn)
             }
-            if let checkOut = shown.checkOut {
+            if let checkOut = profile?.checkOut {
                 LabeledContent("チェックアウト", value: checkOut)
             }
-            if let area = shown.areaSummary {
+            if let area = (profile?.area ?? model.listing?.area)?.summary {
                 LabeledContent("エリア", value: area)
+            }
+            if let telephone = profile?.detail?.telephone {
+                LabeledContent("電話", value: telephone)
             }
         }
     }
 
-    var accessSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            sectionTitle("アクセス")
-            ForEach(shown.access) { access in
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(access.label)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    Text(access.detail)
-                        .font(.callout)
+    @ViewBuilder
+    func accessSection(_ model: HotelDetailViewModel) -> some View {
+        let access = model.profile?.access ?? model.listing?.access ?? []
+        if !access.isEmpty {
+            VStack(alignment: .leading, spacing: 8) {
+                sectionTitle("アクセス")
+                ForEach(access) { line in
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(line.label)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Text(line.detail)
+                            .font(.callout)
+                    }
                 }
             }
         }
     }
 
-    func captionSection(_ caption: String) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            sectionTitle("この宿について")
-            Text(caption)
-                .font(.callout)
+    @ViewBuilder
+    func captionSection(_ model: HotelDetailViewModel) -> some View {
+        if let caption = model.profile?.caption {
+            VStack(alignment: .leading, spacing: 8) {
+                sectionTitle("この宿について")
+                Text(caption)
+                    .font(.callout)
+            }
         }
     }
 
     @ViewBuilder
-    var plansSection: some View {
+    func plansSection(_ model: HotelDetailViewModel) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             sectionTitle("宿泊プラン")
-            if let model {
-                StayConditionsEditor(stay: Binding(get: { model.stay }, set: { model.stay = $0 }))
-                plans(model)
-            }
+            StayConditionsEditor(stay: Binding(get: { model.stay }, set: { model.stay = $0 }))
+            plans(model)
         }
     }
 
@@ -194,6 +257,12 @@ private extension HotelDetailView {
         case .idle, .loading:
             ProgressView()
                 .frame(maxWidth: .infinity)
+        case .needsCheckIn:
+            // Rakuten has no undated mode at all, so there is nothing to show
+            // until a date is picked. Jalan answers either way.
+            Text("楽天トラベルの空室を見るには宿泊日を選んでください。")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
         case let .failed(message):
             // A plan search with nothing available answers with an error, so this
             // is an ordinary outcome rather than a fault worth alarming about.
@@ -206,10 +275,7 @@ private extension HotelDetailView {
                 .foregroundStyle(.secondary)
         case .loaded:
             ForEach(model.plans) { plan in
-                // `bookingURL` is the plain jalan.net page; `detailURL` goes
-                // through JwsRedirect and carries the API key, so it is only the
-                // fallback and is not worth wrapping for affiliate credit.
-                if let url = plan.bookingURL.map(yadoSearch.affiliate.referralURL(for:)) ?? plan.detailURL {
+                if let url = plan.detailURL {
                     SafariLink(destination: url) {
                         PlanRow(plan: plan)
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -227,10 +293,10 @@ private extension HotelDetailView {
     }
 
     @ViewBuilder
-    var bookingButton: some View {
-        if let url = bookingURL {
+    func bookingButton(_ model: HotelDetailViewModel) -> some View {
+        if let url = model.bookingURL {
             SafariLink(destination: url) {
-                Text("じゃらんで予約")
+                Text("\(model.provider.title)で予約")
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 6)
             }
@@ -243,13 +309,10 @@ private extension HotelDetailView {
         Text(text)
             .font(.title3.weight(.semibold))
     }
-}
 
-private extension Hotel {
     /// Opens the inn in Maps. Built from the coordinate rather than the address,
     /// which Maps often cannot resolve for a Japanese street address.
-    var mapsURL: URL? {
-        guard let coordinate else { return nil }
+    func mapsURL(name: String, coordinate: GeoCoordinate) -> URL? {
         var components = URLComponents(string: "https://maps.apple.com/")
         components?.queryItems = [
             URLQueryItem(name: "ll", value: "\(coordinate.latitude),\(coordinate.longitude)"),

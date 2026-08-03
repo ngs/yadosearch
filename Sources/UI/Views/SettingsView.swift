@@ -69,7 +69,8 @@ struct SettingsView: View {
         defer { isRefreshingAreas = false }
         do {
             let tree = try await yadoSearch.areaCatalog.refresh()
-            areaRefreshMessage = "\(tree.regions.flatMap(\.prefectures).count)都道府県分を更新しました。"
+            let count = tree.regions.flatMap(\.prefectures).count
+            areaRefreshMessage = String(localized: "\(count)都道府県分を更新しました。")
         } catch {
             areaRefreshMessage = searchErrorMessage(for: error)
         }

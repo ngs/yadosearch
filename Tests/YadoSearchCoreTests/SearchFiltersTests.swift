@@ -4,8 +4,10 @@ import Testing
 
 @Suite("Search filters")
 struct SearchFiltersTests {
-    private func names(_ items: [URLQueryItem]) -> [String] {
-        items.map(\.name)
+    /// The `amenities` parameter for one filter set: a sorted, comma-separated
+    /// list, which is what makes the same filters build the same query.
+    private func amenityList(_ filters: SearchFilters) -> String? {
+        value(HotelSearchRequest(target: .name("宿"), filters: filters).queryItems, "amenities")
     }
 
     private func value(_ items: [URLQueryItem], _ name: String) -> String? {
@@ -20,7 +22,7 @@ struct SearchFiltersTests {
 
         #expect(filters.isEmpty)
         #expect(filters.activeCount == 0)
-        #expect(filters.queryItems.isEmpty)
+        #expect(HotelSearchRequest(target: .name("宿"), filters: filters).amenities.isEmpty)
     }
 
     @Test("Sends the codes the service understands")
@@ -32,14 +34,14 @@ struct SearchFiltersTests {
             maximumRate: 20_000,
             amenities: [.hotSpring, .nonSmokingRoom]
         )
-        let items = filters.queryItems
+        let items = HotelSearchRequest(target: .name("宿"), filters: filters).queryItems
 
         #expect(value(items, "order") == "2")
-        #expect(value(items, "h_type") == "1")
-        #expect(value(items, "min_rate") == "8000")
-        #expect(value(items, "max_rate") == "20000")
-        #expect(value(items, "onsen") == "1")
-        #expect(value(items, "no_smk") == "1")
+        #expect(value(items, "hotelType") == "1")
+        #expect(value(items, "minRate") == "8000")
+        #expect(value(items, "maxRate") == "20000")
+        // One comma-separated parameter now, rather than a flag each.
+        #expect(value(items, "amenities") == "no_smk,onsen")
         #expect(filters.activeCount == 6)
     }
 
@@ -52,8 +54,8 @@ struct SearchFiltersTests {
         let one = SearchFilters(amenities: [.sauna, .hotSpring, .petsAllowed, .freeParking])
         let other = SearchFilters(amenities: [.freeParking, .petsAllowed, .hotSpring, .sauna])
 
-        #expect(names(one.queryItems) == names(other.queryItems))
-        #expect(names(one.queryItems) == ["onsen", "parking", "pet", "sauna"])
+        #expect(amenityList(one) == amenityList(other))
+        #expect(amenityList(one) == "onsen,parking,pet,sauna")
     }
 
     @Test("Every amenity belongs to exactly one group, and every group is populated")
@@ -128,10 +130,14 @@ struct SearchFiltersTests {
             preschoolersWithBedAndMeal: 2
         )
 
-        #expect(names(plain.queryItems) == ["adult_num"])
-        #expect(value(withChildren.queryItems, "sc_num") == "1")
-        #expect(value(withChildren.queryItems, "lc_num_bed_meal") == "2")
-        #expect(value(withChildren.queryItems, "lc_num_meal_only") == nil)
+        let plainItems = HotelSearchRequest(target: .name("宿"), party: plain).queryItems
+        let items = HotelSearchRequest(target: .name("宿"), party: withChildren).queryItems
+
+        #expect(value(plainItems, "adults") == "2")
+        #expect(value(plainItems, "schoolChildren") == nil)
+        #expect(value(items, "schoolChildren") == "1")
+        #expect(value(items, "preschoolersWithBedAndMeal") == "2")
+        #expect(value(items, "preschoolersWithMealOnly") == nil)
         #expect(withChildren.childCount == 3)
         #expect(withChildren.totalCount == 5)
     }

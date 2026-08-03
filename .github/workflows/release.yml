@@ -41,8 +41,6 @@ env:
   MATCH_READONLY: "true"
   FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT: "600"
   FASTLANE_XCODEBUILD_SETTINGS_RETRIES: "5"
-  # A release build without the key would ship an app that cannot search.
-  TUIST_JALAN_API_KEY: ${{ secrets.JALAN_API_KEY }}
 
 jobs:
   determine-platforms:

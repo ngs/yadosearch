@@ -1,0 +1,211 @@
+{
+  "results": [
+    {
+      "access": [
+        {
+          "detail": "車以外／モノレール、JR（浜松町駅経由）　約30分",
+          "label": "羽田空港より"
+        },
+        {
+          "detail": "車以外／成田エクスプレス　約60分",
+          "label": "成田空港より"
+        },
+        {
+          "detail": "東京",
+          "label": "最寄り駅１"
+        },
+        {
+          "detail": "東京",
+          "label": "最寄り駅２"
+        },
+        {
+          "detail": "車／ご宿泊のお客様は、ご一泊当たり２,1００円で地下駐車場をご利用いただけます。\u003cBR\u003e●１４：００～翌１４：００（以降３０分毎６５０円）\u003cBR\u003e●車高制限：２．９ｍ（車寄せは２．３m)\u003cBR\u003e●台数に限りがございます。",
+          "label": "補足"
+        }
+      ],
+      "address": "東京都千代田区丸の内１－９－１",
+      "area": {
+        "large": "銀座・日本橋・東京駅周辺",
+        "prefecture": "東京都",
+        "region": "首都圏",
+        "small": "東京・神田・日本橋"
+      },
+      "catchCopy": "【JR東京駅丸の内南口直結】東京駅のクラシックホテル",
+      "checkIn": "15:00",
+      "checkOut": "12:00",
+      "coordinate": {
+        "latitude": 35.68066108957904,
+        "longitude": 139.76571509593765
+      },
+      "distanceMetres": 142.48951938954283,
+      "kind": "ホテル",
+      "name": "東京ステーションホテル",
+      "offers": [
+        {
+          "detailUrl": "https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=1\u0026pid=2\u0026vc_url=https%3A%2F%2Fwww.jalan.net%2Fyad387456%2F%3FadultNum%3D2%26dateUndecided%3D1%26roomCount%3D1%26stayCount%3D1",
+          "id": "387456",
+          "provider": "jalan"
+        },
+        {
+          "detailUrl": "https://img.travel.rakuten.co.jp/image/tr/api/hs/dQ4dX/?f_no=137869",
+          "id": "137869",
+          "minimumCharge": 26413,
+          "provider": "rakuten",
+          "review": {
+            "average": 4.84,
+            "count": 906
+          }
+        }
+      ],
+      "pictureUrl": "https://www.jalan.net/jalan/images/pictM/Y6/Y387456/Y387456526.jpg"
+    },
+    {
+      "access": [
+        {
+          "detail": "車／首都高速環状線神田橋～神田橋ＩＣ～出口を出て、大手町方面、東京駅正面へ左折し、オアゾ方面へ左折 車以外／JR新幹線・各線　東京駅丸の内北口より徒歩1分（地下道直結）",
+          "label": "大阪より"
+        },
+        {
+          "detail": "車／各方面高速道路より　首都高速　都心環状線へ～都心環状線　神田橋出口～大手町方面へ　永代通り「大手町」交差点を右折して右側 車以外／東京モノレール―浜松町駅乗換―JR山手線　所要時間約40分",
+          "label": "羽田空港より"
+        },
+        {
+          "detail": "東京",
+          "label": "最寄り駅１"
+        },
+        {
+          "detail": "大手町",
+          "label": "最寄り駅２"
+        },
+        {
+          "detail": "車／共有駐車場約300台有（有料・優待有） 車以外／成田/羽田空港のリムジンバス発着有（往路・復路とも時間限定）",
+          "label": "補足"
+        }
+      ],
+      "address": "東京都千代田区丸の内１－６－３",
+      "area": {
+        "large": "銀座・日本橋・東京駅周辺",
+        "prefecture": "東京都",
+        "region": "首都圏",
+        "small": "東京・神田・日本橋"
+      },
+      "catchCopy": "「世界のお客様へ　わが家のおもてなしを」",
+      "checkIn": "15:00",
+      "checkOut": "12:00",
+      "coordinate": {
+        "latitude": 35.68342608355865,
+        "longitude": 139.76639907848121
+      },
+      "distanceMetres": 252.198206554412,
+      "kind": "ホテル",
+      "name": "丸ノ内ホテル",
+      "offers": [
+        {
+          "detailUrl": "https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=1\u0026pid=2\u0026vc_url=https%3A%2F%2Fwww.jalan.net%2Fyad311347%2F%3FadultNum%3D2%26dateUndecided%3D1%26roomCount%3D1%26stayCount%3D1",
+          "id": "311347",
+          "provider": "jalan"
+        },
+        {
+          "detailUrl": "https://img.travel.rakuten.co.jp/image/tr/api/hs/dQ4dX/?f_no=5562",
+          "id": "5562",
+          "minimumCharge": 22050,
+          "provider": "rakuten",
+          "review": {
+            "average": 4.53,
+            "count": 1029
+          }
+        }
+      ],
+      "pictureUrl": "https://www.jalan.net/jalan/images/pictM/Y7/Y311347/Y311347946.jpg"
+    },
+    {
+      "access": [
+        {
+          "detail": "車以外／リムジンバス　大人2800円小人1400円　標準所要時間　約75～125分",
+          "label": "成田空港より"
+        },
+        {
+          "detail": "車以外／リムジンバス　大人950円　小人480円　標準所要時間　約25～45分",
+          "label": "羽田空港より"
+        },
+        {
+          "detail": "東京",
+          "label": "最寄り駅１"
+        },
+        {
+          "detail": "大手町",
+          "label": "最寄り駅２"
+        },
+        {
+          "detail": "日本橋",
+          "label": "最寄り駅３"
+        },
+        {
+          "detail": "車／鉄鋼ビルディング提携の機械式駐車場がございます。\u003cBR\u003e詳細はよくあるお問い合わせをご確認ください。",
+          "label": "補足"
+        }
+      ],
+      "address": "東京都千代田区丸の内１－８－２",
+      "area": {
+        "large": "銀座・日本橋・東京駅周辺",
+        "prefecture": "東京都",
+        "region": "首都圏",
+        "small": "東京・神田・日本橋"
+      },
+      "catchCopy": "東京駅に隣接するラグジュアリーなホテル＆サービスアパートメント",
+      "checkIn": "15:00",
+      "checkOut": "11:00",
+      "coordinate": {
+        "latitude": 35.68216294288755,
+        "longitude": 139.76969414077055
+      },
+      "distanceMetres": 253.9074859233966,
+      "kind": "ホテル",
+      "name": "オークウッドプレミア東京",
+      "offers": [
+        {
+          "detailUrl": "https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=1\u0026pid=2\u0026vc_url=https%3A%2F%2Fwww.jalan.net%2Fyad370146%2F%3FadultNum%3D2%26dateUndecided%3D1%26roomCount%3D1%26stayCount%3D1",
+          "id": "370146",
+          "provider": "jalan"
+        }
+      ],
+      "pictureUrl": "https://www.jalan.net/jalan/images/pictM/Y6/Y370146/Y370146051.jpg"
+    },
+    {
+      "access": [
+        {
+          "detail": "JR東京駅八重洲南口から直接アクセス可能",
+          "label": "アクセス"
+        },
+        {
+          "detail": "東京",
+          "label": "最寄り駅"
+        }
+      ],
+      "address": "東京都中央区八重洲2-2-1",
+      "area": {
+        "prefecture": "東京都"
+      },
+      "catchCopy": "　",
+      "coordinate": {
+        "latitude": 35.6794084,
+        "longitude": 139.7689311
+      },
+      "distanceMetres": 260.59544404929994,
+      "name": "ブルガリ　ホテル　東京",
+      "offers": [
+        {
+          "detailUrl": "https://img.travel.rakuten.co.jp/image/tr/api/hs/dQ4dX/?f_no=187298",
+          "id": "187298",
+          "minimumCharge": 90659,
+          "provider": "rakuten"
+        }
+      ],
+      "pictureUrl": "https://img.travel.rakuten.co.jp/share/HOTEL/187298/187298.jpg"
+    }
+  ],
+  "totals": {
+    "jalan": 51,
+    "rakuten": 7
+  }
+}
