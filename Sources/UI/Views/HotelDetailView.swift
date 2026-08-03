@@ -213,6 +213,9 @@ private extension HotelDetailView {
                     Link(destination: url) {
                         PlanRow(plan: plan)
                             .frame(maxWidth: .infinity, alignment: .leading)
+                            // Without this the row only responds where its text
+                            // is; the gaps between the lines fall through.
+                            .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
                 } else {
