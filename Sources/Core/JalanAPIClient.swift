@@ -25,8 +25,8 @@ public struct JalanAPIClient: Sendable {
 
         /// The configuration baked into the app at project-generation time.
         ///
-        /// `Scripts/generate.sh` reads `JALAN_API_KEY` out of `.env` (or the
-        /// environment, in CI) and Tuist writes it into `Info.plist`. A build made
+        /// direnv exports `TUIST_JALAN_API_KEY` from `.env` (CI sets it from a
+        /// repository secret) and Tuist writes it into `Info.plist`. A build made
         /// without one — every CI build, since the key is a secret the pull
         /// request workflows do not get — yields `nil` here, and the app says so
         /// rather than issuing requests that would all come back rejected.

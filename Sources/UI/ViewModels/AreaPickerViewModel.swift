@@ -16,17 +16,13 @@ public final class AreaPickerViewModel {
     public private(set) var tree = AreaTree(regions: [])
     public private(set) var phase: Phase = .loading
 
-    private let catalog: AreaCatalog?
+    private let catalog: AreaCatalog
 
-    public init(catalog: AreaCatalog?) {
+    public init(catalog: AreaCatalog) {
         self.catalog = catalog
     }
 
     public func load() async {
-        guard let catalog else {
-            phase = .failed(searchErrorMessage(for: JalanAPIError.missingApplicationKey))
-            return
-        }
         phase = .loading
         do {
             tree = try await catalog.tree()
@@ -38,7 +34,6 @@ public final class AreaPickerViewModel {
 
     /// Discards the cache and fetches the tree again.
     public func refresh() async {
-        guard let catalog else { return }
         do {
             tree = try await catalog.refresh()
             phase = .loaded

@@ -30,13 +30,6 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 Section("データ") {
-                    LabeledContent("APIキー") {
-                        Label(
-                            yadoSearch.isConfigured ? "設定済み" : "未設定",
-                            systemImage: yadoSearch.isConfigured ? "checkmark.circle" : "exclamationmark.circle"
-                        )
-                        .foregroundStyle(yadoSearch.isConfigured ? .green : .orange)
-                    }
                     Button {
                         Task { await refreshAreas() }
                     } label: {
@@ -46,7 +39,7 @@ struct SettingsView: View {
                             }
                         }
                     }
-                    .disabled(!yadoSearch.isConfigured || isRefreshingAreas)
+                    .disabled(isRefreshingAreas)
                     if let areaRefreshMessage {
                         Text(areaRefreshMessage)
                             .font(.footnote)
@@ -72,11 +65,10 @@ struct SettingsView: View {
     }
 
     private func refreshAreas() async {
-        guard let catalog = yadoSearch.areaCatalog else { return }
         isRefreshingAreas = true
         defer { isRefreshingAreas = false }
         do {
-            let tree = try await catalog.refresh()
+            let tree = try await yadoSearch.areaCatalog.refresh()
             areaRefreshMessage = "\(tree.regions.flatMap(\.prefectures).count)都道府県分を更新しました。"
         } catch {
             areaRefreshMessage = searchErrorMessage(for: error)

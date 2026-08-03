@@ -39,7 +39,6 @@ struct ChosenArea: Hashable {
 }
 
 struct SearchView: View {
-    @Environment(\.yadoSearch) private var yadoSearch
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \StoredSearch.searchedAt, order: .reverse) private var recentSearches: [StoredSearch]
 
@@ -60,22 +59,16 @@ struct SearchView: View {
 
     var body: some View {
         NavigationStack(path: $path) {
-            Group {
-                if yadoSearch.isConfigured {
-                    form
-                } else {
-                    NotConfiguredView()
+            form
+                .navigationTitle("宿さがし")
+                .navigationDestination(for: SearchRoute.self) { route in
+                    switch route {
+                    case let .results(search):
+                        HotelListView(search: search)
+                    case let .hotel(hotel):
+                        HotelDetailView(hotel: hotel)
+                    }
                 }
-            }
-            .navigationTitle("宿さがし")
-            .navigationDestination(for: SearchRoute.self) { route in
-                switch route {
-                case let .results(search):
-                    HotelListView(search: search)
-                case let .hotel(hotel):
-                    HotelDetailView(hotel: hotel)
-                }
-            }
         }
         .sheet(isPresented: $isEditingFilters) {
             SearchFiltersView(filters: $filters, party: $party)

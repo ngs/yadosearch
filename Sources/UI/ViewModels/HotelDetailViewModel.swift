@@ -36,10 +36,10 @@ public final class HotelDetailViewModel {
         }
     }
 
-    private let client: JalanAPIClient?
+    private let client: JalanAPIClient
     private var reloadPlansTask: Task<Void, Never>?
 
-    public init(hotel: Hotel, client: JalanAPIClient?, stay: StayConditions = StayConditions()) {
+    public init(hotel: Hotel, client: JalanAPIClient, stay: StayConditions = StayConditions()) {
         self.hotel = hotel
         self.client = client
         self.stay = stay
@@ -54,7 +54,6 @@ public final class HotelDetailViewModel {
     /// Re-reads the inn by ID. Silent on failure: the page already has a usable
     /// record, and an error banner over a working screen helps nobody.
     private func refreshHotel() async {
-        guard let client else { return }
         guard
             let page = try? await client.searchHotels(HotelSearchQuery(target: .hotel(id: hotel.id), count: 1)),
             let refreshed = page.items.first
@@ -65,10 +64,6 @@ public final class HotelDetailViewModel {
     }
 
     public func loadPlans() async {
-        guard let client else {
-            plansPhase = .failed(searchErrorMessage(for: JalanAPIError.missingApplicationKey))
-            return
-        }
         plansPhase = .loading
         do {
             let page = try await client.searchPlans(

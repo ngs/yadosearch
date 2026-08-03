@@ -13,7 +13,7 @@ struct HotelListView: View {
             if let model {
                 content(model)
             } else {
-                NotConfiguredView()
+                ProgressView()
             }
         }
         .navigationTitle(search.title)
@@ -21,9 +21,9 @@ struct HotelListView: View {
         .navigationBarTitleDisplayMode(.inline)
         #endif
         .task {
-            guard model == nil, let client = yadoSearch.client else { return }
+            guard model == nil else { return }
             let model = HotelSearchViewModel(
-                client: client,
+                client: yadoSearch.client,
                 target: search.target,
                 filters: search.filters,
                 party: search.party
