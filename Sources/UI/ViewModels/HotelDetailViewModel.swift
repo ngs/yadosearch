@@ -142,7 +142,14 @@ public final class HotelDetailViewModel {
             guard !Task.isCancelled else { return }
             plans = []
             numberOfPlans = 0
-            plansPhase = .failed(searchErrorMessage(for: error))
+            // "Nothing on offer" arrives as a failure from Rakuten and as an
+            // empty page from Jalan. It is the same answer, and the screen
+            // already has wording for it.
+            if let apiError = error as? APIError, apiError.meansNoResults {
+                plansPhase = .loaded
+            } else {
+                plansPhase = .failed(searchErrorMessage(for: error))
+            }
         }
     }
 }

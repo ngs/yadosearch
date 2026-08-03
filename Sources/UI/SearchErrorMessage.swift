@@ -12,6 +12,13 @@ public func searchErrorMessage(for error: Error) -> String {
     guard let apiError = error as? APIError else {
         return error.localizedDescription
     }
+    if apiError.meansRateLimited {
+        // The upstream wording for this is "rakuten:  (status 429)", which
+        // says nothing to anyone. It is also temporary, which is the part
+        // worth saying.
+        return String(localized: "The booking site is busy. Try again in a moment.")
+    }
+
     switch apiError {
     case let .service(message) where !message.isEmpty:
         return message

@@ -3181,6 +3181,23 @@
         }
       }
     },
+    "The booking site is busy. Try again in a moment.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The booking site is busy. Try again in a moment."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "予約サイトが混み合っています。しばらくしてからもう一度お試しください。"
+          }
+        }
+      }
+    },
     "The search failed": {
       "extractionState": "manual",
       "localizations": {

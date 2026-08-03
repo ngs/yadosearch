@@ -268,11 +268,18 @@ private extension HotelDetailView {
                 .font(.footnote)
                 .foregroundStyle(.secondary)
         case let .failed(message):
-            // A plan search with nothing available answers with an error, so this
-            // is an ordinary outcome rather than a fault worth alarming about.
-            Text(message)
+            // Rakuten's rate limit is the common one here, and it passes on its
+            // own — so the line comes with a way to ask again rather than
+            // leaving the screen stuck on it.
+            VStack(alignment: .leading, spacing: 8) {
+                Text(message)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                Button("Try again") {
+                    Task { await model.loadPlans() }
+                }
                 .font(.footnote)
-                .foregroundStyle(.secondary)
+            }
         case .loaded where model.plans.isEmpty:
             Text("No bookable plans were found for these conditions.")
                 .font(.footnote)
