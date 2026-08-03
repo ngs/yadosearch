@@ -121,6 +121,19 @@ public struct StayConditions: Sendable, Hashable, Codable {
     public var rooms: Int
     public var party: GuestParty
 
+    /// What "set a date" starts from: tomorrow, not today.
+    ///
+    /// 楽天 answers a same-day plan search with "Data Not Found" far more often
+    /// than not — most inns stop selling the night on the day — so a toggle
+    /// that defaulted to today made the vacancy search look broken on the first
+    /// try, whichever inn it was.
+    public static func nextAvailableCheckIn(
+        from now: Date = .now,
+        calendar: Calendar = .current
+    ) -> Date {
+        calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: now)) ?? now
+    }
+
     public init(
         checkIn: Date? = nil,
         nights: Int = 1,

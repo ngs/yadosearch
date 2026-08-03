@@ -67,6 +67,21 @@ struct RakutenPlanSearchTests {
         #expect(model.plans.isEmpty)
     }
 
+    @Test("A rate limit that clears is retried rather than reported")
+    func rateLimitIsRetried() async throws {
+        StubProxyServer.install(.init(
+            pages: [0: Self.onePlan, 1: Self.onePlan],
+            failureBody: #"{"error":"rakuten:  (status 429)"}"#,
+            transientFailures: 1
+        ), host: Self.host)
+        let model = try model()
+        model.stay.checkIn = Date(timeIntervalSince1970: 1_800_000_000)
+        await model.loadPlans()
+
+        #expect(model.plansPhase == .loaded, "phase was \(model.plansPhase)")
+        #expect(model.plans.count == 1)
+    }
+
     @Test("The rate limit is said in words, not in a status code")
     func rateLimitIsExplained() async throws {
         StubProxyServer.install(.init(

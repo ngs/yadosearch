@@ -14,15 +14,22 @@ final class StubProxyServer: URLProtocol {
         /// is for: "Data Not Found" for an empty result, "(status 429)" for its
         /// rate limit — both of which the app has to read rather than repeat.
         var failureBody: String
+        /// How many of the first requests fail before the script starts
+        /// answering. Rakuten's rate limit is what this is for: it clears on
+        /// its own, so a retry is expected to succeed where the first try did
+        /// not.
+        var transientFailures: Int
 
         init(
             pages: [Int: String],
             failingPages: Set<Int> = [],
-            failureBody: String = #"{"error":"テスト用のエラーです。"}"#
+            failureBody: String = #"{"error":"テスト用のエラーです。"}"#,
+            transientFailures: Int = 0
         ) {
             self.pages = pages
             self.failingPages = failingPages
             self.failureBody = failureBody
+            self.transientFailures = transientFailures
         }
     }
 
@@ -78,10 +85,17 @@ final class StubProxyServer: URLProtocol {
             .value
             .flatMap(Int.init) ?? 1
 
-        let current = Self.scripts.withLock { $0[url.host() ?? ""] } ?? Script(pages: [:])
+        let host = url.host() ?? ""
+        let current = Self.scripts.withLock { scripts -> Script in
+            let script = scripts[host] ?? Script(pages: [:])
+            if script.transientFailures > 0 {
+                scripts[host]?.transientFailures -= 1
+            }
+            return script
+        }
         let body: String
         let status: Int
-        if current.failingPages.contains(page) {
+        if current.transientFailures > 0 || current.failingPages.contains(page) {
             body = current.failureBody
             status = 400
         } else {

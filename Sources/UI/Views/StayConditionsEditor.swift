@@ -9,7 +9,7 @@ struct StayConditionsEditor: View {
     /// "No date" means "whatever is on offer", and that is the default.
     private var checkInDate: Binding<Date> {
         Binding(
-            get: { stay.checkIn ?? .now },
+            get: { stay.checkIn ?? StayConditions.nextAvailableCheckIn() },
             set: { stay.checkIn = $0 }
         )
     }
@@ -17,7 +17,7 @@ struct StayConditionsEditor: View {
     private var hasCheckInDate: Binding<Bool> {
         Binding(
             get: { stay.checkIn != nil },
-            set: { stay.checkIn = $0 ? Date.now : nil }
+            set: { stay.checkIn = $0 ? StayConditions.nextAvailableCheckIn() : nil }
         )
     }
 
@@ -28,7 +28,7 @@ struct StayConditionsEditor: View {
                 DatePicker(
                     "Check-in",
                     selection: checkInDate,
-                    in: Date.now...,
+                    in: Calendar.current.startOfDay(for: .now)...,
                     displayedComponents: .date
                 )
             }

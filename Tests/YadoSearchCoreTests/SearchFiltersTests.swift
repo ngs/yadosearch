@@ -150,3 +150,18 @@ struct SearchFiltersTests {
         #expect(party.elementarySchoolChildren == 0)
     }
 }
+
+@Suite("Stay conditions")
+struct StayConditionsTests {
+    @Test("A date starts at tomorrow, because 楽天 rarely sells tonight")
+    func checkInStartsTomorrow() {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Asia/Tokyo") ?? .gmt
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+
+        let checkIn = StayConditions.nextAvailableCheckIn(from: now, calendar: calendar)
+
+        #expect(calendar.dateComponents([.day], from: calendar.startOfDay(for: now), to: checkIn).day == 1)
+        #expect(calendar.startOfDay(for: checkIn) == checkIn)
+    }
+}

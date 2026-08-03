@@ -121,19 +121,16 @@ public final class HotelDetailViewModel {
         }
         guard let id = hotelID else { return }
 
+        let request = StayRequest(
+            checkIn: stay.checkIn,
+            nights: stay.nights,
+            rooms: stay.rooms,
+            adults: stay.party.adults
+        )
+
         plansPhase = .loading
         do {
-            let page = try await client.plans(
-                provider: provider,
-                hotelID: id,
-                stay: StayRequest(
-                    checkIn: stay.checkIn,
-                    nights: stay.nights,
-                    rooms: stay.rooms,
-                    adults: stay.party.adults
-                ),
-                count: 30
-            )
+            let page = try await fetchPlans(provider: provider, id: id, request: request)
             guard !Task.isCancelled else { return }
             plans = page.plans
             numberOfPlans = page.total
@@ -150,6 +147,26 @@ public final class HotelDetailViewModel {
             } else {
                 plansPhase = .failed(searchErrorMessage(for: error))
             }
+        }
+    }
+
+    /// Asks once, and asks again if 楽天 said it was busy.
+    ///
+    /// Its rate limit is shared and easy to trip — reading two inns in quick
+    /// succession is enough — and it clears in about a second. One retry turns
+    /// most of those into the answer the user asked for; a second would only
+    /// make the screen sit there longer.
+    private func fetchPlans(
+        provider: Provider,
+        id: String,
+        request: StayRequest
+    ) async throws -> PlanPage {
+        do {
+            return try await client.plans(provider: provider, hotelID: id, stay: request, count: 30)
+        } catch let error as APIError where error.meansRateLimited {
+            try await Task.sleep(for: .milliseconds(1_200))
+            try Task.checkCancellation()
+            return try await client.plans(provider: provider, hotelID: id, stay: request, count: 30)
         }
     }
 }
