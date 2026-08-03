@@ -66,7 +66,8 @@ Every outbound jalan.net link goes through ValueCommerce (`JalanAffiliate`, `sid
 - `vc_url` is the destination percent-encoded **whole**, `:` and `/` included; only the unreserved set survives. It is built by string concatenation, not `URLComponents.queryItems`, which would re-encode the percent signs.
 - The inn link is built from `HotelID` as `https://www.jalan.net/yad{HotelID}/`, not from the API's `HotelDetailURL` — that one goes through `JwsRedirect.do` and carries the API key in its query. For plans, `PlanCommonDetailURL` (a plain jalan.net address) is wrapped and `PlanDetailURL` is the unwrapped fallback.
 - Non-jalan.net URLs are returned unchanged; the programme pays for one merchant.
-- The redirect answers with a JavaScript tracking page, so these URLs must be opened in a browser (`Link`), never fetched with `URLSession`.
+- The redirect answers with a JavaScript tracking page, so these URLs must be opened in a browser, never fetched with `URLSession`.
+- **Opened with `SafariLink`, not `Link`.** jalan.net publishes a universal link: handing the redirect to the system opens the じゃらん app instead of the browser, and the referral never completes, so the click earns nothing. `SFSafariViewController` ignores universal links, so the redirect stays in the browser. `SafariLink` falls back to `Link` on macOS, where neither the app nor `SFSafariViewController` exists. Non-affiliate links (Maps, the App Store, jalan.net in 設定) stay plain `Link`s.
 
 ## The application key
 

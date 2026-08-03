@@ -49,7 +49,7 @@ struct HotelDetailView: View {
             }
             if let url = bookingURL {
                 ToolbarItem(placement: .primaryAction) {
-                    Link(destination: url) {
+                    SafariLink(destination: url) {
                         Label("じゃらんで予約", systemImage: "calendar.badge.plus")
                     }
                 }
@@ -210,7 +210,7 @@ private extension HotelDetailView {
                 // through JwsRedirect and carries the API key, so it is only the
                 // fallback and is not worth wrapping for affiliate credit.
                 if let url = plan.bookingURL.map(yadoSearch.affiliate.referralURL(for:)) ?? plan.detailURL {
-                    Link(destination: url) {
+                    SafariLink(destination: url) {
                         PlanRow(plan: plan)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             // Without this the row only responds where its text
@@ -229,7 +229,7 @@ private extension HotelDetailView {
     @ViewBuilder
     var bookingButton: some View {
         if let url = bookingURL {
-            Link(destination: url) {
+            SafariLink(destination: url) {
                 Text("じゃらんで予約")
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 6)
