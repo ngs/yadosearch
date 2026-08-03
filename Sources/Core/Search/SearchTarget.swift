@@ -25,6 +25,33 @@ public struct AreaSelection: Sendable, Hashable, Codable {
     }
 }
 
+/// A point in Rakuten's classification: 大区分 → 中区分 → 小区分 → 細区分.
+///
+/// Unlike Jalan's, the levels above the small class cannot be searched on their
+/// own — Rakuten answers `specify valid anyone set of parameters from
+/// classcodes[…]` to a query that stops at the middle class, and `specify valid
+/// detailClassCode` to a small class that has detail classes. So the three
+/// upper levels are required here and only `detailClassCode` is optional, which
+/// is also why there is no Rakuten equivalent of searching "東京都" whole.
+public struct RakutenAreaSelection: Sendable, Hashable, Codable {
+    public var largeClassCode: String
+    public var middleClassCode: String
+    public var smallClassCode: String
+    public var detailClassCode: String?
+
+    public init(
+        largeClassCode: String,
+        middleClassCode: String,
+        smallClassCode: String,
+        detailClassCode: String? = nil
+    ) {
+        self.largeClassCode = largeClassCode
+        self.middleClassCode = middleClassCode
+        self.smallClassCode = smallClassCode
+        self.detailClassCode = detailClassCode
+    }
+}
+
 /// How far out a proximity search reaches.
 ///
 /// The distances were measured against Jalan's opaque range codes — every
@@ -63,8 +90,26 @@ public enum SearchTarget: Sendable, Hashable, Codable {
     /// 200 inns match, so a bare "ホテル" comes back as an error rather than as
     /// a truncated list.
     case name(String)
+    /// Jalan's hierarchy. The case is spelled `area` rather than `jalanArea`
+    /// because recent searches are stored as this enum's JSON, and a case name
+    /// is what that JSON is keyed by: renaming it would drop every stored area
+    /// search on the floor.
     case area(AreaSelection)
+    case rakutenArea(RakutenAreaSelection)
     case around(GeoCoordinate, radius: SearchRadius)
+
+    /// The scope this target can only be searched at, or `nil` when it reaches
+    /// both providers and the choice is the searcher's.
+    ///
+    /// Area codes belong to one scheme or the other; there is nothing to send
+    /// the provider whose codes were not picked.
+    public var requiredScope: SearchScope? {
+        switch self {
+        case .name, .around: nil
+        case .area: .jalan
+        case .rakutenArea: .rakuten
+        }
+    }
 }
 
 /// Who is staying, and when.

@@ -20,6 +20,20 @@ public struct HotelSearchRequest: Sendable, Hashable {
     /// The finest level wins when more than one is set.
     public var jalanSmallArea: String?
 
+    /// Rakuten wants the whole path, not just the leaf, and **will not search
+    /// above the small class** — see `RakutenAreaSelection`.
+    public var rakutenLargeClass: String?
+    public var rakutenMiddleClass: String?
+    public var rakutenSmallClass: String?
+    public var rakutenDetailClass: String?
+
+    /// Which sites may answer. Empty means every site the rest of the request
+    /// could reach, which is what the proxy does with no `providers` at all.
+    ///
+    /// **It only narrows.** Naming Rakuten alongside Jalan area codes searches
+    /// nobody, because there is nothing to send Rakuten.
+    public var providers: [Provider]
+
     /// Flag names from `/v1/amenities`. **Jalan only** — Rakuten has no
     /// equivalent, so these do not narrow its half of the results.
     public var amenities: [String]
@@ -56,6 +70,11 @@ public struct HotelSearchRequest: Sendable, Hashable {
         jalanPrefecture: String? = nil,
         jalanLargeArea: String? = nil,
         jalanSmallArea: String? = nil,
+        rakutenLargeClass: String? = nil,
+        rakutenMiddleClass: String? = nil,
+        rakutenSmallClass: String? = nil,
+        rakutenDetailClass: String? = nil,
+        providers: [Provider] = [],
         amenities: [String] = [],
         hotelType: Int? = nil,
         minRate: Int? = nil,
@@ -77,6 +96,11 @@ public struct HotelSearchRequest: Sendable, Hashable {
         self.jalanPrefecture = jalanPrefecture
         self.jalanLargeArea = jalanLargeArea
         self.jalanSmallArea = jalanSmallArea
+        self.rakutenLargeClass = rakutenLargeClass
+        self.rakutenMiddleClass = rakutenMiddleClass
+        self.rakutenSmallClass = rakutenSmallClass
+        self.rakutenDetailClass = rakutenDetailClass
+        self.providers = providers
         self.amenities = amenities
         self.hotelType = hotelType
         self.minRate = minRate
@@ -113,6 +137,11 @@ public struct HotelSearchRequest: Sendable, Hashable {
         add("jalanPrefecture", jalanPrefecture)
         add("jalanLargeArea", jalanLargeArea)
         add("jalanSmallArea", jalanSmallArea)
+        add("rakutenLargeClass", rakutenLargeClass)
+        add("rakutenMiddleClass", rakutenMiddleClass)
+        add("rakutenSmallClass", rakutenSmallClass)
+        add("rakutenDetailClass", rakutenDetailClass)
+        add("providers", providers.isEmpty ? nil : providers.map(\.rawValue).joined(separator: ","))
         add("amenities", amenities.isEmpty ? nil : amenities.sorted().joined(separator: ","))
         add("hotelType", hotelType)
         add("minRate", minRate)
@@ -139,6 +168,7 @@ public extension HotelSearchRequest {
     /// rather than pretending otherwise.
     init(
         target: SearchTarget,
+        scope: SearchScope = .both,
         filters: SearchFilters = SearchFilters(),
         party: GuestParty? = nil,
         page: Int = 1,
@@ -154,10 +184,20 @@ public extension HotelSearchRequest {
             jalanPrefecture = selection.prefectureID
             jalanLargeArea = selection.largeAreaID
             jalanSmallArea = selection.smallAreaID
+        case let .rakutenArea(selection):
+            rakutenLargeClass = selection.largeClassCode
+            rakutenMiddleClass = selection.middleClassCode
+            rakutenSmallClass = selection.smallClassCode
+            rakutenDetailClass = selection.detailClassCode
         case let .around(centre, searchRadius):
             coordinate = centre
             radius = Int(searchRadius.approximateMetres)
         }
+
+        // An area target already names its provider, and repeating it as
+        // `providers` would be a second place for the two to disagree. Only a
+        // target that could reach both needs saying.
+        providers = target.requiredScope == nil ? scope.providers : []
 
         amenities = filters.amenities.map(\.rawValue)
         hotelType = filters.hotelType?.rawValue

@@ -33,8 +33,12 @@ enum SearchMode: String, CaseIterable, Identifiable {
 }
 
 /// An area the user picked, with the phrase to show for it.
+///
+/// The target rather than a selection, because the two providers' selections
+/// are different types — which one this is decides which site the search
+/// reaches, and there is nothing to translate between them.
 struct ChosenArea: Hashable {
-    var selection: AreaSelection
+    var target: SearchTarget
     var name: String
 }
 
@@ -52,6 +56,9 @@ struct SearchView: View {
     @State private var isPickingStation = false
     @State private var isEditingFilters = false
     @State private var path: [SearchRoute] = []
+    /// Which sites to ask. An area search cannot ask both, so this is coerced
+    /// to one provider whenever the area mode is showing.
+    @State private var scope: SearchScope = .both
     // Kept across searches on purpose: someone who wants a 禁煙 room with a
     // 露天風呂 wants it for the next search too.
     @State private var filters = SearchFilters()
@@ -74,8 +81,16 @@ struct SearchView: View {
             SearchFiltersView(filters: $filters, party: $party)
         }
         .sheet(isPresented: $isPickingArea) {
-            AreaPickerView { chosen in
-                chosenArea = chosen
+            // Which tree to show follows from the site already chosen; there is
+            // no picker that spans both, because the two schemes share no codes.
+            if scope == .rakuten {
+                RakutenAreaPickerView { chosen in
+                    chosenArea = chosen
+                }
+            } else {
+                AreaPickerView { chosen in
+                    chosenArea = chosen
+                }
             }
         }
         .sheet(isPresented: $isPickingStation) {
@@ -99,6 +114,8 @@ struct SearchView: View {
                 .listRowBackground(Color.clear)
             }
 
+            scopeSection
+
             switch mode {
             case .keyword: keywordSection
             case .nearby: nearbySection
@@ -118,6 +135,7 @@ struct SearchView: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
                 }
+                .accessibilityIdentifier(YadoAccessibilityID.searchSubmit)
                 .buttonStyle(.borderedProminent)
                 .disabled(currentSearch == nil)
                 .listRowInsets(EdgeInsets())
@@ -127,6 +145,60 @@ struct SearchView: View {
             recentSearchesSection
         }
         .formStyle(.grouped)
+        // The name field is near the top and the keyboard covers the conditions
+        // and the search button, so scrolling has to be able to put it away —
+        // the keyboard's own key runs the search rather than dismissing it.
+        .scrollDismissesKeyboard(.immediately)
+        .onChange(of: mode) { _, mode in
+            // "両方" is not on offer for an area search, so entering that mode
+            // has to land somewhere real — otherwise the segmented control has
+            // a selection that is not one of its segments. Jalan, because its
+            // hierarchy is the one that can be searched at any level.
+            if mode == .area, scope == .both {
+                scope = .jalan
+            }
+        }
+    }
+
+    /// Which sites to search. Three choices normally; two when an area is being
+    /// picked, because an area code belongs to one scheme and there is nothing
+    /// to send the other site.
+    private var scopeSection: some View {
+        Section {
+            Picker("検索先", selection: $scope) {
+                ForEach(availableScopes) { scope in
+                    Text(scope.title).tag(scope)
+                }
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .onChange(of: scope) { _, _ in
+                // The area picked belongs to the site it was picked on, so
+                // switching sites has to throw it away rather than carry a code
+                // the other site cannot read.
+                chosenArea = nil
+            }
+        } header: {
+            Text("検索先")
+        } footer: {
+            Text(scopeFooter)
+        }
+    }
+
+    private var availableScopes: [SearchScope] {
+        mode == .area ? [.jalan, .rakuten] : SearchScope.allCases
+    }
+
+    private var scopeFooter: String {
+        if mode == .area {
+            return String(localized: "エリアの区分は2つのサイトで別物で、コードを変換できません。どちらか一方をえらびます。")
+        }
+        switch scope {
+        case .both:
+            return String(localized: "両方をさがし、同じ宿は1件にまとめます。")
+        case .jalan, .rakuten:
+            return String(localized: "\(scope.title)だけをさがします。")
+        }
     }
 
     /// What the search will be narrowed by, one line per condition that is
@@ -135,7 +207,6 @@ struct SearchView: View {
     private var conditionsSection: some View {
         Section("検索条件") {
             ForEach(conditionRows, id: \.title) { row in
-                .accessibilityIdentifier(YadoAccessibilityID.searchSubmit)
                 Button {
                     isEditingFilters = true
                 } label: {
@@ -145,10 +216,6 @@ struct SearchView: View {
             }
         }
     }
-        // The name field is near the top and the keyboard covers the conditions
-        // and the search button, so scrolling has to be able to put it away —
-        // the keyboard's own key runs the search rather than dismissing it.
-        .scrollDismissesKeyboard(.immediately)
 
     private struct ConditionRow {
         let title: String
@@ -240,6 +307,7 @@ private extension SearchView {
     var keywordSection: some View {
         Section {
             TextField("宿名の一部", text: $keyword)
+                .accessibilityIdentifier(YadoAccessibilityID.searchKeyword)
                 .autocorrectionDisabled()
                 #if !os(macOS)
                 .textInputAutocapitalization(.never)
@@ -307,12 +375,18 @@ private extension SearchView {
             } label: {
                 pickerLabel(title: "地域", value: chosenArea?.name)
             }
-                .accessibilityIdentifier(YadoAccessibilityID.searchKeyword)
             .buttonStyle(.plain)
         } header: {
             Text("地域から")
         } footer: {
-            Text("広域 → 都道府県 → 大エリア → 小エリアの順に絞り込めます。")
+            // The two hierarchies are not the same depth or the same cut, and
+            // Rakuten's cannot be searched above its small class, so what can be
+            // picked genuinely differs between them.
+            if scope == .rakuten {
+                Text("都道府県 → 小エリアの順に絞り込めます。楽天トラベルは都道府県全体では検索できません。")
+            } else {
+                Text("広域 → 都道府県 → 大エリア → 小エリアの順に絞り込めます。")
+            }
         }
     }
 
@@ -365,7 +439,7 @@ private extension SearchView {
     /// disables the button.
     var currentSearch: SavedSearch? {
         guard let (target, title) = targetAndTitle else { return nil }
-        return SavedSearch(target: target, filters: filters, party: party, title: title)
+        return SavedSearch(target: target, scope: scope, filters: filters, party: party, title: title)
     }
 
     /// Runs the search and remembers it. Recording here rather than on the
@@ -390,7 +464,7 @@ private extension SearchView {
             return (.around(coordinate, radius: radius), String(localized: "\(origin)から\(radius.label)"))
         case .area:
             guard let chosenArea else { return nil }
-            return (.area(chosenArea.selection), chosenArea.name)
+            return (chosenArea.target, chosenArea.name)
         case .station:
             guard let chosenStation else { return nil }
             return (

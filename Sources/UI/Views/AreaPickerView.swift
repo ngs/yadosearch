@@ -70,7 +70,7 @@ struct AreaPickerView: View {
             list(
                 title: region.name,
                 whole: ChosenArea(
-                    selection: AreaSelection(regionID: region.id),
+                    target: .area(AreaSelection(regionID: region.id)),
                     name: region.name
                 ),
                 rows: region.prefectures.map {
@@ -81,7 +81,7 @@ struct AreaPickerView: View {
             list(
                 title: prefecture.name,
                 whole: ChosenArea(
-                    selection: AreaSelection(regionID: region.id, prefectureID: prefecture.id),
+                    target: .area(AreaSelection(regionID: region.id, prefectureID: prefecture.id)),
                     name: prefecture.name
                 ),
                 rows: prefecture.largeAreas.map {
@@ -93,11 +93,11 @@ struct AreaPickerView: View {
                 Section {
                     chooseButton(
                         ChosenArea(
-                            selection: AreaSelection(
+                            target: .area(AreaSelection(
                                 regionID: region.id,
                                 prefectureID: prefecture.id,
                                 largeAreaID: largeArea.id
-                            ),
+                            )),
                             name: largeArea.name
                         ),
                         title: String(localized: "\(largeArea.name)全体でさがす")
@@ -107,12 +107,12 @@ struct AreaPickerView: View {
                     ForEach(largeArea.smallAreas) { smallArea in
                         chooseButton(
                             ChosenArea(
-                                selection: AreaSelection(
+                                target: .area(AreaSelection(
                                     regionID: region.id,
                                     prefectureID: prefecture.id,
                                     largeAreaID: largeArea.id,
                                     smallAreaID: smallArea.id
-                                ),
+                                )),
                                 name: smallArea.name
                             ),
                             title: smallArea.name

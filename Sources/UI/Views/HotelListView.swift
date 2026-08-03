@@ -25,6 +25,7 @@ struct HotelListView: View {
             let model = HotelSearchViewModel(
                 client: yadoSearch.client,
                 target: search.target,
+                scope: search.scope,
                 filters: search.filters,
                 party: search.party
             )
@@ -67,8 +68,8 @@ struct HotelListView: View {
                         NavigationLink(value: SearchRoute.hotel(reference)) {
                             HotelRow(listing: listing, distance: model.distance(to: listing))
                         }
-                        .task {
                         .accessibilityIdentifier(YadoAccessibilityID.hotelRow(index))
+                        .task {
                             await model.loadMoreIfNeeded(currentItem: listing)
                         }
                     }

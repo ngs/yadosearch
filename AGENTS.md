@@ -25,7 +25,7 @@ Four search axes, carried over from that release: by inn name, near you, by area
 
 | Module | Path | Contents |
 |---|---|---|
-| `YadoSearchCore` | `Sources/Core/` | `Sources/Core/API/` — the proxy's contract as Codable types plus `YadoSearchAPIClient`; `SearchTarget`/`SearchFilters`/`GuestParty`/`SavedSearch`, `AreaTree`, `GeoCoordinate`. **Foundation only, no dependencies.** |
+| `YadoSearchCore` | `Sources/Core/` | `Sources/Core/API/` — the proxy's contract as Codable types plus `YadoSearchAPIClient`; `SearchTarget`/`SearchScope`/`SearchFilters`/`GuestParty`/`SavedSearch`, `AreaTree`/`RakutenAreaTree`, `GeoCoordinate`. **Foundation only, no dependencies.** |
 | `YadoSearchPlatform` | `Sources/Platform/` | SwiftData `StoredHotel` (favourites and visit history in one table) and `StoredSearch` (recent searches), area-tree disk cache, Core Location, MapKit station search and reverse geocoding |
 | `YadoSearchUI` | `Sources/UI/` | SwiftUI views and view models |
 
@@ -44,6 +44,7 @@ Everything goes through the proxy. **Neither じゃらん nor 楽天 is reached 
 | One inn, plus its match on the other provider | `GET /v1/hotels/{provider}/{id}` |
 | Plans and vacancy for one inn | `GET /v1/hotels/{provider}/{id}/plans` |
 | Jalan's area hierarchy | `GET /v1/areas/jalan` |
+| Rakuten's area classification | `GET /v1/areas/rakuten` |
 
 `openapi.json` in the proxy repository is the contract, and `Sources/Core/API/APIModels.swift` is that contract in Swift. The decoding tests read the proxy's own committed examples (`internal/httpapi/testdata/examples/`), so a change on that side shows up as a failure here.
 
@@ -61,10 +62,13 @@ Everything goes through the proxy. **Neither じゃらん nor 楽天 is reached 
 - **Errors are the body, not the status.** A refused request is `{"error": "…"}`, often verbatim from the upstream service in Japanese, which is why `searchErrorMessage(for:)` passes service messages through.
 - **`count` is per provider.** Asking for 30 can return fewer merged rows, because the same inn found on both sides is one row. Paging is decided from the per-provider totals, not from the row count.
 - **Filters reach じゃらん only.** `amenities`, `hotelType`, `minRate`/`maxRate`, `order` have no 楽天 equivalent, so a filtered search returns a narrowed じゃらん half and an unnarrowed 楽天 half. The list says so.
-- **Area search is single-provider by construction.** じゃらん's hierarchy and 楽天's classification share no codes, so sending じゃらん codes searches じゃらん alone.
+- **Which sites answer is chosen, not assumed.** `SearchScope` (じゃらん / 楽天 / 両方) rides on `SavedSearch` and is sent as `providers`. **It only narrows** — the target still decides what is reachable at all, so `providers` alongside area codes of the other scheme searches nobody. `HotelSearchRequest` leaves the parameter off for an area target for exactly that reason: the codes already name the site, and two places to say it is two places to disagree.
+- **Area search is single-provider by construction.** じゃらん's hierarchy and 楽天's classification share no codes, so an area target carries one or the other — `.area(AreaSelection)` or `.rakutenArea(RakutenAreaSelection)` — and `SearchTarget.requiredScope` is what forces the scope to match. The area picker is a different screen per site (`AreaPickerView` / `RakutenAreaPickerView`), and switching sites discards the area already picked.
+- **楽天 cannot be searched above its small class.** A query stopping at the middle class is refused (`specify valid anyone set of parameters from classcodes[…]`), and a small class that has detail classes needs one (`specify valid detailClassCode`). So `RakutenAreaSelection` requires the top three levels, `RakutenAreaTree.SmallClass.isSearchable` is what the picker branches on, and **there is no 楽天 equivalent of "東京都全体"**. Only 5 of its 312 small classes have detail classes.
 - **楽天 has no undated mode.** `checkIn` is required for its plans; じゃらん without one quotes guide prices. Selecting 楽天 with no date prompts for one instead of reporting a failure.
 - Name search still refuses above 200 matches, with じゃらん's own wording.
 - **Radius is metres now.** `SearchRadius` still carries じゃらん's old opaque codes as raw values (so stored searches keep decoding), but what is sent is `approximateMetres`. **楽天 caps its own search at 3 km.**
+- **`/v1/areas/rakuten` is 楽天's own response, passed through.** The proxy declares no schema for it — the only thing it can promise is what 楽天 said — so `RakutenAreaTreeResponse` decodes 楽天's shape: every level is an object behind a single-key wrapper (`{"largeClass": {…}}`), not the array-of-single-key-objects the rest of `formatVersion=1` uses. `Fixtures/api/areas_rakuten_full.json` is captured live, and it is what pins that.
 
 ## Affiliate links
 
@@ -128,10 +132,11 @@ Favourites, visit history and recent searches mirror through the CloudKit privat
 
 ## Search state
 
-`SavedSearch` (Core) is the whole search — target, filters, party, and the title. It is what the results screen is pushed with, what the recents list stores as JSON, and what re-running a recent search replays.
+`SavedSearch` (Core) is the whole search — target, scope, filters, party, and the title. It is what the results screen is pushed with, what the recents list stores as JSON, and what re-running a recent search replays.
 
 - The title is carried, not derived: "東京都千代田区から約2.5km" needs the reverse-geocoded name that existed at the time, and an area name cannot be recovered from its code.
 - `SavedSearch.id` is a fingerprint of the *conditions* with the title excluded, so re-running a search moves one row rather than adding a twin. It is built from a flattened struct with the amenities sorted — encoding `SearchFilters` directly would fingerprint two equal filter sets differently, because a `Set` serialises in iteration order.
+- The scope is part of that fingerprint, so the same name searched on じゃらん and on 楽天 are two rows. Everything recorded before there was a choice has no `scope` in its stored JSON; `SavedSearch.init(from:)` reads that as `.both` rather than letting the row fail to decode and vanish.
 - Reverse geocoding uses `MKReverseGeocodingRequest` (`CLGeocoder` is deprecated as of iOS 26) and prefers `MKAddressRepresentations.cityWithContext(.short)`. It runs *after* the fix and never blocks it: the coordinate is what the search needs, the name is only read.
 
 ## Conventions
@@ -144,7 +149,7 @@ Favourites, visit history and recent searches mirror through the CloudKit privat
 
 Against the 2010 release specifically:
 
-Rakuten Travel is back, by way of the proxy — the 2010 release switched between the two services, and the merged search restores that.
+Rakuten Travel is back, by way of the proxy — the 2010 release switched between the two services, and the merged search restores that. The switch is back too, as `SearchScope`: the difference is that "両方" is now a third option rather than the only behaviour.
 
 - **No line-by-line station picker, no sightseeing-spot search.** The 2010 app bundled `eki.sqlite` (stations, lines) and a spot database. Station search here resolves a coordinate through MapKit instead, which carries no data to maintain but loses the 路線→駅 drill-down.
 - Sharing (ShareKit/Evernote), AdSense and Google Analytics are deliberately not carried over.

@@ -35,6 +35,23 @@
         }
       }
     },
+    "%@だけをさがします。": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Searches %@ only."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%@だけをさがします。"
+          }
+        }
+      }
+    },
     "%@で予約": {
       "extractionState": "manual",
       "localizations": {
@@ -766,6 +783,23 @@
         }
       }
     },
+    "エリアの区分は2つのサイトで別物で、コードを変換できません。どちらか一方をえらびます。": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "The two sites divide the country differently and their codes cannot be converted, so an area search picks one of them."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "エリアの区分は2つのサイトで別物で、コードを変換できません。どちらか一方をえらびます。"
+          }
+        }
+      }
+    },
     "キャンセル": {
       "extractionState": "manual",
       "localizations": {
@@ -1408,6 +1442,40 @@
           "stringUnit": {
             "state": "translated",
             "value": "下限なし"
+          }
+        }
+      }
+    },
+    "両方": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Both"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "両方"
+          }
+        }
+      }
+    },
+    "両方をさがし、同じ宿は1件にまとめます。": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Searches both and merges an inn found on each into one row."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "両方をさがし、同じ宿は1件にまとめます。"
           }
         }
       }
@@ -2636,6 +2704,23 @@
         }
       }
     },
+    "検索先": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Search on"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "検索先"
+          }
+        }
+      }
+    },
     "検索条件": {
       "extractionState": "manual",
       "localizations": {
@@ -3159,6 +3244,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "部屋・宿"
+          }
+        }
+      }
+    },
+    "都道府県 → 小エリアの順に絞り込めます。楽天トラベルは都道府県全体では検索できません。": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Narrow by prefecture, then by area. Rakuten Travel cannot search a whole prefecture."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "都道府県 → 小エリアの順に絞り込めます。楽天トラベルは都道府県全体では検索できません。"
           }
         }
       }

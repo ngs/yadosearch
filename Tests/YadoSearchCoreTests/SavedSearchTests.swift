@@ -4,8 +4,11 @@ import Testing
 
 @Suite("Saved searches")
 struct SavedSearchTests {
+    /// A name search by default, because that is the shape whose scope is the
+    /// searcher's choice — an area target forces one, and every summary here
+    /// would then start with the site's name.
     private func search(
-        target: SearchTarget = .area(AreaSelection(prefectureID: "130000")),
+        target: SearchTarget = .name("熱海"),
         filters: SearchFilters = SearchFilters(),
         party: GuestParty? = nil,
         title: String = "東京都"
@@ -67,6 +70,12 @@ struct SavedSearchTests {
         let targets: [SearchTarget] = [
             .name("星野"),
             .area(AreaSelection(regionID: "15", prefectureID: "130000", largeAreaID: "136700")),
+            .rakutenArea(RakutenAreaSelection(
+                largeClassCode: "japan",
+                middleClassCode: "hokkaido",
+                smallClassCode: "sapporo",
+                detailClassCode: "A"
+            )),
             .around(GeoCoordinate(latitude: 35.0, longitude: 139.0), radius: .aboutOneKilometre)
         ]
 

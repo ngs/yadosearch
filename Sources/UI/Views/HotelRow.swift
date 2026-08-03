@@ -47,10 +47,11 @@ struct HotelRow: View {
                 HStack(spacing: 6) {
                     ForEach(providers) { provider in
                         Text(provider.title)
-                            .font(.caption2)
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(provider.tint)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
-                            .background(.quaternary, in: .capsule)
+                            .background(provider.tint.opacity(0.15), in: .capsule)
                     }
                     if let lowestCharge {
                         Text("\(lowestCharge.formattedYen)〜")
@@ -94,6 +95,16 @@ extension Provider {
         switch self {
         case .jalan: String(localized: "じゃらん")
         case .rakuten: String(localized: "楽天トラベル")
+        }
+    }
+
+    /// Each site's own brand colour, sampled from its logo: じゃらん's orange and
+    /// 楽天トラベル's green. The app's own accent is pink, so a badge in these
+    /// reads as "which site", never as "selected".
+    var tint: Color {
+        switch self {
+        case .jalan: Color(red: 0.929, green: 0.439, blue: 0.180)
+        case .rakuten: Color(red: 0.325, green: 0.714, blue: 0.208)
         }
     }
 }
