@@ -19,6 +19,12 @@ struct SettingsView: View {
         URL(string: "https://www.jalan.net/") ?? URL(filePath: "/")
     }
 
+    /// Not affiliate-wrapped, and not meant to be: this is where to read about
+    /// the inn, not where to book it. Only the proxy builds booking links.
+    private var rakutenURL: URL {
+        URL(string: "https://travel.rakuten.co.jp/") ?? URL(filePath: "/")
+    }
+
     private var version: String {
         let bundle = Bundle.main
         let short = bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—"
@@ -53,6 +59,7 @@ struct SettingsView: View {
                     // 宿さがし 2.0.4 was published under in 2010.
                     Link("Write a review on the App Store", destination: reviewURL)
                     Link("Jalan net", destination: jalanURL)
+                    Link("Rakuten Travel", destination: rakutenURL)
                 } header: {
                     Text("About")
                 } footer: {
