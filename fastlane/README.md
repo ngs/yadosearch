@@ -74,6 +74,14 @@ Publish the app to TestFlight
 
 Update the App Store metadata. Run validate_metadata first to check it without uploading.
 
+### ios deliver_screenshots
+
+```sh
+[bundle exec] fastlane ios deliver_screenshots
+```
+
+Update the App Store screenshots from fastlane/screenshots/ios
+
 ----
 
 
@@ -102,6 +110,14 @@ Build the app for macOS release
 ```
 
 Update the App Store metadata for macOS. Run validate_metadata first to check it without uploading.
+
+### mac deliver_screenshots
+
+```sh
+[bundle exec] fastlane mac deliver_screenshots
+```
+
+Update the App Store screenshots for macOS from fastlane/screenshots/mac
 
 ### mac release_upload
 

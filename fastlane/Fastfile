@@ -58,6 +58,12 @@ platform :ios do
     setup_app_store_connect_api_key
     deliver_metadata_for('ios')
   end
+
+  desc 'Update the App Store screenshots from fastlane/screenshots/ios'
+  lane :deliver_screenshots do
+    setup_app_store_connect_api_key
+    deliver_screenshots_for('ios', './fastlane/screenshots/ios')
+  end
 end
 
 platform :mac do
@@ -114,6 +120,12 @@ platform :mac do
     deliver_metadata_for('osx')
   end
 
+  desc 'Update the App Store screenshots for macOS from fastlane/screenshots/mac'
+  lane :deliver_screenshots do
+    setup_app_store_connect_api_key
+    deliver_screenshots_for('osx', './fastlane/screenshots/mac')
+  end
+
   desc 'Publish the macOS app to App Store Connect'
   lane :release_upload do
     setup_app_store_connect_api_key
@@ -137,13 +149,30 @@ def deliver_metadata_for(platform)
   deliver(
     platform: platform,
     force: true,
-    # Screenshots go up by hand. Uploading them here means iTMSTransporter,
-    # which is slow and fails often enough that it would make this workflow
-    # untrustworthy for the part that does work.
+    # Screenshots are their own lane. Uploading them means iTMSTransporter,
+    # which is slow and fails often enough that it would take the copy down
+    # with it every time it did.
     skip_screenshots: true,
     skip_binary_upload: true,
     run_precheck_before_submit: false,
     metadata_path: './fastlane/metadata',
+    app_identifier: APP_IDENTIFIER
+  )
+end
+
+# The other half, on its own so that a transporter failure costs the
+# screenshots and not the listing. `overwrite_screenshots` is what makes the
+# directory the truth: without it App Store Connect keeps whatever is already
+# there and the new set lands beside it.
+def deliver_screenshots_for(platform, path)
+  deliver(
+    platform: platform,
+    force: true,
+    skip_metadata: true,
+    skip_binary_upload: true,
+    run_precheck_before_submit: false,
+    overwrite_screenshots: true,
+    screenshots_path: path,
     app_identifier: APP_IDENTIFIER
   )
 end

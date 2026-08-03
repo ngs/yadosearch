@@ -1,12 +1,14 @@
 name: Metadata
 
-# Pushes fastlane/metadata to App Store Connect.
+# Pushes fastlane/metadata and fastlane/screenshots to App Store Connect.
 #
 # A merge to master applies the listing: what is on master is what the store
 # shows. A pull request validates the same files and uploads nothing, so the
 # copy is read in review rather than after it is live in the editable version.
 #
-# Screenshots are not part of this. See the Fastfile for why.
+# The screenshots are a job of their own. They go up through iTMSTransporter,
+# which is slow and fails often enough that it must not be able to take the
+# copy down with it.
 
 on:
   workflow_dispatch:
@@ -22,11 +24,17 @@ on:
         required: false
         type: boolean
         default: false
+      screenshots:
+        description: "Also upload the screenshots"
+        required: false
+        type: boolean
+        default: false
 
   push:
     branches: [master]
     paths:
       - "fastlane/metadata/**"
+      - "fastlane/screenshots/**"
       - "fastlane/Fastfile"
       - "Scripts/validate-metadata.rb"
       - ".github/workflows/metadata.yml"
@@ -34,6 +42,7 @@ on:
   pull_request:
     paths:
       - "fastlane/metadata/**"
+      - "fastlane/screenshots/**"
       - "fastlane/Fastfile"
       - "Scripts/validate-metadata.rb"
       - ".github/workflows/metadata.yml"
@@ -88,3 +97,60 @@ jobs:
       - name: macOS listing
         if: steps.mode.outputs.upload == 'true' && (steps.mode.outputs.platform == 'all' || steps.mode.outputs.platform == 'mac')
         run: bundle exec fastlane mac deliver_metadata
+
+  # Only when there is something to send: a push that changed the screenshots,
+  # or a dispatch that asked for them. A directory with no PNGs in it is
+  # skipped rather than uploaded as an empty set.
+  screenshots:
+    name: Upload screenshots
+    if: github.event_name != 'pull_request' && !inputs.verify_only && (github.event_name != 'workflow_dispatch' || inputs.screenshots)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1.321.0
+        with:
+          bundler-cache: true
+
+      # A push gets here because it touched fastlane/metadata just as often as
+      # because it touched the screenshots, and re-sending an unchanged set
+      # through iTMSTransporter buys nothing. A dispatch asked for it outright.
+      - name: Find the sets
+        id: sets
+        shell: bash
+        run: |
+          changed=true
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            base="${{ github.event.before }}"
+            git cat-file -e "$base^{commit}" 2>/dev/null || base="$(git rev-parse HEAD~1)"
+            if git diff --name-only "$base" HEAD | grep -q '^fastlane/screenshots/.*\.png$'; then
+              changed=true
+            else
+              changed=false
+              echo "::notice::No screenshot changed in this push"
+            fi
+          fi
+
+          for platform in ios mac; do
+            if [[ "$changed" == "true" ]] && compgen -G "fastlane/screenshots/$platform/*/*.png" > /dev/null; then
+              echo "$platform=true" >> $GITHUB_OUTPUT
+            else
+              echo "$platform=false" >> $GITHUB_OUTPUT
+            fi
+          done
+
+          if [[ "$changed" == "true" ]]; then
+            compgen -G "fastlane/screenshots/*/*/*.png" > /dev/null ||
+              echo "::notice::fastlane/screenshots holds no PNG yet — 3.0.0's set has not been shot"
+          fi
+
+      - name: iOS screenshots
+        if: steps.sets.outputs.ios == 'true' && (github.event_name != 'workflow_dispatch' || inputs.platform != 'mac')
+        run: bundle exec fastlane ios deliver_screenshots
+
+      - name: macOS screenshots
+        if: steps.sets.outputs.mac == 'true' && (github.event_name != 'workflow_dispatch' || inputs.platform != 'ios')
+        run: bundle exec fastlane mac deliver_screenshots
