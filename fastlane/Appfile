@@ -1,0 +1,6 @@
+# The App Store record that shipped as 宿さがし 2.0.4 in 2010
+# (https://apps.apple.com/jp/app/id347959354). The rewrite ships as an update
+# to it, which is why the bundle identifier is the original one.
+app_identifier('org.ngsdev.iphone.Yado')
+
+team_id('3Y8APYUG2G')

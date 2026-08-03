@@ -1,0 +1,18 @@
+AllCops:
+  NewCops: enable
+  Exclude:
+    - 'vendor/**/*'
+    - 'tmp/**/*'
+
+Metrics/BlockLength:
+  Exclude:
+    - 'fastlane/Fastfile'
+
+Style/IfUnlessModifier:
+  Enabled: false
+
+Style/FetchEnvVar:
+  Enabled: false
+
+Layout/LineLength:
+  Max: 150

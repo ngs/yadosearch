@@ -1,0 +1,26 @@
+project: YadoSearch.xcworkspace
+retain_objc_accessible: true
+retain_public: true
+strict: true
+schemes:
+  - YadoSearch
+
+# Retain SwiftUI property wrappers and modifiers
+retain_assign_only_properties: true
+retain_assign_only_property_types:
+  - State
+  - StateObject
+  - ObservedObject
+  - EnvironmentObject
+  - Environment
+  - AppStorage
+  - Published
+  - Binding
+
+index_exclude:
+  - "Tests/**/*.swift"
+  - "**/*.generated.swift"
+  - "**/GeneratedAssetSymbols.swift"
+
+build_arguments:
+  - -destination 'generic/platform=iOS Simulator'

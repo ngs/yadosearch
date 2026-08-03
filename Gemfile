@@ -1,6 +1,7 @@
+# frozen_string_literal: true
+
 source 'https://rubygems.org'
 
-gem 'dotenv'
-gem 'cocoapods'
-gem 'shenzhen'
-gem 'rake'
+gem 'debug'
+gem 'fastlane'
+gem 'rubocop'

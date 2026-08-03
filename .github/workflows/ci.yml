@@ -1,0 +1,191 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master, develop]
+
+env:
+  # Absent on pull requests from forks, and that is fine: the app builds and
+  # tests without a key, and reports the missing key at runtime instead.
+  TUIST_JALAN_API_KEY: ${{ secrets.JALAN_API_KEY }}
+
+jobs:
+  test:
+    name: Test ${{ matrix.platform }}
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: iOS
+            useSimulator: true
+            buildNumberSuffix: ".1"
+          - platform: macOS
+            useSimulator: false
+            buildNumberSuffix: ".2"
+
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - name: Select Xcode 26
+        run: |
+          XCODE_PATH=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+          if [ -z "$XCODE_PATH" ]; then
+            echo "Available Xcode versions:"; ls -la /Applications | grep Xcode
+            echo "Error: Xcode 26.x not found"; exit 1
+          fi
+          echo "Using $XCODE_PATH"
+          sudo xcode-select -s "$XCODE_PATH"
+
+      - name: Install tuist (mise)
+        uses: jdx/mise-action@v4.2.4
+
+      - name: Generate Xcode project and workspace
+        run: tuist generate --no-open
+        env:
+          TUIST_BUILD_NUMBER: ${{ github.run_id }}${{ matrix.buildNumberSuffix }}
+
+      # Resolved from the simulators the runner actually has, and constrained to
+      # the deployment target, so an image that still ships iOS 18 runtimes does
+      # not hand back a destination xcodebuild will reject.
+      - name: Resolve destination
+        id: destination
+        run: |
+          if [ "${{ matrix.useSimulator }}" != "true" ]; then
+            echo "destination=platform=macOS" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          DEVICE_ID=$(Scripts/latest-ios-simulator.sh 26)
+          echo "destination=id=$DEVICE_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Build and test (${{ matrix.platform }})
+        run: |
+          xcodebuild test \
+            -workspace YadoSearch.xcworkspace \
+            -scheme YadoSearch \
+            -destination '${{ steps.destination.outputs.destination }}' \
+            -derivedDataPath .build/xcode \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            clean test
+
+  test-swift:
+    name: Swift tests
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - name: Select Xcode 26
+        run: |
+          XCODE_PATH=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+          if [ -z "$XCODE_PATH" ]; then
+            echo "Error: Xcode 26.x not found"; ls -la /Applications | grep Xcode; exit 1
+          fi
+          sudo xcode-select -s "$XCODE_PATH"
+
+      - name: Run Swift tests
+        run: swift test
+
+  lint:
+    name: SwiftLint
+    # Homebrew rather than action-swiftlint: that action pins an old SwiftLint
+    # that cannot parse modern Swift.
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - name: Install SwiftLint
+        run: brew install swiftlint
+
+      - name: SwiftLint
+        run: swiftlint lint --strict
+
+  periphery:
+    name: Periphery scan
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - name: Select Xcode 26
+        run: |
+          XCODE_PATH=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+          if [ -z "$XCODE_PATH" ]; then
+            echo "Error: Xcode 26.x not found"; ls -la /Applications | grep Xcode; exit 1
+          fi
+          sudo xcode-select -s "$XCODE_PATH"
+
+      - name: Install tuist (mise)
+        uses: jdx/mise-action@v4.2.4
+
+      - name: Install periphery
+        run: brew install --formula periphery
+
+      - name: Generate Xcode project and workspace
+        run: tuist generate --no-open
+        env:
+          TUIST_BUILD_NUMBER: "${{ github.run_id }}.0"
+
+      - name: periphery scan
+        run: periphery scan --strict
+
+  rubocop:
+    name: RuboCop
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1.321.0
+        with:
+          bundler-cache: true
+
+      - name: Run RuboCop
+        run: bundle exec rubocop
+
+  build:
+    name: Build ${{ matrix.platform }}
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: iOS
+            destination: "generic/platform=iOS Simulator"
+            buildNumberSuffix: ".3"
+          - platform: macOS
+            destination: "platform=macOS"
+            buildNumberSuffix: ".4"
+
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - name: Select Xcode 26
+        run: |
+          XCODE_PATH=$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1)
+          if [ -z "$XCODE_PATH" ]; then
+            echo "Error: Xcode 26.x not found"; ls -la /Applications | grep Xcode; exit 1
+          fi
+          sudo xcode-select -s "$XCODE_PATH"
+
+      - name: Install tuist (mise)
+        uses: jdx/mise-action@v4.2.4
+
+      - name: Generate Xcode project and workspace
+        run: tuist generate --no-open
+        env:
+          TUIST_BUILD_NUMBER: "${{ github.run_id }}${{ matrix.buildNumberSuffix }}"
+
+      - name: Build ${{ matrix.platform }}
+        run: |
+          xcodebuild build \
+            -workspace YadoSearch.xcworkspace \
+            -scheme YadoSearch \
+            -destination '${{ matrix.destination }}' \
+            -derivedDataPath .build/xcode \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            clean build
