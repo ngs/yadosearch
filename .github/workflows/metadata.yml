@@ -18,7 +18,7 @@ on:
         options: [all, ios, mac]
         default: all
       verify_only:
-        description: "Validate without uploading"
+        description: "Only validate fastlane/metadata, do not upload"
         required: false
         type: boolean
         default: false
@@ -27,6 +27,7 @@ on:
     paths:
       - "fastlane/metadata/**"
       - "fastlane/Fastfile"
+      - "Scripts/validate-metadata.rb"
       - ".github/workflows/metadata.yml"
 
 env:
@@ -52,22 +53,28 @@ jobs:
       - name: Set mode
         id: mode
         run: |
+          if [[ "${{ github.event_name }}" == "pull_request" || "${{ inputs.verify_only }}" == "true" ]]; then
+            echo "upload=false" >> $GITHUB_OUTPUT
+          else
+            echo "upload=true" >> $GITHUB_OUTPUT
+          fi
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            echo "verify_only=true" >> $GITHUB_OUTPUT
             echo "platform=all" >> $GITHUB_OUTPUT
           else
-            echo "verify_only=${{ inputs.verify_only }}" >> $GITHUB_OUTPUT
             echo "platform=${{ inputs.platform }}" >> $GITHUB_OUTPUT
           fi
 
+      # The whole of the pull-request check, and the gate on an upload. It
+      # reads the files and nothing else, so it needs no App Store Connect
+      # credentials — `deliver`'s `verify_only` is a *binary* check and cannot
+      # stand in for this.
+      - name: Validate metadata
+        run: ruby Scripts/validate-metadata.rb
+
       - name: iOS listing
-        if: steps.mode.outputs.platform == 'all' || steps.mode.outputs.platform == 'ios'
-        env:
-          VERIFY_ONLY: ${{ steps.mode.outputs.verify_only }}
+        if: steps.mode.outputs.upload == 'true' && (steps.mode.outputs.platform == 'all' || steps.mode.outputs.platform == 'ios')
         run: bundle exec fastlane ios deliver_metadata
 
       - name: macOS listing
-        if: steps.mode.outputs.platform == 'all' || steps.mode.outputs.platform == 'mac'
-        env:
-          VERIFY_ONLY: ${{ steps.mode.outputs.verify_only }}
+        if: steps.mode.outputs.upload == 'true' && (steps.mode.outputs.platform == 'all' || steps.mode.outputs.platform == 'mac')
         run: bundle exec fastlane mac deliver_metadata
