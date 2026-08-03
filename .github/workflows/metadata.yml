@@ -2,9 +2,9 @@ name: Metadata
 
 # Pushes fastlane/metadata to App Store Connect.
 #
-# Manual on purpose. This writes straight onto the store listing, and a typo
-# pushed by a merge would be live in the editable version before anyone read
-# it — so a pull request only validates, and applying is a deliberate act.
+# A merge to master applies the listing: what is on master is what the store
+# shows. A pull request validates the same files and uploads nothing, so the
+# copy is read in review rather than after it is live in the editable version.
 #
 # Screenshots are not part of this. See the Fastfile for why.
 
@@ -23,6 +23,14 @@ on:
         type: boolean
         default: false
 
+  push:
+    branches: [master]
+    paths:
+      - "fastlane/metadata/**"
+      - "fastlane/Fastfile"
+      - "Scripts/validate-metadata.rb"
+      - ".github/workflows/metadata.yml"
+
   pull_request:
     paths:
       - "fastlane/metadata/**"
@@ -39,7 +47,7 @@ env:
 
 jobs:
   deliver:
-    name: ${{ inputs.verify_only && 'Verify' || github.event_name == 'pull_request' && 'Verify' || 'Upload' }} metadata
+    name: ${{ (github.event_name == 'pull_request' || inputs.verify_only) && 'Verify' || 'Upload' }} metadata
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v7.0.1
@@ -49,7 +57,9 @@ jobs:
         with:
           bundler-cache: true
 
-      # A pull request never uploads, whatever it was dispatched with.
+      # A pull request never uploads, whatever it was dispatched with. Only a
+      # dispatch chooses a platform — a merge to master applies both, because
+      # the one set of files describes the one app on both stores.
       - name: Set mode
         id: mode
         run: |
@@ -58,10 +68,10 @@ jobs:
           else
             echo "upload=true" >> $GITHUB_OUTPUT
           fi
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            echo "platform=all" >> $GITHUB_OUTPUT
-          else
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             echo "platform=${{ inputs.platform }}" >> $GITHUB_OUTPUT
+          else
+            echo "platform=all" >> $GITHUB_OUTPUT
           fi
 
       # The whole of the pull-request check, and the gate on an upload. It
