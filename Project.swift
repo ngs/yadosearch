@@ -20,8 +20,8 @@ let project = Project(
     name: "YadoSearch",
     organizationName: "LittleApps Inc.",
     options: .options(
-        defaultKnownRegions: ["ja", "en"],
-        developmentRegion: "ja"
+        defaultKnownRegions: ["en", "ja"],
+        developmentRegion: "en"
     ),
     packages: [
         .package(path: ".")
@@ -60,8 +60,9 @@ let project = Project(
                 "ITSAppUsesNonExemptEncryption": .boolean(false),
                 "CFBundleName": .string("YadoSearch"),
                 // Localised in Resources/InfoPlist.xcstrings, along with the
-                // location permission prompt.
-                "CFBundleDisplayName": .string("宿さがし"),
+                // location permission prompt: 宿さがし is the Japanese name, and
+                // the one the App Store record has carried since 2010.
+                "CFBundleDisplayName": .string("YadoSearch"),
                 "CFBundleVersion": .string("$(CURRENT_PROJECT_VERSION)"),
                 "CFBundleShortVersionString": .string("$(MARKETING_VERSION)"),
                 "NSHumanReadableCopyright": .string(copyright),
@@ -72,7 +73,7 @@ let project = Project(
                 ],
                 "APIHost": .string("$(API_HOST)"),
                 "NSLocationWhenInUseUsageDescription": .string(
-                    "現在地のまわりの宿を探すために位置情報を使います。"),
+                    "Your location is used to find inns around you."),
                 // SwiftData + CloudKit receives changes pushed from the user's
                 // other devices as silent remote notifications.
                 "UIBackgroundModes": .array([.string("remote-notification")]),

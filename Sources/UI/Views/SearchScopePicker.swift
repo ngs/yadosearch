@@ -31,13 +31,13 @@ struct SearchScopePicker: View {
                     Text(footer)
                 }
             }
-            .navigationTitle("検索先")
+            .navigationTitle("Search on")
             #if !os(macOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("完了") { dismiss() }
+                    Button("Done") { dismiss() }
                 }
             }
         }
@@ -83,11 +83,11 @@ struct SearchScopePicker: View {
 
     private var footer: String {
         if !allowsBoth {
-            return String(localized: "エリアの区分は2つのサイトで別物で、コードを変換できません。どちらか一方をえらびます。")
+            return String(localized: "The two sites divide the country differently and their codes cannot be converted, so an area search picks one of them.")
         }
         switch scope {
-        case .both: return String(localized: "両方をさがし、同じ宿は1件にまとめます。")
-        case .jalan, .rakuten: return String(localized: "\(scope.title)だけをさがします。")
+        case .both: return String(localized: "Searches both and merges an inn found on each into one row.")
+        case .jalan, .rakuten: return String(localized: "Searches \(scope.title) only.")
         }
     }
 }

@@ -23,17 +23,17 @@ struct StayConditionsEditor: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Toggle("日付を指定", isOn: hasCheckInDate)
+            Toggle("Set a date", isOn: hasCheckInDate)
             if stay.checkIn != nil {
                 DatePicker(
-                    "チェックイン",
+                    "Check-in",
                     selection: checkInDate,
                     in: Date.now...,
                     displayedComponents: .date
                 )
             }
-            Stepper("\(stay.nights)泊", value: $stay.nights, in: 1...30)
-            Stepper("\(stay.rooms)部屋", value: $stay.rooms, in: 1...10)
+            Stepper("\(stay.nights) nights", value: $stay.nights, in: 1...30)
+            Stepper("\(stay.rooms) rooms", value: $stay.rooms, in: 1...10)
             GuestPartyEditor(party: $stay.party)
         }
         .font(.callout)

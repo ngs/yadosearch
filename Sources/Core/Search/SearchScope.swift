@@ -45,9 +45,9 @@ public enum SearchScope: String, Sendable, Hashable, Codable, CaseIterable, Iden
 
     public var title: String {
         switch self {
-        case .jalan: String(localized: "じゃらん")
-        case .rakuten: String(localized: "楽天トラベル")
-        case .both: String(localized: "両方")
+        case .jalan: String(localized: "Jalan")
+        case .rakuten: String(localized: "Rakuten Travel")
+        case .both: String(localized: "Both")
         }
     }
 }

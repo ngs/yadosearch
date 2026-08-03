@@ -99,10 +99,10 @@ struct SavedSearchTests {
         )
 
         #expect(none.conditionsSummary.isEmpty)
-        #expect(some.conditionsSummary.contains("参考料金の安い順"))
-        #expect(some.conditionsSummary.contains("旅館"))
-        #expect(some.conditionsSummary.contains("8,000〜20,000円"))
-        #expect(some.conditionsSummary.contains("温泉"))
+        #expect(some.conditionsSummary.contains("Guide price, low to high"))
+        #expect(some.conditionsSummary.contains("Ryokan"))
+        #expect(some.conditionsSummary.contains("¥8,000–20,000"))
+        #expect(some.conditionsSummary.contains("Hot spring"))
     }
 
     @Test("Every amenity is named, however many there are")
@@ -118,7 +118,7 @@ struct SavedSearchTests {
 
     @Test("An open-ended budget reads as open-ended")
     func summarisesOpenEndedBudgets() {
-        #expect(search(filters: SearchFilters(minimumRate: 10_000)).conditionsSummary == "10,000円〜")
-        #expect(search(filters: SearchFilters(maximumRate: 10_000)).conditionsSummary == "〜10,000円")
+        #expect(search(filters: SearchFilters(minimumRate: 10_000)).conditionsSummary == "From ¥10,000")
+        #expect(search(filters: SearchFilters(maximumRate: 10_000)).conditionsSummary == "Up to ¥10,000")
     }
 }

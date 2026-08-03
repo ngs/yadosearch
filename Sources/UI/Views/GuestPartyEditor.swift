@@ -8,25 +8,25 @@ struct GuestPartyEditor: View {
     @Binding var party: GuestParty
 
     var body: some View {
-        Stepper("大人 \(party.adults)名", value: $party.adults, in: 1...20)
-        Stepper("小学生 \(party.elementarySchoolChildren)名", value: $party.elementarySchoolChildren, in: 0...10)
+        Stepper("Adults: \(party.adults)", value: $party.adults, in: 1...20)
+        Stepper("Primary school children: \(party.elementarySchoolChildren)", value: $party.elementarySchoolChildren, in: 0...10)
         Stepper(
-            "幼児（布団・食事あり）\(party.preschoolersWithBedAndMeal)名",
+            "Preschoolers, bed and meals: \(party.preschoolersWithBedAndMeal)",
             value: $party.preschoolersWithBedAndMeal,
             in: 0...10
         )
         Stepper(
-            "幼児（食事のみ）\(party.preschoolersWithMealOnly)名",
+            "Preschoolers, meals only: \(party.preschoolersWithMealOnly)",
             value: $party.preschoolersWithMealOnly,
             in: 0...10
         )
         Stepper(
-            "幼児（布団のみ）\(party.preschoolersWithBedOnly)名",
+            "Preschoolers, bed only: \(party.preschoolersWithBedOnly)",
             value: $party.preschoolersWithBedOnly,
             in: 0...10
         )
         Stepper(
-            "幼児（布団・食事なし）\(party.preschoolersWithNeither)名",
+            "Preschoolers, neither: \(party.preschoolersWithNeither)",
             value: $party.preschoolersWithNeither,
             in: 0...10
         )
@@ -36,10 +36,10 @@ struct GuestPartyEditor: View {
 extension GuestParty {
     /// "大人2名・子ども1名" — the one-line summary for a collapsed row.
     var summary: String {
-        var parts = [String(localized: "大人\(adults)名")]
+        var parts = [String(localized: "\(adults) adults")]
         if childCount > 0 {
-            parts.append(String(localized: "子ども\(childCount)名"))
+            parts.append(String(localized: "\(childCount) children"))
         }
-        return parts.joined(separator: "・")
+        return parts.joined(separator: String(localized: " · "))
     }
 }

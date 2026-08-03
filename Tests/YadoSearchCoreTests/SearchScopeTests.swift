@@ -122,6 +122,6 @@ struct SearchScopeTests {
     @Test("The summary names the site only when it is one of them")
     func summaryNamesTheSite() {
         #expect(SavedSearch(target: .name("熱海"), scope: .both, title: "x").conditionsSummary.isEmpty)
-        #expect(SavedSearch(target: .name("熱海"), scope: .jalan, title: "x").conditionsSummary == "じゃらん")
+        #expect(SavedSearch(target: .name("熱海"), scope: .jalan, title: "x").conditionsSummary == "Jalan")
     }
 }

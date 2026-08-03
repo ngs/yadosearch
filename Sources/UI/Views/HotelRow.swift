@@ -54,7 +54,7 @@ struct HotelRow: View {
                             .background(provider.tint.opacity(0.15), in: .capsule)
                     }
                     if let lowestCharge {
-                        Text("\(lowestCharge.formattedYen)〜")
+                        Text("From \(lowestCharge.formattedYen)")
                             .font(.caption.weight(.semibold))
                             .monospacedDigit()
                     }
@@ -84,7 +84,7 @@ extension AreaNames {
     var summary: String? {
         [prefecture, large]
             .compactMap { $0 }
-            .joined(separator: "・")
+            .joined(separator: String(localized: " · "))
             .nonEmptyText
     }
 }
@@ -93,8 +93,8 @@ extension Provider {
     /// How each site names itself.
     var title: String {
         switch self {
-        case .jalan: String(localized: "じゃらん")
-        case .rakuten: String(localized: "楽天トラベル")
+        case .jalan: String(localized: "Jalan")
+        case .rakuten: String(localized: "Rakuten Travel")
         }
     }
 

@@ -19,7 +19,7 @@ public struct YadoSearchRootView: View {
     public var body: some View {
         NavigationSplitView(columnVisibility: $columns) {
             TabView {
-                Tab("さがす", systemImage: "magnifyingglass") {
+                Tab("Search", systemImage: "magnifyingglass") {
                     SearchView(selectedHotel: $selectedHotel)
                 }
                 Tab(StoredHotel.Kind.favorite.title, systemImage: "heart") {
@@ -28,7 +28,7 @@ public struct YadoSearchRootView: View {
                 Tab(StoredHotel.Kind.history.title, systemImage: "clock") {
                     StoredHotelListView(kind: .history, selectedHotel: $selectedHotel)
                 }
-                Tab("設定", systemImage: "gearshape") {
+                Tab("Settings", systemImage: "gearshape") {
                     SettingsView()
                 }
             }
@@ -51,9 +51,9 @@ public struct YadoSearchRootView: View {
                 .id(selectedHotel)
         } else {
             ContentUnavailableView {
-                Label("宿がえらばれていません", systemImage: "bed.double")
+                Label("No inn selected", systemImage: "bed.double")
             } description: {
-                Text("さがした宿をえらぶと、ここに表示されます。")
+                Text("Choose an inn from a search and it appears here.")
             }
         }
     }

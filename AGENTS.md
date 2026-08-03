@@ -19,7 +19,7 @@ Four search axes, carried over from that release: by inn name, near you, by area
 - **Project generation**: Tuist (`Project.swift`) + SwiftPM (`Package.swift`)
 - **Code quality**: SwiftLint / Periphery / RuboCop (for the Fastfile)
 - **CI/CD**: GitHub Actions + fastlane
-- **Localization**: Japanese and English, through `Resources/Localizable.xcstrings`
+- **Localization**: English (source) and Japanese, through `Resources/Localizable.xcstrings`
 
 ### Modules
 
@@ -156,11 +156,12 @@ Rakuten Travel is back, by way of the proxy — the 2010 release switched betwee
 
 In general:
 
-- **Japanese is the source language, and the Japanese string is the key.** `Text("お気に入り")` stays as it is; `Resources/Localizable.xcstrings` maps that key to itself in `ja` and to "Favourites" in `en`.
-  - **The catalogue lives in the app target, not in the UI package.** SwiftUI resolves a `LocalizedStringKey` against `Bundle.main` unless told otherwise, so a catalogue in the app bundle serves every module without `bundle: .module` at hundreds of call sites. The cost is that previews and `swift test` see no catalogue and fall back to the key, which is the Japanese text — the same thing they showed before.
-  - **Anything typed `String` needs `String(localized:)`.** `Text` and friends take a `LocalizedStringKey` and look themselves up; a plain `String` does not. That is why `Amenity.title`, `Provider.title`, `SearchRadius.label`, the `SavedSearch` titles and `searchErrorMessage(for:)` all wrap their literals. Core can do this because `String(localized:)` is Foundation, and it reads `Bundle.main` too.
-  - **Interpolation changes the key.** `Text("\(count)件")` looks up `%lld件`, not `\(count)件`; a `String` interpolation is `%@`. When a translation reorders two arguments it has to use positional specifiers (`%1$@`).
-  - `Resources/InfoPlist.xcstrings` carries the display name and the location prompt.
+- **English is the source language, and the English string is the key.** `Text("Favourites")` is what the code says; `Resources/Localizable.xcstrings` maps that key to itself in `en` and to "お気に入り" in `ja`. It was the other way round until the base language was switched, and the switch was made by inverting the catalogue rather than by re-translating: every Japanese key became its own English translation, and the Japanese it used to be became the `ja` value.
+  - **The catalogue lives in the app target, not in the UI package.** SwiftUI resolves a `LocalizedStringKey` against `Bundle.main` unless told otherwise, so a catalogue in the app bundle serves every module without `bundle: .module` at hundreds of call sites. The cost is that previews and `swift test` see no catalogue and fall back to the key — which is now the English text, and is what the tests assert.
+  - **Anything typed `String` needs `String(localized:)`.** `Text` and friends take a `LocalizedStringKey` and look themselves up; a plain `String` does not. That is why `Amenity.title`, `Provider.title`, `SearchRadius.label`, the `SavedSearch` titles, `searchErrorMessage(for:)` and even the `" · "` that joins a summary all wrap their literals. Core can do this because `String(localized:)` is Foundation, and it reads `Bundle.main` too.
+  - **Interpolation changes the key.** `Text("\(count) inns")` looks up `%lld inns`, not `\(count) inns`; a `String` interpolation is `%@`. When a translation reorders two arguments it has to use positional specifiers (`%1$@`).
+  - **One key, one meaning.** Japanese drew distinctions English collapses: 検索条件 and こだわり were both "Conditions", さがす and 宿をさがす both "Search", エリア and 地域 both "Area". A shared key would have given each pair one Japanese translation, so they are "Conditions"/"Amenities", "Search"/"Find inns" and "Region"/"Area".
+  - `Resources/InfoPlist.xcstrings` carries the display name and the location prompt. **`CFBundleDisplayName` is "YadoSearch" in the plist and 宿さがし in `ja`** — the Japanese name is the one the App Store record has carried since 2010, and it comes from the catalogue rather than from `Project.swift`.
   - Reverse-geocoded place names follow the device language on their own. **What the proxy returns — inn names, area names, service error messages — is Japanese whatever the device is set to**, because that is all the upstream services have.
 - **The app icon is still being tuned.** `Resources/AppIcon.icon` is an Icon Composer package (`icon.json` plus `Assets/onsen.svg`) — edit it there, not by hand. There is no `AppIcon.appiconset` any more; the `.icon` supersedes it, and `actool` still emits the legacy PNGs from it.
   - The layer's `fill` in `icon.json` is what colours the glyph. `actool` treats the SVG as a monochrome vector and ignores fills inside it, so changing the SVG's own `fill` does nothing.

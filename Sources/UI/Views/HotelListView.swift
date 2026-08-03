@@ -41,22 +41,22 @@ struct HotelListView: View {
     private func content(_ model: HotelSearchViewModel) -> some View {
         switch model.phase {
         case .loading:
-            ProgressView("さがしています…")
+            ProgressView("Searching…")
         case let .failed(message):
             ContentUnavailableView {
-                Label("さがせませんでした", systemImage: "exclamationmark.triangle")
+                Label("The search failed", systemImage: "exclamationmark.triangle")
             } description: {
                 Text(message)
             } actions: {
-                Button("もう一度試す") {
+                Button("Try again") {
                     Task { await model.load() }
                 }
             }
         case .loaded where model.listings.isEmpty:
             ContentUnavailableView {
-                Label("宿が見つかりません", systemImage: "bed.double")
+                Label("No inns found", systemImage: "bed.double")
             } description: {
-                Text("条件を変えてもう一度おためしください。")
+                Text("Try again with different conditions.")
             }
         case .loaded:
             list(model)
@@ -99,8 +99,8 @@ struct HotelListView: View {
             .joined(separator: " / ")
         let count = model.listings.count
         return breakdown.isEmpty
-            ? String(localized: "\(count)件")
-            : String(localized: "\(count)件（\(breakdown)）")
+            ? String(localized: "\(count) inns")
+            : String(localized: "\(count) inns (\(breakdown))")
     }
 
     @ViewBuilder
@@ -110,11 +110,11 @@ struct HotelListView: View {
             // a note under the list rather than an error state over it.
             ForEach(Provider.allCases) { provider in
                 if let message = model.providerErrors[provider] {
-                    Text("\(provider.title)：\(message)")
+                    Text("\(provider.title): \(message)")
                 }
             }
             if model.filtersAppliedToJalanOnly {
-                Text("絞り込み条件はじゃらんの結果にのみ反映されます。")
+                Text("Filters apply to the Jalan results only.")
             }
             if model.isLoadingMore {
                 HStack {

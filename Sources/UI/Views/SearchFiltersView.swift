@@ -27,8 +27,8 @@ struct SearchFiltersView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("並び順") {
-                    Picker("並び順", selection: $filters.sortOrder) {
+                Section("Sort by") {
+                    Picker("Sort by", selection: $filters.sortOrder) {
                         ForEach(HotelSortOrder.allCases) { order in
                             Text(order.title).tag(order)
                         }
@@ -37,9 +37,9 @@ struct SearchFiltersView: View {
                     .pickerStyle(.inline)
                 }
 
-                Section("宿の種類") {
-                    Picker("宿の種類", selection: hotelType) {
-                        Text("指定なし").tag(0)
+                Section("Property type") {
+                    Picker("Property type", selection: hotelType) {
+                        Text("Any").tag(0)
                         ForEach(HotelType.allCases) { type in
                             Text(type.title).tag(type.rawValue)
                         }
@@ -47,23 +47,23 @@ struct SearchFiltersView: View {
                 }
 
                 Section {
-                    Picker("下限", selection: minimumRate) {
-                        Text("下限なし").tag(0)
+                    Picker("From", selection: minimumRate) {
+                        Text("No minimum").tag(0)
                         ForEach(SearchFilters.rateSteps, id: \.self) { rate in
                             Text(rate.formattedYen).tag(rate)
                         }
                     }
-                    Picker("上限", selection: maximumRate) {
-                        Text("上限なし").tag(0)
+                    Picker("To", selection: maximumRate) {
+                        Text("No maximum").tag(0)
                         ForEach(SearchFilters.rateSteps, id: \.self) { rate in
                             Text(rate.formattedYen).tag(rate)
                         }
                     }
                 } header: {
-                    Text("予算（1名1泊あたり）")
+                    Text("Budget (per person, per night)")
                 }
 
-                Section("人数") {
+                Section("Guests") {
                     GuestPartyEditor(party: $party)
                 }
 
@@ -76,17 +76,17 @@ struct SearchFiltersView: View {
                 }
             }
             .formStyle(.grouped)
-            .navigationTitle("絞り込み")
+            .navigationTitle("Filters")
             #if !os(macOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("すべて解除") { filters.reset() }
+                    Button("Clear all") { filters.reset() }
                         .disabled(filters.isEmpty)
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("完了") { dismiss() }
+                    Button("Done") { dismiss() }
                 }
             }
         }

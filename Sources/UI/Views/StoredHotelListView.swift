@@ -30,7 +30,7 @@ struct StoredHotelListView: View {
             .toolbar {
                 if kind == .history, !entries.isEmpty {
                     ToolbarItem(placement: .primaryAction) {
-                        Button("すべて削除", role: .destructive) {
+                        Button("Delete all", role: .destructive) {
                             StoredHotelStore.clear(kind: .history, in: modelContext)
                         }
                     }
@@ -75,8 +75,8 @@ struct StoredHotelListView: View {
 extension StoredHotel.Kind {
     var title: String {
         switch self {
-        case .favorite: String(localized: "お気に入り")
-        case .history: String(localized: "履歴")
+        case .favorite: String(localized: "Favourites")
+        case .history: String(localized: "History")
         }
     }
 
@@ -89,15 +89,15 @@ extension StoredHotel.Kind {
 
     var emptyTitle: String {
         switch self {
-        case .favorite: String(localized: "お気に入りはまだありません")
-        case .history: String(localized: "見た宿はまだありません")
+        case .favorite: String(localized: "No favourites yet")
+        case .history: String(localized: "No inns viewed yet")
         }
     }
 
     var emptyDescription: String {
         switch self {
-        case .favorite: String(localized: "宿の詳細画面のハートを押すと、ここに残ります。")
-        case .history: String(localized: "宿の詳細画面を開くと、ここに残ります。")
+        case .favorite: String(localized: "Tap the heart on an inn's page and it will stay here.")
+        case .history: String(localized: "Open an inn's page and it will stay here.")
         }
     }
 }

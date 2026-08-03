@@ -26,25 +26,25 @@ struct AreaPickerView: View {
                     regionList
                 case let .failed(message):
                     ContentUnavailableView {
-                        Label("地域を読み込めませんでした", systemImage: "exclamationmark.triangle")
+                        Label("Could not load the areas", systemImage: "exclamationmark.triangle")
                     } description: {
                         Text(message)
                     } actions: {
-                        Button("もう一度試す") {
+                        Button("Try again") {
                             Task { await model?.load() }
                         }
                     }
                 case .loading, .none:
-                    ProgressView("地域を読み込み中…")
+                    ProgressView("Loading areas…")
                 }
             }
-            .navigationTitle("地域をえらぶ")
+            .navigationTitle("Choose an area")
             #if !os(macOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("キャンセル") { dismiss() }
+                    Button("Cancel") { dismiss() }
                 }
             }
             .navigationDestination(for: Level.self, destination: destination(for:))
@@ -100,10 +100,10 @@ struct AreaPickerView: View {
                             )),
                             name: largeArea.name
                         ),
-                        title: String(localized: "\(largeArea.name)全体でさがす")
+                        title: String(localized: "Search all of \(largeArea.name)")
                     )
                 }
-                Section("小エリア") {
+                Section("Small areas") {
                     ForEach(largeArea.smallAreas) { smallArea in
                         chooseButton(
                             ChosenArea(
@@ -134,7 +134,7 @@ struct AreaPickerView: View {
     private func list(title: String, whole: ChosenArea, rows: [Row]) -> some View {
         List {
             Section {
-                chooseButton(whole, title: String(localized: "\(title)全体でさがす"))
+                chooseButton(whole, title: String(localized: "Search all of \(title)"))
             }
             Section {
                 ForEach(rows) { row in

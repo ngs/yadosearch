@@ -109,6 +109,6 @@ public extension SavedSearch {
         if let amenities = filters.amenitySummary {
             parts.append(amenities)
         }
-        return parts.joined(separator: "・")
+        return parts.joined(separator: String(localized: " · "))
     }
 }

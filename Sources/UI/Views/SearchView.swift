@@ -15,10 +15,10 @@ enum SearchMode: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .keyword: String(localized: "キーワード")
-        case .nearby: String(localized: "現在地")
-        case .area: String(localized: "地域")
-        case .station: String(localized: "駅")
+        case .keyword: String(localized: "Name")
+        case .nearby: String(localized: "Nearby")
+        case .area: String(localized: "Area")
+        case .station: String(localized: "Station")
         }
     }
 
@@ -72,7 +72,7 @@ struct SearchView: View {
     var body: some View {
         NavigationStack(path: $path) {
             form
-                .navigationTitle("宿さがし")
+                .navigationTitle("YadoSearch")
                 .navigationDestination(for: SearchRoute.self) { route in
                     switch route {
                     case let .results(search):
@@ -109,7 +109,7 @@ struct SearchView: View {
     private var form: some View {
         Form {
             Section {
-                Picker("さがしかた", selection: $mode) {
+                Picker("How to search", selection: $mode) {
                     ForEach(SearchMode.allCases) { mode in
                         Label(mode.title, systemImage: mode.systemImage).tag(mode)
                     }
@@ -137,7 +137,7 @@ struct SearchView: View {
                         run(search)
                     }
                 } label: {
-                    Text("宿をさがす")
+                    Text("Find inns")
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
                 }
@@ -174,12 +174,12 @@ struct SearchView: View {
             Button {
                 isPickingScope = true
             } label: {
-                pickerLabel(title: String(localized: "検索先"), value: scope.title)
+                pickerLabel(title: String(localized: "Search on"), value: scope.title)
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier(YadoAccessibilityID.searchScope)
         } header: {
-            Text("検索先")
+            Text("Search on")
         } footer: {
             Text(scopeFooter)
         }
@@ -193,13 +193,13 @@ struct SearchView: View {
 
     private var scopeFooter: String {
         if mode == .area {
-            return String(localized: "エリアの区分は2つのサイトで別物で、コードを変換できません。どちらか一方をえらびます。")
+            return String(localized: "The two sites divide the country differently and their codes cannot be converted, so an area search picks one of them.")
         }
         switch scope {
         case .both:
-            return String(localized: "両方をさがし、同じ宿は1件にまとめます。")
+            return String(localized: "Searches both and merges an inn found on each into one row.")
         case .jalan, .rakuten:
-            return String(localized: "\(scope.title)だけをさがします。")
+            return String(localized: "Searches \(scope.title) only.")
         }
     }
 
@@ -207,7 +207,7 @@ struct SearchView: View {
     /// actually in effect. Every row opens the same editing sheet — there is no
     /// separate "絞り込み" row to find first.
     private var conditionsSection: some View {
-        Section("検索条件") {
+        Section("Conditions") {
             ForEach(conditionRows, id: \.title) { row in
                 Button {
                     isEditingFilters = true
@@ -227,18 +227,18 @@ struct SearchView: View {
     /// The party is always shown — a search always has one — and the rest appear
     /// only once they are set, so the section stays short when nothing is.
     private var conditionRows: [ConditionRow] {
-        var rows = [ConditionRow(title: "人数", value: party.summary)]
+        var rows = [ConditionRow(title: "Guests", value: party.summary)]
         if filters.sortOrder != .unspecified {
-            rows.append(ConditionRow(title: "並び順", value: filters.sortOrder.title))
+            rows.append(ConditionRow(title: "Sort by", value: filters.sortOrder.title))
         }
         if let hotelType = filters.hotelType {
-            rows.append(ConditionRow(title: "宿の種類", value: hotelType.title))
+            rows.append(ConditionRow(title: "Property type", value: hotelType.title))
         }
         if let budget = filters.budgetSummary {
-            rows.append(ConditionRow(title: "予算", value: budget))
+            rows.append(ConditionRow(title: "Budget", value: budget))
         }
         if let amenities = filters.amenitySummary {
-            rows.append(ConditionRow(title: "こだわり", value: amenities))
+            rows.append(ConditionRow(title: "Amenities", value: amenities))
         }
         return rows
     }
@@ -285,9 +285,9 @@ struct SearchView: View {
                 }
                 .onDelete(perform: deleteRecentSearches)
             } header: {
-                Text("最近の検索")
+                Text("Recent searches")
             } footer: {
-                Button("履歴を消す", role: .destructive) {
+                Button("Clear history", role: .destructive) {
                     SearchHistoryStore.clear(in: modelContext)
                 }
                 .font(.footnote)
@@ -308,7 +308,7 @@ struct SearchView: View {
 private extension SearchView {
     var keywordSection: some View {
         Section {
-            TextField("宿名の一部", text: $keyword)
+            TextField("Part of the name", text: $keyword)
                 .accessibilityIdentifier(YadoAccessibilityID.searchKeyword)
                 .autocorrectionDisabled()
                 #if !os(macOS)
@@ -319,11 +319,11 @@ private extension SearchView {
                     if let search = currentSearch { run(search) }
                 }
         } header: {
-            Text("宿の名前")
+            Text("Inn name")
         } footer: {
             // Worth saying up front: the service refuses rather than truncating,
             // and the error it returns is easy to read as a fault in the app.
-            Text("宿名で検索します。該当が200件を超えると、じゃらん側が結果を返さずエラーになります。")
+            Text("Searches by inn name. Jalan returns an error rather than a list when more than 200 inns match.")
         }
     }
 
@@ -331,42 +331,42 @@ private extension SearchView {
         Section {
             switch location.state {
             case .idle:
-                Button("現在地を取得", systemImage: "location") {
+                Button("Get my location", systemImage: "location") {
                     location.requestLocation()
                 }
             case .locating:
                 HStack {
                     ProgressView()
-                    Text("現在地を取得中…")
+                    Text("Getting your location…")
                         .foregroundStyle(.secondary)
                 }
             case let .located(coordinate):
-                LabeledContent("現在地") {
+                LabeledContent("Nearby") {
                     // The place name replaces the coordinate once the reverse
                     // geocoder answers; the degrees are what there is until then,
                     // and what remains if it never does.
                     Text(location.placeName ?? coordinate.formattedDegrees)
                         .multilineTextAlignment(.trailing)
                 }
-                Button("取得しなおす", systemImage: "arrow.clockwise") {
+                Button("Get it again", systemImage: "arrow.clockwise") {
                     location.requestLocation()
                 }
             case .denied:
-                Label("位置情報の利用が許可されていません", systemImage: "location.slash")
+                Label("Location access is off", systemImage: "location.slash")
                     .foregroundStyle(.secondary)
-                Text("設定 App の「プライバシーとセキュリティ」から位置情報の利用を許可してください。")
+                Text("Allow location access in Settings, under Privacy & Security.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             case .unavailable:
-                Label("現在地を取得できませんでした", systemImage: "location.slash")
+                Label("Could not get your location", systemImage: "location.slash")
                     .foregroundStyle(.secondary)
-                Button("もう一度試す", systemImage: "arrow.clockwise") {
+                Button("Try again", systemImage: "arrow.clockwise") {
                     location.requestLocation()
                 }
             }
             radiusPicker
         } header: {
-            Text("現在地のまわり")
+            Text("Around you")
         }
     }
 
@@ -375,19 +375,19 @@ private extension SearchView {
             Button {
                 isPickingArea = true
             } label: {
-                pickerLabel(title: "地域", value: chosenArea?.name)
+                pickerLabel(title: "Area", value: chosenArea?.name)
             }
             .buttonStyle(.plain)
         } header: {
-            Text("地域から")
+            Text("By area")
         } footer: {
             // The two hierarchies are not the same depth or the same cut, and
             // Rakuten's cannot be searched above its small class, so what can be
             // picked genuinely differs between them.
             if scope == .rakuten {
-                Text("都道府県 → 小エリアの順に絞り込めます。楽天トラベルは都道府県全体では検索できません。")
+                Text("Narrow by prefecture, then by area. Rakuten Travel cannot search a whole prefecture.")
             } else {
-                Text("広域 → 都道府県 → 大エリア → 小エリアの順に絞り込めます。")
+                Text("Narrow down from region to prefecture to large area to small area.")
             }
         }
     }
@@ -397,15 +397,15 @@ private extension SearchView {
             Button {
                 isPickingStation = true
             } label: {
-                pickerLabel(title: "駅", value: chosenStation?.name)
+                pickerLabel(title: "Station", value: chosenStation?.name)
             }
             .buttonStyle(.plain)
             radiusPicker
         } header: {
-            Text("駅のまわり")
+            Text("Around a station")
         } footer: {
             // The API has no station parameter; this is what actually happens.
-            Text("駅の位置を地図から調べ、そのまわりの宿をさがします。")
+            Text("Finds the station on the map and looks for inns around it.")
         }
     }
 
@@ -415,7 +415,7 @@ private extension SearchView {
         HStack {
             Text(title)
             Spacer(minLength: 12)
-            Text(value ?? "えらぶ")
+            Text(value ?? "Choose")
                 .foregroundStyle(value == nil ? .secondary : .primary)
                 .multilineTextAlignment(.trailing)
             Image(systemName: "chevron.forward")
@@ -426,7 +426,7 @@ private extension SearchView {
     }
 
     var radiusPicker: some View {
-        Picker("さがす範囲", selection: $radius) {
+        Picker("Distance", selection: $radius) {
             ForEach(SearchRadius.allCases) { radius in
                 Text(radius.label).tag(radius)
             }
@@ -457,13 +457,13 @@ private extension SearchView {
         case .keyword:
             let trimmed = keyword.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !trimmed.isEmpty else { return nil }
-            return (.name(trimmed), String(localized: "「\(trimmed)」"))
+            return (.name(trimmed), String(localized: "“\(trimmed)”"))
         case .nearby:
             guard let coordinate = location.coordinate else { return nil }
             // The place name, when there is one, is what makes this search
             // recognisable in the recent list a week later.
-            let origin = location.placeName ?? String(localized: "現在地")
-            return (.around(coordinate, radius: radius), String(localized: "\(origin)から\(radius.label)"))
+            let origin = location.placeName ?? String(localized: "Nearby")
+            return (.around(coordinate, radius: radius), String(localized: "\(origin), \(radius.label)"))
         case .area:
             guard let chosenArea else { return nil }
             return (chosenArea.target, chosenArea.name)
@@ -471,7 +471,7 @@ private extension SearchView {
             guard let chosenStation else { return nil }
             return (
                 .around(chosenStation.coordinate, radius: radius),
-                String(localized: "\(chosenStation.name)から\(radius.label)")
+                String(localized: "\(chosenStation.name), \(radius.label)")
             )
         }
     }
@@ -480,11 +480,11 @@ private extension SearchView {
 extension SearchRadius {
     var label: String {
         switch self {
-        case .aboutOneKilometre: String(localized: "約1km")
-        case .aboutTwoAndAHalfKilometres: String(localized: "約2.5km")
-        case .aboutFiveKilometres: String(localized: "約5km")
-        case .aboutSevenKilometres: String(localized: "約7km")
-        case .aboutTenKilometres: String(localized: "約10km")
+        case .aboutOneKilometre: String(localized: "about 1km")
+        case .aboutTwoAndAHalfKilometres: String(localized: "about 2.5km")
+        case .aboutFiveKilometres: String(localized: "about 5km")
+        case .aboutSevenKilometres: String(localized: "about 7km")
+        case .aboutTenKilometres: String(localized: "about 10km")
         }
     }
 }

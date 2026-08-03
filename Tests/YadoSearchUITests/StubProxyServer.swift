@@ -111,7 +111,7 @@ extension StubProxyServer {
             {"name":"テスト旅館\(identifier)",\
             "address":"東京都千代田区丸の内1-\(identifier)",\
             "area":{"region":"首都圏","prefecture":"東京都","large":"東京駅周辺","small":"丸の内"},\
-            "kind":"旅館","catchCopy":"駅から近い宿\(identifier)",\
+            "kind":"Ryokan","catchCopy":"駅から近い宿\(identifier)",\
             "coordinate":{"latitude":35.681236,"longitude":\(longitude)},\
             "offers":[\(offers)]}
             """

@@ -39,25 +39,25 @@ struct RakutenAreaPickerView: View {
                     middleClassList
                 case let .failed(message):
                     ContentUnavailableView {
-                        Label("地域を読み込めませんでした", systemImage: "exclamationmark.triangle")
+                        Label("Could not load the areas", systemImage: "exclamationmark.triangle")
                     } description: {
                         Text(message)
                     } actions: {
-                        Button("もう一度試す") {
+                        Button("Try again") {
                             Task { await model?.load() }
                         }
                     }
                 case .loading, .none:
-                    ProgressView("地域を読み込み中…")
+                    ProgressView("Loading areas…")
                 }
             }
-            .navigationTitle("地域をえらぶ")
+            .navigationTitle("Choose an area")
             #if !os(macOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("キャンセル") { dismiss() }
+                    Button("Cancel") { dismiss() }
                 }
             }
             .navigationDestination(for: Level.self, destination: smallClassList(for:))

@@ -20,8 +20,8 @@ struct PresentationTests {
         for radius in SearchRadius.allCases {
             #expect(!radius.label.isEmpty)
         }
-        #expect(SearchRadius.aboutOneKilometre.label == "約1km")
-        #expect(SearchRadius.aboutTenKilometres.label == "約10km")
+        #expect(SearchRadius.aboutOneKilometre.label == "about 1km")
+        #expect(SearchRadius.aboutTenKilometres.label == "about 10km")
         #expect(SearchRadius.aboutTenKilometres.approximateMetres == 10_000)
     }
 
@@ -30,7 +30,7 @@ struct PresentationTests {
         let full = AreaNames(region: "首都圏", prefecture: "東京都", large: "浅草", small: "浅草")
         let bare = AreaNames(region: nil, prefecture: nil, large: nil, small: nil)
 
-        #expect(full.summary == "東京都・浅草")
+        #expect(full.summary == "東京都 · 浅草")
         #expect(bare.summary == nil)
     }
 
@@ -41,10 +41,10 @@ struct PresentationTests {
         let message = "宿名による宿の検索結果が200件を越えています。検索キーワードを変更してください。"
 
         #expect(searchErrorMessage(for: APIError.service(message: message)) == message)
-        #expect(searchErrorMessage(for: APIError.service(message: "")).contains("応答"))
+        #expect(searchErrorMessage(for: APIError.service(message: "")).contains("response"))
         // Nothing the user sees mentions the API key.
         for error: APIError in [.service(message: ""), .malformedResponse, .transport(description: "x")] {
-            #expect(!searchErrorMessage(for: error).contains("APIキー"))
+            #expect(!searchErrorMessage(for: error).localizedCaseInsensitiveContains("api key"))
         }
     }
 
@@ -64,10 +64,10 @@ struct PresentationTests {
 
     @Test("A party reads as a one-line summary")
     func summarisesTheParty() {
-        #expect(GuestParty(adults: 2).summary == "大人2名")
+        #expect(GuestParty(adults: 2).summary == "2 adults")
         #expect(
             GuestParty(adults: 2, elementarySchoolChildren: 1, preschoolersWithBedOnly: 1).summary
-                == "大人2名・子ども2名"
+                == "2 adults · 2 children"
         )
     }
 
