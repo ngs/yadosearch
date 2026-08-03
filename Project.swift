@@ -14,7 +14,7 @@ let buildNumber = Environment.buildNumber.getString(default: "0")
 /// The `YadoSearch (Local)` scheme overrides this with a launch argument, which
 /// is also how a build on a real device is pointed at a Mac on the same
 /// network — `localhost` there means the device itself.
-let apiHost = "yadosearch-api-679155343431.asia-northeast1.run.app"
+let apiHost = "api.yadosearch.ngs.io"
 
 let project = Project(
     name: "YadoSearch",
