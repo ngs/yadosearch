@@ -157,6 +157,7 @@ GitHub Actions（`.github/workflows/`）:
 - **ci.yml** — iOS / macOS の `xcodebuild test`、`swift test`、SwiftLint、Periphery、RuboCop、両プラットフォームのビルド
 - **release.yml** — CI 成功後（または手動実行で）fastlane match で署名し、TestFlight / App Store Connect にアップロード
 - **provision.yml** — 署名プロファイルの再発行（手動）
+- **metadata.yml** — App Store の説明文などを `fastlane/metadata/` から反映（手動実行）。Pull Request では検証のみ
 - **ci-actions-versions.yml** — Actions のバージョン追随チェック（Dependabot が PR を出す）
 
 必要な Secrets: `APP_STORE_CONNECT_API_KEY_*`、`MATCH_GIT_URL`、`MATCH_PASSWORD`、`MATCH_DEPLOY_KEY`。じゃらんのキーは不要になりました（`JALAN_API_KEY` は削除して構いません）。
@@ -176,5 +177,6 @@ GitHub Actions（`.github/workflows/`）:
 
 - **ローカライズは日本語のみ。** じゃらんが日本国内専用のサービスであるため、開発言語を `ja` にして日本語リテラルで書いています。英語化する場合は String Catalog の導入が必要です。なお逆ジオコーディングだけは端末の言語に追随するので、英語環境では "Chiyoda, Tokyo" と出ます。
 - **App Store 上のレコードは販売停止（`CANNOT_SELL`）です。** 2020年1月に Apple の App Store Improvements（更新されていないアプリの削除）で削除されました。**この状態では TestFlight のインストールも 404 で失敗します** — ビルドの問題ではなく、ストアがアプリを配信できないためです。復帰には 3.0.0 を審査に通す必要があります。
-- **アップロードのたびに `ITMS-90076` が出ますが無視して構いません。** 2010年版はチーム `24UH5JK9Q6` で署名されており、現在は `3Y8APYUG2G` なので、キーチェーンアクセスグループの prefix が変わるという警告です。このアプリはキーチェーンを一切使っていません（iCloud/CloudKit と SwiftData のデータにも影響しません）。旧 prefix で署名することはできないので、この警告は消せません。
+- **アップロードのたびに `ITMS-90076` が出ますが無視して構いません。** application-identifier の prefix が `24UH5JK9Q6` から `3Y8APYUG2G` に変わりキーチェーンにアクセスできなくなる、という内容ですが、**以前から届いている誤検知**です。チームの移管も再登録も行っていませんし、このアプリはキーチェーンを一切使っていません。`keychain-access-groups` を足して直そうとしないでください。
+- **スクリーンショットは手動アップロードです。** `metadata.yml` は `skip_screenshots: true` で説明文などのテキストだけを反映します。スクリーンショットの経路は iTMSTransporter を通るため失敗が多く、動く部分まで信用できなくなるので分離しています。
 - **アプリアイコンは調整中。** `Resources/AppIcon.icon` は Icon Composer で開いて編集できる形式（`icon.json` ＋ `Assets/onsen.svg`）です。温泉マークを白、背景をアクセントカラーのベタ、レイヤーは Liquid Glass 有効にした状態から始めています。

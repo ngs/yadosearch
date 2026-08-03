@@ -1,1 +1,9 @@
+3.0.0 is a complete rewrite.
 
+・Rebuilt in SwiftUI, for iPhone, iPad and Mac
+・Searches Jalan net and Rakuten Travel at once, merging an inn carried by both into one row with the lowest price from each
+・Switch booking site on the inn's page
+・Favourites, viewed inns and past searches sync through iCloud
+・Re-run a past search from your history
+
+Choosing a station by railway line, searching by landmark, and sharing to Evernote and others are gone, following the shutdown of the services behind them. Station search now locates the station and looks around it.

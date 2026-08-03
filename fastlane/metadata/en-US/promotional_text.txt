@@ -1,1 +1,1 @@
-
+Searches Jalan net and Rakuten Travel at once, merges the same inn into one row, and shows the lowest price from each. Pick the booking site on the inn's page.

@@ -1,1 +1,1 @@
-Jalan onsen Japan API WebService Recruit Rakuten travel nihon 
+hotel,ryokan,inn,onsen,japan,jalan,rakuten,booking,vacancy,nearby,travel,hot spring,lodging

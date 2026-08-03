@@ -53,19 +53,10 @@ platform :ios do
     )
   end
 
-  desc 'Update the App Store metadata'
+  desc 'Update the App Store metadata. VERIFY_ONLY=true validates without uploading.'
   lane :deliver_metadata do
     setup_app_store_connect_api_key
-
-    deliver(
-      platform: 'ios',
-      force: true,
-      skip_screenshots: true,
-      skip_binary_upload: true,
-      run_precheck_before_submit: false,
-      metadata_path: './fastlane/metadata',
-      app_identifier: APP_IDENTIFIER
-    )
+    deliver_metadata_for('ios')
   end
 end
 
@@ -117,6 +108,12 @@ platform :mac do
     )
   end
 
+  desc 'Update the App Store metadata for macOS. VERIFY_ONLY=true validates without uploading.'
+  lane :deliver_metadata do
+    setup_app_store_connect_api_key
+    deliver_metadata_for('osx')
+  end
+
   desc 'Publish the macOS app to App Store Connect'
   lane :release_upload do
     setup_app_store_connect_api_key
@@ -131,6 +128,25 @@ platform :mac do
       run_precheck_before_submit: false
     )
   end
+end
+
+# The same metadata serves both platforms: App Store Connect keeps a separate
+# localisation set per platform, but the app is one app and the copy describes
+# it, not the build.
+def deliver_metadata_for(platform)
+  deliver(
+    platform: platform,
+    force: true,
+    # Screenshots go up by hand. Uploading them here means iTMSTransporter,
+    # which is slow and fails often enough that it would make this workflow
+    # untrustworthy for the part that does work.
+    skip_screenshots: true,
+    skip_binary_upload: true,
+    run_precheck_before_submit: false,
+    verify_only: ENV['VERIFY_ONLY'] == 'true',
+    metadata_path: './fastlane/metadata',
+    app_identifier: APP_IDENTIFIER
+  )
 end
 
 desc 'Set up the App Store Connect API key'
