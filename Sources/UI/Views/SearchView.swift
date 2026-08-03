@@ -10,9 +10,9 @@ enum SearchMode: String, CaseIterable, Identifiable {
     case nearby
     case area
     case station
-    
+
     var id: String { rawValue }
-    
+
     var title: String {
         switch self {
         case .keyword: String(localized: "キーワード")
@@ -21,7 +21,7 @@ enum SearchMode: String, CaseIterable, Identifiable {
         case .station: String(localized: "駅")
         }
     }
-    
+
     var systemImage: String {
         switch self {
         case .keyword: "magnifyingglass"
@@ -41,7 +41,7 @@ struct ChosenArea: Hashable {
 struct SearchView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \StoredSearch.searchedAt, order: .reverse) private var recentSearches: [StoredSearch]
-    
+
     @State private var mode: SearchMode = .keyword
     @State private var keyword = ""
     @State private var radius: SearchRadius = .aboutTwoAndAHalfKilometres
@@ -56,7 +56,7 @@ struct SearchView: View {
     // 露天風呂 wants it for the next search too.
     @State private var filters = SearchFilters()
     @State private var party = GuestParty()
-    
+
     var body: some View {
         NavigationStack(path: $path) {
             form
@@ -84,49 +84,51 @@ struct SearchView: View {
             }
         }
     }
-    
+
     private var form: some View {
-        VStack{
-            Picker("さがしかた", selection: $mode) {
-                ForEach(SearchMode.allCases) { mode in
-                    Label(mode.title, systemImage: mode.systemImage).tag(mode)
-                }
-            }
-            .pickerStyle(.segmented)
-            .labelsHidden()
-            Form {
-                switch mode {
-                case .keyword: keywordSection
-                case .nearby: nearbySection
-                case .area: areaSection
-                case .station: stationSection
-                }
-                
-                conditionsSection
-                
-                Section {
-                    Button {
-                        if let search = currentSearch {
-                            run(search)
-                        }
-                    } label: {
-                        Text("宿をさがす")
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
+        Form {
+            Section {
+                Picker("さがしかた", selection: $mode) {
+                    ForEach(SearchMode.allCases) { mode in
+                        Label(mode.title, systemImage: mode.systemImage).tag(mode)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .disabled(currentSearch == nil)
-                    .listRowInsets(EdgeInsets())
-                    .listRowBackground(Color.clear)
                 }
-                
-                recentSearchesSection
+                .pickerStyle(.segmented)
+                .labelsHidden()
+                .listRowInsets(EdgeInsets())
+                .listRowBackground(Color.clear)
             }
-            .formStyle(.grouped)
-            
+
+            switch mode {
+            case .keyword: keywordSection
+            case .nearby: nearbySection
+            case .area: areaSection
+            case .station: stationSection
+            }
+
+            conditionsSection
+
+            Section {
+                Button {
+                    if let search = currentSearch {
+                        run(search)
+                    }
+                } label: {
+                    Text("宿をさがす")
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(currentSearch == nil)
+                .listRowInsets(EdgeInsets())
+                .listRowBackground(Color.clear)
+            }
+
+            recentSearchesSection
         }
+        .formStyle(.grouped)
     }
-    
+
     /// What the search will be narrowed by, one line per condition that is
     /// actually in effect. Every row opens the same editing sheet — there is no
     /// separate "絞り込み" row to find first.
@@ -142,12 +144,12 @@ struct SearchView: View {
             }
         }
     }
-    
+
     private struct ConditionRow {
         let title: String
         let value: String
     }
-    
+
     /// The party is always shown — a search always has one — and the rest appear
     /// only once they are set, so the section stays short when nothing is.
     private var conditionRows: [ConditionRow] {
@@ -166,7 +168,7 @@ struct SearchView: View {
         }
         return rows
     }
-    
+
     /// `contentShape` is what makes the whole row tappable. Without it a
     /// `.plain` button in a form only responds where the text actually is.
     private func conditionLabel(title: String, value: String) -> some View {
@@ -182,7 +184,7 @@ struct SearchView: View {
         }
         .contentShape(Rectangle())
     }
-    
+
     @ViewBuilder
     private var recentSearchesSection: some View {
         if !recentSearches.isEmpty {
@@ -218,7 +220,7 @@ struct SearchView: View {
             }
         }
     }
-    
+
     private func deleteRecentSearches(at offsets: IndexSet) {
         for index in offsets {
             modelContext.delete(recentSearches[index])
@@ -234,10 +236,10 @@ private extension SearchView {
         Section {
             TextField("宿名の一部", text: $keyword)
                 .autocorrectionDisabled()
-#if !os(macOS)
+                #if !os(macOS)
                 .textInputAutocapitalization(.never)
                 .submitLabel(.search)
-#endif
+                #endif
                 .onSubmit {
                     if let search = currentSearch { run(search) }
                 }
@@ -249,7 +251,7 @@ private extension SearchView {
             Text("宿名で検索します。該当が200件を超えると、じゃらん側が結果を返さずエラーになります。")
         }
     }
-    
+
     var nearbySection: some View {
         Section {
             switch location.state {
@@ -292,7 +294,7 @@ private extension SearchView {
             Text("現在地のまわり")
         }
     }
-    
+
     var areaSection: some View {
         Section {
             Button {
@@ -307,7 +309,7 @@ private extension SearchView {
             Text("広域 → 都道府県 → 大エリア → 小エリアの順に絞り込めます。")
         }
     }
-    
+
     var stationSection: some View {
         Section {
             Button {
@@ -324,7 +326,7 @@ private extension SearchView {
             Text("駅の位置を地図から調べ、そのまわりの宿をさがします。")
         }
     }
-    
+
     /// A row that opens a picker sheet. Shaped like the condition rows, and made
     /// tappable across its whole width for the same reason.
     func pickerLabel(title: String, value: String?) -> some View {
@@ -340,7 +342,7 @@ private extension SearchView {
         }
         .contentShape(Rectangle())
     }
-    
+
     var radiusPicker: some View {
         Picker("さがす範囲", selection: $radius) {
             ForEach(SearchRadius.allCases) { radius in
@@ -359,7 +361,7 @@ private extension SearchView {
         guard let (target, title) = targetAndTitle else { return nil }
         return SavedSearch(target: target, filters: filters, party: party, title: title)
     }
-    
+
     /// Runs the search and remembers it. Recording here rather than on the
     /// results screen keeps a replayed search from re-recording itself on every
     /// back-and-forward.
@@ -367,7 +369,7 @@ private extension SearchView {
         SearchHistoryStore.record(search, in: modelContext)
         path.append(.results(search))
     }
-    
+
     private var targetAndTitle: (SearchTarget, String)? {
         switch mode {
         case .keyword:
