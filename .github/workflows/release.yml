@@ -42,7 +42,7 @@ env:
   FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT: "600"
   FASTLANE_XCODEBUILD_SETTINGS_RETRIES: "5"
   # A release build without the key would ship an app that cannot search.
-  JALAN_API_KEY: ${{ secrets.JALAN_API_KEY }}
+  TUIST_JALAN_API_KEY: ${{ secrets.JALAN_API_KEY }}
 
 jobs:
   determine-platforms:
@@ -138,7 +138,7 @@ jobs:
             mac) export TUIST_BUILD_NUMBER="${{ github.run_id }}.2" ;;
           esac
           echo "Using build number: $TUIST_BUILD_NUMBER"
-          Scripts/generate.sh --no-open
+          tuist generate --no-open
 
       - name: Build release
         run: bundle exec fastlane ${{ matrix.platform }} release_build

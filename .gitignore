@@ -18,8 +18,9 @@ Derived/
 # Swift/LLVM
 *.dSYM
 
-# The Jalan Web Service application key lives here; it is never committed.
-.env
+# direnv (.envrc holds the Jalan Web Service key and is never committed)
+.direnv/
+.envrc
 
 *.p8
 fastlane/report.xml
