@@ -1,8 +1,9 @@
 import ProjectDescription
 
-/// The original UIKit app shipped as 3.0 in 2014; the SwiftUI rewrite picks up
-/// the next major.
-let version = "4.0.0"
+/// The last release on the App Store was 2.0.4, in 2010. The 2014 rewrite that
+/// never shipped called itself 3.0 in its Info.plist; this one takes that
+/// version number for real.
+let version = "3.0.0"
 let copyright = "© 2014-2026 Atsushi Nagase. All rights reserved."
 
 let buildNumber = Environment.buildNumber.getString(default: "0")
