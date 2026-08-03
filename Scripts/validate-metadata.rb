@@ -53,6 +53,8 @@ REVIEW_FIELDS = {
   'notes' => 4000
 }.freeze
 
+REVIEW_CONTACT_FIELDS = %w[first_name last_name phone_number email_address].freeze
+
 # App Store Connect's own keys, as deliver writes them.
 CATEGORIES = %w[
   BOOKS BUSINESS DEVELOPER_TOOLS EDUCATION ENTERTAINMENT FINANCE FOOD_AND_DRINK
@@ -161,6 +163,8 @@ problems << 'fastlane/metadata/copyright.txt: required, but empty' if !File.exis
 
 review_dir = File.join(ROOT, 'review_information')
 if File.directory?(review_dir)
+  review_values = {}
+
   Dir.children(review_dir).sort.each do |entry|
     path = File.join(review_dir, entry)
     field = File.basename(entry, '.txt')
@@ -171,8 +175,21 @@ if File.directory?(review_dir)
     end
 
     value = read(path)
+    review_values[field] = value
     limit = REVIEW_FIELDS[field]
     problems << "#{relative(path)}: #{value.length} characters, limit is #{limit}" if value.length > limit
+  end
+
+  # deliver sends the review detail whenever any of these files holds
+  # something, and App Store Connect rejects the request outright when the
+  # contact is incomplete ("You must provide a value for the attribute
+  # 'contactFirstName'"). Blank files are how the directory says "leave the
+  # review detail alone" — half-filled is the state that fails at upload.
+  contact = REVIEW_CONTACT_FIELDS.reject { |field| review_values[field].to_s.empty? }
+  if !contact.empty? && contact.length < REVIEW_CONTACT_FIELDS.length
+    missing = REVIEW_CONTACT_FIELDS - contact
+    problems << "fastlane/metadata/review_information: #{missing.join(', ')} left empty — " \
+                'App Store Connect wants the whole contact or none of it'
   end
 end
 
