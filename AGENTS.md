@@ -110,7 +110,9 @@ Favourites, visit history and recent searches mirror through the CloudKit privat
 - **Mirroring constraints**: every persisted property must be optional or defaulted, and `@Attribute(.unique)` is forbidden. Both compile fine and then crash at container creation, so `CloudKitSchemaTests` pins them. Deduplication is done by an explicit fetch in `StoredHotelStore` / `SearchHistoryStore`, not by a constraint.
 - `YadoSearchModelContainer.make(inMemory:)` walks a ladder: CloudKit → local → in-memory. A build without the entitlement (CI, and any simulator not signed into iCloud) simply lands on a lower rung, so nothing here may assume sync is on.
 - `aps-environment` comes from `$(APS_ENVIRONMENT)`, set per configuration in `Project.swift` (Debug `development`, Release `production`). A Release build claiming `development` registers against the APNs sandbox, where CloudKit's pushes never arrive — the app would then only sync when opened.
-- **First-time setup is manual**: the App ID needs the iCloud and Push Notifications capabilities and the container has to exist in the portal, then `provision.yml` must be run once with `MATCH_READONLY=false` to reissue the profiles.
+- The portal side is already set up: `org.ngsdev.iphone.Yado` has the iCloud (CloudKit) and Push Notifications capabilities, with `iCloud.org.ngsdev.iphone.Yado` assigned. The identifier is pinned in `CloudKitSchemaTests`; if it ever moves, the entitlements file has to move with it or signing fails.
+- What is still outstanding: `provision.yml` run once with `MATCH_READONLY=false`. A provisioning profile is a snapshot of the entitlements at issue time, so profiles cut before the capabilities were added do not carry them.
+- Push is only ever the silent kind. The app has no notification code at all — `NSPersistentCloudKitContainer` uses the pushes to learn that another device changed something. Without them sync still works, but only when the app is opened.
 
 ## Search state
 

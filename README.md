@@ -95,7 +95,9 @@ YadoSearch/
 
 `aps-environment` は構成ごとに切り替わります（Debug=development / Release=production）。Release で development のまま出すと APNs サンドボックスに登録され、CloudKit のプッシュが届かず「アプリを開いたときしか同期しない」状態になります。
 
-**初回はプロビジョニングが必要です。** Developer Portal で App ID `org.ngsdev.iphone.Yado` に iCloud と Push Notifications の capability を付け、コンテナ `iCloud.org.ngsdev.iphone.Yado` を作ってから、`provision.yml` を `MATCH_READONLY=false` で1回実行してプロファイルを再発行してください。
+Developer Portal 側の設定は済んでいます。App ID `org.ngsdev.iphone.Yado` は iCloud（CloudKit）と Push Notifications が有効で、コンテナ `iCloud.org.ngsdev.iphone.Yado` が割り当てられています。
+
+残りは **`provision.yml` を `MATCH_READONLY=false` で1回実行**するだけです。プロビジョニングプロファイルは発行時点の entitlements のスナップショットなので、capability を追加した後に作り直す必要があります。
 
 ## じゃらん Web サービスについて
 
