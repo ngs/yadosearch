@@ -4,6 +4,9 @@ import YadoSearchCore
 /// Results for one search, paged as the list is scrolled.
 struct HotelListView: View {
     let search: SavedSearch
+    /// What the detail column shows. Set by choosing a row; the row itself
+    /// navigates nowhere, because the inn is not in this column.
+    @Binding var selectedHotel: HotelReference?
 
     @Environment(\.yadoSearch) private var yadoSearch
     @State private var model: HotelSearchViewModel?
@@ -61,17 +64,16 @@ struct HotelListView: View {
     }
 
     private func list(_ model: HotelSearchViewModel) -> some View {
-        List {
+        List(selection: $selectedHotel) {
             Section {
                 ForEach(Array(model.listings.enumerated()), id: \.element.id) { index, listing in
                     if let reference = HotelReference(listing: listing) {
-                        NavigationLink(value: SearchRoute.hotel(reference)) {
-                            HotelRow(listing: listing, distance: model.distance(to: listing))
-                        }
-                        .accessibilityIdentifier(YadoAccessibilityID.hotelRow(index))
-                        .task {
-                            await model.loadMoreIfNeeded(currentItem: listing)
-                        }
+                        HotelRow(listing: listing, distance: model.distance(to: listing))
+                            .tag(reference)
+                            .accessibilityIdentifier(YadoAccessibilityID.hotelRow(index))
+                            .task {
+                                await model.loadMoreIfNeeded(currentItem: listing)
+                            }
                     }
                 }
             } header: {

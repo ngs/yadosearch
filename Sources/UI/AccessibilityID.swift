@@ -9,6 +9,9 @@ import Foundation
 public enum YadoAccessibilityID {
     /// The name field on the search form.
     public static let searchKeyword = "search.keyword"
+    /// The row that opens the 検索先 sheet, and a site's row inside it.
+    public static let searchScope = "search.scope"
+    public static func searchScope(_ provider: String) -> String { "search.scope.\(provider)" }
     /// The button that runs the search.
     public static let searchSubmit = "search.submit"
     /// A row in the results list, by position.

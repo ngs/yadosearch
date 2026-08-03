@@ -7,6 +7,8 @@ import YadoSearchPlatform
 /// sense.
 struct StoredHotelListView: View {
     let kind: StoredHotel.Kind
+    /// What the detail column shows, shared with every other list.
+    @Binding var selectedHotel: HotelReference?
 
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \StoredHotel.savedAt, order: .reverse) private var stored: [StoredHotel]
@@ -34,11 +36,6 @@ struct StoredHotelListView: View {
                     }
                 }
             }
-            .navigationDestination(for: SearchRoute.self) { route in
-                if case let .hotel(reference) = route {
-                    HotelDetailView(reference: reference)
-                }
-            }
         }
     }
 
@@ -51,18 +48,15 @@ struct StoredHotelListView: View {
     }
 
     private var list: some View {
-        List {
+        List(selection: $selectedHotel) {
             ForEach(entries) { entry in
-                NavigationLink(value: SearchRoute.hotel(
-                    HotelReference(provider: entry.provider, id: entry.hotelID)
-                )) {
-                    HotelRow(
-                        name: entry.name,
-                        area: entry.areaSummary,
-                        catchCopy: entry.catchCopy,
-                        pictureURL: entry.pictureURL
-                    )
-                }
+                HotelRow(
+                    name: entry.name,
+                    area: entry.areaSummary,
+                    catchCopy: entry.catchCopy,
+                    pictureURL: entry.pictureURL
+                )
+                .tag(HotelReference(provider: entry.provider, id: entry.hotelID))
             }
             .onDelete(perform: delete)
         }

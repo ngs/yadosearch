@@ -62,7 +62,7 @@ final class ScreenshotTests: XCTestCase {
     private func captureResults() throws {
         app.descendants(matching: .any)[YadoAccessibilityID.searchSubmit].firstMatch.tap()
 
-        let firstRow = app.descendants(matching: .any)[YadoAccessibilityID.hotelRow(0)]
+        let firstRow = row(0)
         guard firstRow.waitForExistence(timeout: timeout) else {
             XCTFail("The results list never appeared. Is Scripts/screenshot-server.rb running?")
             return
@@ -73,7 +73,7 @@ final class ScreenshotTests: XCTestCase {
 
     /// One inn: the photograph, the map, the facts.
     private func captureDetail() throws {
-        app.descendants(matching: .any)[YadoAccessibilityID.hotelRow(0)].tap()
+        row(0).tap()
 
         let favorite = app.descendants(matching: .any)[YadoAccessibilityID.hotelFavorite]
         guard favorite.waitForExistence(timeout: timeout) else {
@@ -110,6 +110,9 @@ final class ScreenshotTests: XCTestCase {
 
     /// The favourites tab, holding the inn just favourited.
     private func captureFavorites() throws {
+        // On iPhone the split view is collapsed, so the inn was *pushed* and it
+        // covers the tab bar. Walk back out before asking for another tab.
+        popToRoot()
         guard selectSecondTab() else {
             // The hierarchy differs enough between iPhone, iPad and Mac that a
             // bare failure here says nothing. Leave the tree behind.
@@ -119,6 +122,29 @@ final class ScreenshotTests: XCTestCase {
         }
         settle(seconds: 3)
         try capture("05_favorites")
+    }
+
+    /// Unwinds whatever the run pushed, so the top-level places are reachable
+    /// again. Harmless where nothing was pushed: there is no back button then.
+    private func popToRoot() {
+        for _ in 0 ..< 3 {
+            let back = app.navigationBars.buttons.firstMatch
+            guard back.exists, back.isHittable else { return }
+            back.tap()
+            settle(seconds: 1)
+        }
+    }
+
+    /// A row of the results list. The identifier is on the row's content now
+    /// that choosing an inn selects it rather than pushing it, and an
+    /// identifier on content reaches every element inside it — so this asks for
+    /// the cell, which is the one thing that can be tapped.
+    private func row(_ index: Int) -> XCUIElement {
+        let identifier = YadoAccessibilityID.hotelRow(index)
+        let matches = app.descendants(matching: .any).matching(identifier: identifier)
+        // The photograph and the labels carry the identifier too, and none of
+        // them can be tapped; the row itself is the one that can.
+        return matches.allElementsBoundByIndex.first { $0.isHittable } ?? matches.firstMatch
     }
 
     /// じゃらん, the first segment. It is what the plan list can show without a

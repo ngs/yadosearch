@@ -43,6 +43,10 @@ struct ChosenArea: Hashable {
 }
 
 struct SearchView: View {
+    /// The inn the detail column is showing. Handed down to the results list,
+    /// which is what sets it.
+    @Binding var selectedHotel: HotelReference?
+
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \StoredSearch.searchedAt, order: .reverse) private var recentSearches: [StoredSearch]
 
@@ -53,6 +57,7 @@ struct SearchView: View {
     @State private var chosenArea: ChosenArea?
     @State private var chosenStation: Station?
     @State private var isPickingArea = false
+    @State private var isPickingScope = false
     @State private var isPickingStation = false
     @State private var isEditingFilters = false
     @State private var path: [SearchRoute] = []
@@ -71,9 +76,7 @@ struct SearchView: View {
                 .navigationDestination(for: SearchRoute.self) { route in
                     switch route {
                     case let .results(search):
-                        HotelListView(search: search)
-                    case let .hotel(reference):
-                        HotelDetailView(reference: reference)
+                        HotelListView(search: search, selectedHotel: $selectedHotel)
                     }
                 }
         }
@@ -92,6 +95,9 @@ struct SearchView: View {
                     chosenArea = chosen
                 }
             }
+        }
+        .sheet(isPresented: $isPickingScope) {
+            SearchScopePicker(scope: $scope, allowsBoth: mode != .area)
         }
         .sheet(isPresented: $isPickingStation) {
             StationPickerView { station in
@@ -165,28 +171,24 @@ struct SearchView: View {
     /// to send the other site.
     private var scopeSection: some View {
         Section {
-            Picker("検索先", selection: $scope) {
-                ForEach(availableScopes) { scope in
-                    Text(scope.title).tag(scope)
-                }
+            Button {
+                isPickingScope = true
+            } label: {
+                pickerLabel(title: String(localized: "検索先"), value: scope.title)
             }
-            .pickerStyle(.segmented)
-            .labelsHidden()
-            .onChange(of: scope) { _, _ in
-                // The area picked belongs to the site it was picked on, so
-                // switching sites has to throw it away rather than carry a code
-                // the other site cannot read.
-                chosenArea = nil
-            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier(YadoAccessibilityID.searchScope)
         } header: {
             Text("検索先")
         } footer: {
             Text(scopeFooter)
         }
-    }
-
-    private var availableScopes: [SearchScope] {
-        mode == .area ? [.jalan, .rakuten] : SearchScope.allCases
+        .onChange(of: scope) { _, _ in
+            // The area picked belongs to the site it was picked on, so switching
+            // sites has to throw it away rather than carry a code the other site
+            // cannot read.
+            chosenArea = nil
+        }
     }
 
     private var scopeFooter: String {
@@ -494,5 +496,5 @@ extension GeoCoordinate {
 }
 
 #Preview {
-    SearchView()
+    SearchView(selectedHotel: .constant(nil))
 }

@@ -27,10 +27,14 @@ struct HotelReference: Hashable {
     }
 }
 
-/// Where a navigation stack in this app can go.
+/// Where the left column's navigation stack can go.
+///
+/// Only results: an inn is not pushed any more, it is *selected*, and the
+/// detail column is what renders the selection. On iPhone that column is the
+/// same stack collapsed, so the inn still arrives by a push — SwiftUI's, not
+/// one spelled out here.
 enum SearchRoute: Hashable {
-    /// The whole search — target, filters, party and the phrase that names it.
-    /// The same value the recent-search list stores and replays.
+    /// The whole search — target, scope, filters, party and the phrase that
+    /// names it. The same value the recent-search list stores and replays.
     case results(SavedSearch)
-    case hotel(HotelReference)
 }
