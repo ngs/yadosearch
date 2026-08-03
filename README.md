@@ -2,7 +2,7 @@
 
 日本の宿・ホテルを探す iOS / iPadOS / macOS アプリです。[じゃらん Web サービス](https://www.jalan.net/jw/jwp0000/jww0001.do)を使い、**キーワード（宿名）・現在地・地域・駅**の4つの軸で宿を検索します。
 
-2010 年に [littleapps-yadosearch](https://github.com/ngs-archives/littleapps-yadosearch) として App Store でリリースした「宿さがし」（[App Store ID 347959354](https://apps.apple.com/jp/app/id347959354)、最終 2.0.4）の後継です。2014 年に UIKit で書きかけだった v3 を捨て、リリース版の機能を引き継ぐ形で SwiftUI で作り直しました。Bundle ID は当時の `org.ngsdev.iphone.Yado` のままで、既存レコードへのアップデートとして出せます。
+2010 年に App Store でリリースした「宿さがし」（[App Store ID 347959354](https://apps.apple.com/jp/app/id347959354)、最終 2.0.4）の後継です。2014 年に UIKit で書きかけだった v3 を捨て、リリース版の機能を引き継ぐ形で SwiftUI で作り直しました。Bundle ID は当時の `org.ngsdev.iphone.Yado` のままで、既存レコードへのアップデートとして出せます。
 
 ## できること
 

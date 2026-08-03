@@ -6,11 +6,9 @@
 
 **YadoSearch（宿さがし）** — an app for finding Japanese inns and hotels on iPhone, iPad and Mac, backed by the Jalan Web Service.
 
-It is the successor to the app that shipped on the App Store in 2010 as 宿さがし 2.0.4 ([ngs-archives/littleapps-yadosearch], App Store ID 347959354). The bundle identifier is that release's — `org.ngsdev.iphone.Yado` — so this ships as an update to the existing record, not as a new app. **Do not change it.** This repository's own history holds an abandoned 2014 UIKit rewrite (v3); the 2010 release, not that skeleton, is the behavioural reference.
+It is the successor to the app that shipped on the App Store in 2010 as 宿さがし 2.0.4 (App Store ID 347959354). The bundle identifier is that release's — `org.ngsdev.iphone.Yado` — so this ships as an update to the existing record, not as a new app. **Do not change it.** This repository's own history holds an abandoned 2014 UIKit rewrite (v3); the 2010 release, not that skeleton, is the behavioural reference.
 
 Four search axes, carried over from that release: by inn name, near you, by area, and around a station.
-
-[ngs-archives/littleapps-yadosearch]: https://github.com/ngs-archives/littleapps-yadosearch
 
 ### Stack
 

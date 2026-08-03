@@ -1,0 +1,62 @@
+Useful for traveling, when you have missed the last train.
+
+This application uses the following APIs.
+ * Jalan Web Service's "Yado Search API".
+ * Rakuten Webservice's "Travel API".
+
+You can search hotels in the following way
+ * By hotel name
+ * By railway ( Area>Line>Station )
+ * By current location
+ * By landmarks (Area>Prefecture>LargeArea>Landmarks)
+ * By area ( Area>Prefecture>LargeArea>SmallArea )
+
+You can reserve hotels using your iPhone / iPad.
+Also the following web services are supported, for rechecking on your Mac / PC.
+ * Delicious
+ * Evernote
+ * Facebook
+ * Twitter
+ * Instapaper
+ * Tumblr
+ * Twitter
+
+etc...
+
+----
+
+Jalan Web Service
+  http://jws.jalan.net/
+
+Jalan net
+  http://www.jalan.net/
+  
+Rakuten WebService
+  http://webservice.rakuten.co.jp/
+
+Rakuten Travel
+  http://travel.rakuten.co.jp/
+
+Developer : Atsushi Nagase
+  http://ngsdev.org/
+
+== Version History ==
+[ 2.0.4 ]
+ * Fixed area listing issue ( Rakuten > Osaka-city area )
+ * Fixed date picker displaying bug in Japanese date time locale.
+[ 2.0.3 ]
+ * Rakuten Travel hotel search support.
+ * Implement search by landmark name.
+ * Implement save plan list to Evernote ( Jalan only ).
+[ 2.0.2 ]
+ * Evernote support
+ * Added price, number of person and some detail conditions to filtering conditions.
+ * Added forum link to detail screen.
+ * Added AdSense.
+[ 2.0.1 ]
+ * Fixed map plotting issue.
+ * Delicious support.
+[ 2.0 ]
+ * Refactored. Support for iPad and iOS 4. Fixed many issues.
+[ 1.0 ]
+ * Initial release.
