@@ -39,19 +39,24 @@ end
 # fixtures line up with each other on purpose: the first row of the keyword
 # search is 東京ステーションホテル, and so is the inn behind the detail and the
 # plans, so the shots tell one story rather than three.
+PLANS_PATH = %r{\A/v1/hotels/(jalan|rakuten)/[^/]+/plans\z}
+HOTEL_PATH = %r{\A/v1/hotels/(?:jalan|rakuten)/[^/]+\z}
+AREA_FIXTURES = {
+  '/v1/areas/jalan' => 'areas_jalan_full',
+  '/v1/areas/rakuten' => 'areas_rakuten_full'
+}.freeze
+
+def fixture_for(path, query)
+  return AREA_FIXTURES[path] if AREA_FIXTURES.key?(path)
+  return query.key?('latitude') ? 'hotels_by_coordinate' : 'hotels_by_keyword' if path == '/v1/hotels'
+  return "plans_#{Regexp.last_match(1)}" if path.match(PLANS_PATH)
+
+  'hotel_jalan' if path.match?(HOTEL_PATH)
+end
+
 def body_for(path, query)
-  case path
-  when '/v1/hotels'
-    query.key?('latitude') ? fixture('hotels_by_coordinate') : fixture('hotels_by_keyword')
-  when '/v1/areas/jalan'
-    fixture('areas_jalan_full')
-  when '/v1/areas/rakuten'
-    fixture('areas_rakuten_full')
-  when %r{\A/v1/hotels/(jalan|rakuten)/[^/]+/plans\z}
-    fixture(Regexp.last_match(1) == 'rakuten' ? 'plans_rakuten' : 'plans_jalan')
-  when %r{\A/v1/hotels/(jalan|rakuten)/[^/]+\z}
-    fixture('hotel_jalan')
-  end
+  name = fixture_for(path, query)
+  name && fixture(name)
 end
 
 def handle(request_line)
@@ -76,7 +81,7 @@ loop do
     # Drain the headers. Nothing here reads them, but leaving them unread makes
     # the client see the response before its own request finished sending.
     while (line = socket.gets)
-      break if line == "\r\n" || line == "\n"
+      break if ["\r\n", "\n"].include?(line)
     end
 
     status, body = handle(request_line)
