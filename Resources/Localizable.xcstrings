@@ -796,7 +796,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "えらぶ"
+            "value": "選ぶ"
           }
         }
       }
@@ -830,7 +830,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "駅をえらぶ"
+            "value": "駅を選ぶ"
           }
         }
       }
@@ -847,7 +847,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "地域をえらぶ"
+            "value": "地域を選ぶ"
           }
         }
       }
@@ -864,7 +864,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "さがした宿をえらぶと、ここに表示されます。"
+            "value": "検索した宿を選ぶと、ここに表示されます。"
           }
         }
       }
@@ -1170,7 +1170,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "さがす範囲"
+            "value": "探す範囲"
           }
         }
       }
@@ -1289,7 +1289,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "宿をさがす"
+            "value": "宿を探す"
           }
         }
       }
@@ -1306,7 +1306,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "駅の位置を地図から調べ、そのまわりの宿をさがします。"
+            "value": "駅の位置を地図から調べ、その周辺の宿を探します。"
           }
         }
       }
@@ -1646,7 +1646,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "さがしかた"
+            "value": "探し方"
           }
         }
       }
@@ -2088,7 +2088,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "宿がえらばれていません"
+            "value": "宿が選ばれていません"
           }
         }
       }
@@ -2802,7 +2802,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "さがす"
+            "value": "探す"
           }
         }
       }
@@ -2819,7 +2819,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@全体でさがす"
+            "value": "%@全体で探す"
           }
         }
       }
@@ -2853,7 +2853,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "%@だけをさがします。"
+            "value": "%@だけを探します。"
           }
         }
       }
@@ -2870,7 +2870,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "両方をさがし、同じ宿は1件にまとめます。"
+            "value": "両方を探し、同じ宿は1件にまとめます。"
           }
         }
       }
@@ -2904,7 +2904,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "さがしています…"
+            "value": "探しています…"
           }
         }
       }
@@ -3193,7 +3193,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "さがせませんでした"
+            "value": "検索できませんでした"
           }
         }
       }
@@ -3227,7 +3227,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "エリアの区分は2つのサイトで別物で、コードを変換できません。どちらか一方をえらびます。"
+            "value": "エリアの区分は2つのサイトで別物で、コードを変換できません。どちらか一方を選びます。"
           }
         }
       }
@@ -3295,7 +3295,7 @@
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "条件を変えてもう一度おためしください。"
+            "value": "条件を変えてもう一度お試しください。"
           }
         }
       }
