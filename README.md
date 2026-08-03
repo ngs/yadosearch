@@ -97,7 +97,7 @@ YadoSearch/
 
 Developer Portal 側の設定は済んでいます。App ID `org.ngsdev.iphone.Yado` は iCloud（CloudKit）と Push Notifications が有効で、コンテナ `iCloud.org.ngsdev.iphone.Yado` が割り当てられています。
 
-残りは **`provision.yml` を `MATCH_READONLY=false` で1回実行**するだけです。プロビジョニングプロファイルは発行時点の entitlements のスナップショットなので、capability を追加した後に作り直す必要があります。
+プロビジョニングプロファイルにも capability が反映済みなので、`provision.yml` の再実行は不要です。プロファイルは発行時点の entitlements のスナップショットなのでかつては課題でしたが、`MATCH_READONLY=true` のまま署名した Release ビルドが iCloud・APNs の entitlements 込みで App Store Connect に受理されており、古いプロファイルではそうなりません。
 
 ## じゃらん Web サービスについて
 

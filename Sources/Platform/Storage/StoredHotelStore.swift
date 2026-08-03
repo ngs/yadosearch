@@ -103,38 +103,48 @@ public enum StoredHotelStore {
     /// a cap the list grows forever and nobody ever scrolls to the bottom of it.
     public static let historyLimit = 100
 
-    public static func contains(kind: StoredHotel.Kind, hotelID: String, in context: ModelContext) -> Bool {
-        existing(kind: kind, hotelID: hotelID, in: context) != nil
+    public static func contains(
+        kind: StoredHotel.Kind,
+        provider: Provider,
+        hotelID: String,
+        in context: ModelContext
+    ) -> Bool {
+        existing(kind: kind, provider: provider, hotelID: hotelID, in: context) != nil
     }
 
     /// Adds the inn, or does nothing if this list already has it.
-    public static func add(_ hotel: Hotel, kind: StoredHotel.Kind, to context: ModelContext) {
-        guard existing(kind: kind, hotelID: hotel.id, in: context) == nil else { return }
+    public static func add(_ hotel: HotelProfile, kind: StoredHotel.Kind, to context: ModelContext) {
+        guard existing(kind: kind, provider: hotel.provider, hotelID: hotel.id, in: context) == nil else { return }
         context.insert(StoredHotel(kind: kind, hotel: hotel))
         try? context.save()
     }
 
-    public static func remove(kind: StoredHotel.Kind, hotelID: String, from context: ModelContext) {
-        guard let stored = existing(kind: kind, hotelID: hotelID, in: context) else { return }
+    public static func remove(
+        kind: StoredHotel.Kind,
+        provider: Provider,
+        hotelID: String,
+        from context: ModelContext
+    ) {
+        guard let stored = existing(kind: kind, provider: provider, hotelID: hotelID, in: context) else { return }
         context.delete(stored)
         try? context.save()
     }
 
     /// Adds or removes, and reports what the inn's state became.
     @discardableResult
-    public static func toggleFavorite(_ hotel: Hotel, in context: ModelContext) -> Bool {
-        if existing(kind: .favorite, hotelID: hotel.id, in: context) == nil {
+    public static func toggleFavorite(_ hotel: HotelProfile, in context: ModelContext) -> Bool {
+        if existing(kind: .favorite, provider: hotel.provider, hotelID: hotel.id, in: context) == nil {
             add(hotel, kind: .favorite, to: context)
             return true
         }
-        remove(kind: .favorite, hotelID: hotel.id, from: context)
+        remove(kind: .favorite, provider: hotel.provider, hotelID: hotel.id, from: context)
         return false
     }
 
     /// Records a visit, moving the inn back to the top if it was already there,
     /// then drops whatever falls off the end.
-    public static func recordVisit(_ hotel: Hotel, in context: ModelContext) {
-        if let stored = existing(kind: .history, hotelID: hotel.id, in: context) {
+    public static func recordVisit(_ hotel: HotelProfile, in context: ModelContext) {
+        if let stored = existing(kind: .history, provider: hotel.provider, hotelID: hotel.id, in: context) {
             stored.savedAt = .now
             stored.name = hotel.name
             stored.catchCopy = hotel.catchCopy
@@ -173,10 +183,11 @@ public enum StoredHotelStore {
 
     private static func existing(
         kind: StoredHotel.Kind,
+        provider: Provider,
         hotelID: String,
         in context: ModelContext
     ) -> StoredHotel? {
-        let identifier = StoredHotel.identifier(kind: kind, hotelID: hotelID)
+        let identifier = StoredHotel.identifier(kind: kind, provider: provider, hotelID: hotelID)
         var descriptor = FetchDescriptor<StoredHotel>(
             predicate: #Predicate { $0.id == identifier }
         )

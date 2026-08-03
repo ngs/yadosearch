@@ -35,8 +35,8 @@ struct StoredHotelListView: View {
                 }
             }
             .navigationDestination(for: SearchRoute.self) { route in
-                if case let .hotel(hotel) = route {
-                    HotelDetailView(hotel: hotel)
+                if case let .hotel(reference) = route {
+                    HotelDetailView(reference: reference)
                 }
             }
         }
@@ -53,7 +53,9 @@ struct StoredHotelListView: View {
     private var list: some View {
         List {
             ForEach(entries) { entry in
-                NavigationLink(value: SearchRoute.hotel(entry.hotel)) {
+                NavigationLink(value: SearchRoute.hotel(
+                    HotelReference(provider: entry.provider, id: entry.hotelID)
+                )) {
                     HotelRow(
                         name: entry.name,
                         area: entry.areaSummary,

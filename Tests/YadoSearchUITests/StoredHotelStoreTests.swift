@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 import Testing
-import YadoSearchCore
+@testable import YadoSearchCore
 @testable import YadoSearchPlatform
 
 @Suite("Favourites and history")
@@ -11,15 +11,33 @@ struct StoredHotelStoreTests {
         ModelContext(YadoSearchModelContainer.make(inMemory: true))
     }
 
-    private func hotel(id: String = "300002", name: String = "ホテルテスト") -> Hotel {
-        Hotel(
+    private func hotel(
+        id: String = "300002",
+        name: String = "ホテルテスト",
+        provider: Provider = .jalan
+    ) -> HotelProfile {
+        HotelProfile(
+            provider: provider,
             id: id,
             name: name,
+            nameKana: nil,
             address: "東京都江東区常盤1-12-16",
-            area: Hotel.Area(region: "首都圏", prefecture: "東京都", largeArea: "江東", smallArea: "江東"),
+            postalCode: nil,
+            area: AreaNames(region: "首都圏", prefecture: "東京都", large: "江東", small: "江東"),
+            kind: nil,
             catchCopy: "駅から近い",
+            caption: nil,
             pictureURL: URL(string: "https://www.jalan.net/photo.jpg"),
-            coordinate: GeoCoordinate(latitude: 35.6813, longitude: 139.7991)
+            detailURL: nil,
+            coordinate: GeoCoordinate(latitude: 35.6813, longitude: 139.7991),
+            minimumCharge: nil,
+            review: nil,
+            access: nil,
+            checkIn: nil,
+            checkOut: nil,
+            distanceMetres: nil,
+            lastUpdate: nil,
+            detail: nil
         )
     }
 
@@ -61,8 +79,8 @@ struct StoredHotelStoreTests {
         StoredHotelStore.recordVisit(hotel(), in: context)
 
         #expect(all(in: context).count == 2)
-        #expect(StoredHotelStore.contains(kind: .favorite, hotelID: "300002", in: context))
-        #expect(StoredHotelStore.contains(kind: .history, hotelID: "300002", in: context))
+        #expect(StoredHotelStore.contains(kind: .favorite, provider: .jalan, hotelID: "300002", in: context))
+        #expect(StoredHotelStore.contains(kind: .history, provider: .jalan, hotelID: "300002", in: context))
     }
 
     @Test("Toggling a favourite reports the state it moved to")
@@ -70,7 +88,7 @@ struct StoredHotelStoreTests {
         let context = makeContext()
 
         #expect(StoredHotelStore.toggleFavorite(hotel(), in: context))
-        #expect(StoredHotelStore.contains(kind: .favorite, hotelID: "300002", in: context))
+        #expect(StoredHotelStore.contains(kind: .favorite, provider: .jalan, hotelID: "300002", in: context))
         #expect(!StoredHotelStore.toggleFavorite(hotel(), in: context))
         #expect(all(in: context).isEmpty)
     }
@@ -115,7 +133,7 @@ struct StoredHotelStoreTests {
         StoredHotelStore.clear(kind: .history, in: context)
 
         #expect(all(in: context).count == 1)
-        #expect(StoredHotelStore.contains(kind: .favorite, hotelID: "300002", in: context))
+        #expect(StoredHotelStore.contains(kind: .favorite, provider: .jalan, hotelID: "300002", in: context))
     }
 
     @Test("A stored inn rebuilds into one the detail screen can show")
@@ -123,10 +141,12 @@ struct StoredHotelStoreTests {
         let context = makeContext()
         StoredHotelStore.add(hotel(), kind: .favorite, to: context)
 
-        let rebuilt = try #require(all(in: context).first).hotel
+        let stored = try #require(all(in: context).first)
 
-        #expect(rebuilt.id == "300002")
-        #expect(rebuilt.area.prefecture == "東京都")
-        #expect(rebuilt.coordinate == hotel().coordinate)
+        // Enough to reopen the inn on the right site, plus the snapshot the
+        // list draws from.
+        #expect(stored.reference == (.jalan, "300002"))
+        #expect(stored.prefecture == "東京都")
+        #expect(stored.coordinate == hotel().coordinate)
     }
 }

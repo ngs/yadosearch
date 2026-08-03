@@ -17,8 +17,15 @@ public final class HotelSearchViewModel {
         case failed(String)
     }
 
-    public private(set) var hotels: [Hotel] = []
-    public private(set) var numberOfResults = 0
+    public private(set) var listings: [HotelListing] = []
+    /// Hits per provider before merging. These do not add up to `listings.count`
+    /// and routinely disagree with each other, so they are shown as a breakdown
+    /// rather than as one number.
+    public private(set) var totals: [Provider: Int] = [:]
+    /// What a provider said when it could not answer. One side failing still
+    /// leaves the other's results on screen, so this is a note beside the list
+    /// rather than an error state.
+    public private(set) var providerErrors: [Provider: String] = [:]
     public private(set) var phase: Phase = .loading
     public private(set) var isLoadingMore = false
 
@@ -26,11 +33,12 @@ public final class HotelSearchViewModel {
     public let filters: SearchFilters
     public let party: GuestParty?
 
-    private let client: JalanAPIClient
-    private var nextStart: Int? = 1
+    private let client: YadoSearchAPIClient
+    private let pageSize = 30
+    private var nextPage: Int? = 1
 
     public init(
-        client: JalanAPIClient,
+        client: YadoSearchAPIClient,
         target: SearchTarget,
         filters: SearchFilters = SearchFilters(),
         party: GuestParty? = nil
@@ -47,56 +55,82 @@ public final class HotelSearchViewModel {
         return coordinate
     }
 
-    public func distance(to hotel: Hotel) -> Double? {
-        guard let centre = searchCentre, let coordinate = hotel.coordinate else { return nil }
+    /// Metres from the search centre, preferring the provider's own figure —
+    /// it is measured against the coordinate actually searched from.
+    public func distance(to listing: HotelListing) -> Double? {
+        if let reported = listing.distanceMetres { return reported }
+        guard let centre = searchCentre, let coordinate = listing.coordinate else { return nil }
         return centre.distance(to: coordinate)
     }
 
-    public var canLoadMore: Bool { nextStart != nil }
+    public var canLoadMore: Bool { nextPage != nil }
+
+    /// True when the filters narrowed Jalan's half of the results but not
+    /// Rakuten's, which is every filtered search that reached both.
+    public var filtersAppliedToJalanOnly: Bool {
+        !filters.isEmpty && totals[.rakuten] != nil
+    }
 
     public func load() async {
         phase = .loading
-        hotels = []
-        numberOfResults = 0
-        nextStart = 1
+        listings = []
+        totals = [:]
+        providerErrors = [:]
+        nextPage = 1
         await loadNextPage()
     }
 
     /// Called as rows appear. Fires only for the tail of the list, and never
     /// while a page is already in flight.
-    public func loadMoreIfNeeded(currentItem: Hotel) async {
-        guard !isLoadingMore, nextStart != nil, phase == .loaded else { return }
-        let threshold = hotels.index(hotels.endIndex, offsetBy: -5, limitedBy: hotels.startIndex)
-            ?? hotels.startIndex
-        guard let index = hotels.firstIndex(of: currentItem), index >= threshold else { return }
+    public func loadMoreIfNeeded(currentItem: HotelListing) async {
+        guard !isLoadingMore, nextPage != nil, phase == .loaded else { return }
+        let threshold = listings.index(listings.endIndex, offsetBy: -5, limitedBy: listings.startIndex)
+            ?? listings.startIndex
+        guard let index = listings.firstIndex(of: currentItem), index >= threshold else { return }
         await loadNextPage()
     }
 
     private func loadNextPage() async {
-        guard let start = nextStart else { return }
-        isLoadingMore = !hotels.isEmpty
+        guard let page = nextPage else { return }
+        isLoadingMore = !listings.isEmpty
         defer { isLoadingMore = false }
 
         do {
-            let page = try await client.searchHotels(
-                HotelSearchQuery(
+            let response = try await client.searchHotels(
+                HotelSearchRequest(
                     target: target,
                     filters: filters,
                     party: party,
-                    start: start,
-                    count: 30
+                    page: page,
+                    count: pageSize
                 )
             )
-            hotels += page.items
-            numberOfResults = page.numberOfResults
-            nextStart = page.nextStart
+            // The proxy matches inns across providers within one response, not
+            // across pages, so the same inn can arrive again on a later page
+            // under a different pairing. Dropping repeats keeps the list honest.
+            let known = Set(listings.map(\.id))
+            listings += response.results.filter { !known.contains($0.id) }
+            totals = response.totals
+            providerErrors = response.errors ?? [:]
+            nextPage = Self.pageAfter(page, requested: page * pageSize, response: response)
             phase = .loaded
         } catch {
             // A failed follow-up page must not throw away the rows already shown.
-            if hotels.isEmpty {
+            if listings.isEmpty {
                 phase = .failed(searchErrorMessage(for: error))
             }
-            nextStart = nil
+            nextPage = nil
         }
+    }
+
+    /// `count` is per provider, so how much is left is a question about the
+    /// per-provider totals rather than about the merged row count.
+    private static func pageAfter(
+        _ page: Int,
+        requested: Int,
+        response: SearchResponse
+    ) -> Int? {
+        guard !response.results.isEmpty else { return nil }
+        return response.totals.values.contains { $0 > requested } ? page + 1 : nil
     }
 }

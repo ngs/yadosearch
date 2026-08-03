@@ -9,6 +9,10 @@ struct HotelRow: View {
     let pictureURL: URL?
     /// Metres from the point the search was centred on, when there was one.
     var distance: Double?
+    /// The sites this inn is carried by, in a stable order.
+    var providers: [Provider] = []
+    /// The cheapest of the quoted prices, when any provider quoted one.
+    var lowestCharge: Int?
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -39,6 +43,21 @@ struct HotelRow: View {
                 }
                 .font(.caption)
                 .foregroundStyle(.tertiary)
+
+                HStack(spacing: 6) {
+                    ForEach(providers) { provider in
+                        Text(provider.title)
+                            .font(.caption2)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(.quaternary, in: .capsule)
+                    }
+                    if let lowestCharge {
+                        Text("\(lowestCharge.formattedYen)〜")
+                            .font(.caption.weight(.semibold))
+                            .monospacedDigit()
+                    }
+                }
             }
         }
         .padding(.vertical, 4)
@@ -46,24 +65,36 @@ struct HotelRow: View {
 }
 
 extension HotelRow {
-    init(hotel: Hotel, distance: Double? = nil) {
+    init(listing: HotelListing, distance: Double? = nil) {
         self.init(
-            name: hotel.name,
-            area: hotel.areaSummary,
-            catchCopy: hotel.catchCopy,
-            pictureURL: hotel.pictureURL,
-            distance: distance
+            name: listing.name,
+            area: listing.area?.summary,
+            catchCopy: listing.catchCopy,
+            pictureURL: listing.pictureURL,
+            distance: distance,
+            providers: listing.offers.map(\.provider),
+            lowestCharge: listing.lowestCharge
         )
     }
 }
 
-extension Hotel {
+extension AreaNames {
     /// "東京都・浅草" — the two levels that actually place an inn for a reader.
-    var areaSummary: String? {
-        [area.prefecture, area.largeArea]
+    var summary: String? {
+        [prefecture, large]
             .compactMap { $0 }
             .joined(separator: "・")
             .nonEmptyText
+    }
+}
+
+extension Provider {
+    /// How each site names itself.
+    var title: String {
+        switch self {
+        case .jalan: "じゃらん"
+        case .rakuten: "楽天トラベル"
+        }
     }
 }
 

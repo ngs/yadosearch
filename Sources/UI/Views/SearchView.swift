@@ -65,8 +65,8 @@ struct SearchView: View {
                     switch route {
                     case let .results(search):
                         HotelListView(search: search)
-                    case let .hotel(hotel):
-                        HotelDetailView(hotel: hotel)
+                    case let .hotel(reference):
+                        HotelDetailView(reference: reference)
                     }
                 }
         }

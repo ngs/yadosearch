@@ -1,0 +1,96 @@
+{
+  "from": 1,
+  "plans": [
+    {
+      "caption": "外観",
+      "checkIn": "15:00",
+      "checkOut": "12:00",
+      "detailUrl": "https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=1\u0026pid=2\u0026vc_url=https%3A%2F%2Fwww.jalan.net%2Fuw%2Fuwp3200%2Fuww3201init.do%3FadultNum%3D2%26child1Num%3D%26child2Num%3D%26child3Num%3D%26child4Num%3D%26child5Num%3D%26planCd%3D01901011%26roomCount%3D1%26roomTypeCd%3D0270853%26rootCd%3D55%26stayCount%3D1%26stayDay%3D10%26stayMonth%3D9%26stayYear%3D2026%26yadNo%3D387456",
+      "facilities": [
+        "ダブル",
+        "部屋でインターネット",
+        "禁煙ルーム",
+        "バス",
+        "トイレ"
+      ],
+      "hotelId": "387456",
+      "id": "01901011:0270853",
+      "meal": "食事なし",
+      "name": "【ベストレート】　シンプルステイ　～国の重要文化財で記憶に残るひとときを～",
+      "nights": [
+        {
+          "date": "2026-09-10",
+          "rate": 69574,
+          "stock": 1
+        }
+      ],
+      "pictureUrl": "https://www.jalan.net/jalan/images/pictM/Y6/Y387456/Y387456322.jpg",
+      "provider": "jalan",
+      "rateType": "大人1名あたり",
+      "roomName": "クラシック　コンフォートクイーン【禁煙】",
+      "sampleRate": 34787,
+      "totalRate": 69574
+    },
+    {
+      "caption": "グランスタ東京　イメージ",
+      "checkIn": "15:00",
+      "checkOut": "12:00",
+      "detailUrl": "https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=1\u0026pid=2\u0026vc_url=https%3A%2F%2Fwww.jalan.net%2Fuw%2Fuwp3200%2Fuww3201init.do%3FadultNum%3D2%26child1Num%3D%26child2Num%3D%26child3Num%3D%26child4Num%3D%26child5Num%3D%26planCd%3D03275607%26roomCount%3D1%26roomTypeCd%3D0270853%26rootCd%3D55%26stayCount%3D1%26stayDay%3D10%26stayMonth%3D9%26stayYear%3D2026%26yadNo%3D387456",
+      "facilities": [
+        "ダブル",
+        "部屋でインターネット",
+        "禁煙ルーム",
+        "バス",
+        "トイレ"
+      ],
+      "hotelId": "387456",
+      "id": "03275607:0270853",
+      "meal": "食事なし",
+      "name": "【東京エキナカステイ】　東京駅の飲食店・お土産の購入で使えるクーポン付き(食事なし)",
+      "nights": [
+        {
+          "date": "2026-09-10",
+          "rate": 75574,
+          "stock": 1
+        }
+      ],
+      "pictureUrl": "https://www.jalan.net/jalan/images/pictM/Y6/Y387456/Y387456490.jpg",
+      "provider": "jalan",
+      "rateType": "大人1名あたり",
+      "roomName": "クラシック　コンフォートクイーン【禁煙】",
+      "sampleRate": 37787,
+      "totalRate": 75574
+    },
+    {
+      "caption": "朝食イメージ",
+      "checkIn": "15:00",
+      "checkOut": "12:00",
+      "detailUrl": "https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=1\u0026pid=2\u0026vc_url=https%3A%2F%2Fwww.jalan.net%2Fuw%2Fuwp3200%2Fuww3201init.do%3FadultNum%3D2%26child1Num%3D%26child2Num%3D%26child3Num%3D%26child4Num%3D%26child5Num%3D%26planCd%3D01901006%26roomCount%3D1%26roomTypeCd%3D0270853%26rootCd%3D55%26stayCount%3D1%26stayDay%3D10%26stayMonth%3D9%26stayYear%3D2026%26yadNo%3D387456",
+      "facilities": [
+        "ダブル",
+        "部屋でインターネット",
+        "禁煙ルーム",
+        "バス",
+        "トイレ"
+      ],
+      "hotelId": "387456",
+      "id": "01901006:0270853",
+      "meal": "朝のみ",
+      "name": "【ベストレート】　シンプルステイ　～素材や産地にこだわった100種以上のアイテムが並ぶ朝食ブッフェ付～",
+      "nights": [
+        {
+          "date": "2026-09-10",
+          "rate": 80974,
+          "stock": 1
+        }
+      ],
+      "pictureUrl": "https://www.jalan.net/jalan/images/pictM/Y6/Y387456/Y387456435.jpg",
+      "provider": "jalan",
+      "rateType": "大人1名あたり",
+      "roomName": "クラシック　コンフォートクイーン【禁煙】",
+      "sampleRate": 40487,
+      "totalRate": 80974
+    }
+  ],
+  "total": 181
+}

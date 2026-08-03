@@ -8,11 +8,13 @@ let copyright = "© 2010-2026 LittleApps Inc. All rights reserved."
 
 let buildNumber = Environment.buildNumber.getString(default: "0")
 
-/// The Jalan Web Service application key. Never committed: direnv exports it
-/// from `.env` via `.envrc`, and CI supplies it from a repository secret.
-/// Generating without one produces a perfectly good build that tells the user
-/// the key is missing instead of issuing requests that would all be rejected.
-let jalanAPIKey = Environment.jalanApiKey.getString(default: "")
+/// Where the app looks for the yadosearch-api proxy. A bare host: the app
+/// chooses `https`, or `http` for a local address.
+///
+/// The `YadoSearch (Local)` scheme overrides this with a launch argument, which
+/// is also how a build on a real device is pointed at a Mac on the same
+/// network — `localhost` there means the device itself.
+let apiHost = "yadosearch-api-679155343431.asia-northeast1.run.app"
 
 let project = Project(
     name: "YadoSearch",
@@ -28,7 +30,7 @@ let project = Project(
         base: [
             "CURRENT_PROJECT_VERSION": .string(buildNumber),
             "MARKETING_VERSION": .string(version),
-            "JALAN_API_KEY": .string(jalanAPIKey),
+            "API_HOST": .string(apiHost),
             "DEVELOPMENT_TEAM": .string("3Y8APYUG2G"),
             // Development builds provision themselves; the release lanes switch
             // the Release configuration to the match profiles.
@@ -66,23 +68,18 @@ let project = Project(
                     "UIColorName": "AccentColor",
                     "UIImageRespectsSafeAreaInsets": true
                 ],
-                "JalanAPIKey": .string("$(JALAN_API_KEY)"),
+                "APIHost": .string("$(API_HOST)"),
                 "NSLocationWhenInUseUsageDescription": .string(
                     "現在地のまわりの宿を探すために位置情報を使います。"),
                 // SwiftData + CloudKit receives changes pushed from the user's
                 // other devices as silent remote notifications.
                 "UIBackgroundModes": .array([.string("remote-notification")]),
-                // jws.jalan.net answers on port 80 only — 443 is closed, so
-                // there is no HTTPS endpoint to switch to. The exception is
-                // scoped to that one host; every other connection the app makes
-                // (photos on www.jalan.net, the booking site) stays on TLS.
+                // The proxy is reached over TLS. This exception exists so a
+                // development build can talk to one running on the same
+                // machine or network over plain HTTP, and it covers nothing
+                // beyond local addresses.
                 "NSAppTransportSecurity": .dictionary([
-                    "NSExceptionDomains": .dictionary([
-                        "jws.jalan.net": .dictionary([
-                            "NSExceptionAllowsInsecureHTTPLoads": .boolean(true),
-                            "NSIncludesSubdomains": .boolean(false)
-                        ])
-                    ])
+                    "NSAllowsLocalNetworking": .boolean(true)
                 ])
             ]),
             sources: ["Sources/App/**"],
@@ -122,6 +119,24 @@ let project = Project(
         )
     ],
     schemes: [
+        // Points the app at a proxy running on this machine. `localhost` is the
+        // device itself, so testing on a phone means changing this argument to
+        // the Mac's name or address — that is what it is here for.
+        .scheme(
+            name: "YadoSearch (Local)",
+            buildAction: .buildAction(targets: ["YadoSearch"]),
+            testAction: .targets(
+                ["YadoSearchTests"],
+                configuration: .debug,
+                options: .options(coverage: true)
+            ),
+            runAction: .runAction(
+                configuration: .debug,
+                arguments: .arguments(launchArguments: [
+                    .launchArgument(name: "-APIHost localhost:8080", isEnabled: true)
+                ])
+            )
+        ),
         .scheme(
             name: "YadoSearch",
             buildAction: .buildAction(targets: ["YadoSearch"]),

@@ -5,8 +5,8 @@ import Foundation
 /// The whole tree arrives in one ~56 KB response from `APICommon/AreaSearch`,
 /// which is the only place the area *codes* exist — a hotel search response
 /// names an inn's areas but never codes them, so drilling down needs this.
-public struct AreaTree: Sendable, Hashable {
-    public struct SmallArea: Sendable, Hashable, Identifiable {
+public struct AreaTree: Sendable, Hashable, Codable {
+    public struct SmallArea: Sendable, Hashable, Identifiable, Codable {
         public let id: String
         public let name: String
 
@@ -16,7 +16,7 @@ public struct AreaTree: Sendable, Hashable {
         }
     }
 
-    public struct LargeArea: Sendable, Hashable, Identifiable {
+    public struct LargeArea: Sendable, Hashable, Identifiable, Codable {
         public let id: String
         public let name: String
         public let smallAreas: [SmallArea]
@@ -28,7 +28,7 @@ public struct AreaTree: Sendable, Hashable {
         }
     }
 
-    public struct Prefecture: Sendable, Hashable, Identifiable {
+    public struct Prefecture: Sendable, Hashable, Identifiable, Codable {
         public let id: String
         public let name: String
         public let largeAreas: [LargeArea]
@@ -40,7 +40,7 @@ public struct AreaTree: Sendable, Hashable {
         }
     }
 
-    public struct Region: Sendable, Hashable, Identifiable {
+    public struct Region: Sendable, Hashable, Identifiable, Codable {
         public let id: String
         public let name: String
         public let prefectures: [Prefecture]

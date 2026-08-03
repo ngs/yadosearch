@@ -20,14 +20,16 @@ public final class StoredHotel {
         case history
     }
 
-    /// `"favorite:300002"` — composite, because the same inn can legitimately be
-    /// in both lists.
+    /// `"favorite:jalan:300002"` — composite, because the same inn can
+    /// legitimately be in both lists, and because the two booking sites number
+    /// their inns independently: `137869` means a different inn on each.
     ///
     /// Not `@Attribute(.unique)`: CloudKit mirroring forbids unique constraints.
     /// `StoredHotelStore` looks the identifier up before inserting instead, and
     /// every property carries a default because mirroring requires that too.
     public var id: String = ""
     public var kindRawValue: String = StoredHotel.Kind.history.rawValue
+    public var providerRawValue: String = Provider.jalan.rawValue
     public var hotelID: String = ""
     public var name: String = ""
     public var address: String = ""
@@ -42,6 +44,7 @@ public final class StoredHotel {
 
     public init(
         kind: Kind,
+        provider: Provider,
         hotelID: String,
         name: String,
         address: String,
@@ -53,8 +56,9 @@ public final class StoredHotel {
         longitude: Double? = nil,
         savedAt: Date = .now
     ) {
-        id = Self.identifier(kind: kind, hotelID: hotelID)
+        id = Self.identifier(kind: kind, provider: provider, hotelID: hotelID)
         kindRawValue = kind.rawValue
+        providerRawValue = provider.rawValue
         self.hotelID = hotelID
         self.name = name
         self.address = address
@@ -67,20 +71,21 @@ public final class StoredHotel {
         self.savedAt = savedAt
     }
 
-    public static func identifier(kind: Kind, hotelID: String) -> String {
-        "\(kind.rawValue):\(hotelID)"
+    public static func identifier(kind: Kind, provider: Provider, hotelID: String) -> String {
+        "\(kind.rawValue):\(provider.rawValue):\(hotelID)"
     }
 }
 
 public extension StoredHotel {
-    convenience init(kind: Kind, hotel: Hotel, savedAt: Date = .now) {
+    convenience init(kind: Kind, hotel: HotelProfile, savedAt: Date = .now) {
         self.init(
             kind: kind,
+            provider: hotel.provider,
             hotelID: hotel.id,
             name: hotel.name,
-            address: hotel.address,
-            prefecture: hotel.area.prefecture,
-            largeArea: hotel.area.largeArea,
+            address: hotel.address ?? "",
+            prefecture: hotel.area?.prefecture,
+            largeArea: hotel.area?.large,
             catchCopy: hotel.catchCopy,
             pictureURLString: hotel.pictureURL?.absoluteString,
             latitude: hotel.coordinate?.latitude,
@@ -90,6 +95,11 @@ public extension StoredHotel {
     }
 
     var kind: Kind { Kind(rawValue: kindRawValue) ?? .history }
+
+    /// Which site the stored inn belongs to. Records written before the app
+    /// carried two providers have no value of their own and read as Jalan,
+    /// which is what they were.
+    var provider: Provider { Provider(rawValue: providerRawValue) ?? .jalan }
 
     var pictureURL: URL? {
         pictureURLString.flatMap { URL(string: $0) }
@@ -106,18 +116,7 @@ public extension StoredHotel {
         return summary.isEmpty ? nil : summary
     }
 
-    /// Rebuilds enough of a `Hotel` to drive the detail screen. The fields a
-    /// snapshot does not carry — access directions, check-in times — come back
-    /// when the detail screen reloads the inn from the API.
-    var hotel: Hotel {
-        Hotel(
-            id: hotelID,
-            name: name,
-            address: address,
-            area: Hotel.Area(region: nil, prefecture: prefecture, largeArea: largeArea, smallArea: nil),
-            catchCopy: catchCopy,
-            pictureURL: pictureURL,
-            coordinate: coordinate
-        )
-    }
+    /// Everything the detail screen needs to open the inn. The rest of the
+    /// record comes back when that screen fetches it.
+    var reference: (provider: Provider, id: String) { (provider, hotelID) }
 }

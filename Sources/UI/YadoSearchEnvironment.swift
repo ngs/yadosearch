@@ -9,41 +9,46 @@ import YadoSearchPlatform
 /// value with a default. The location provider is main-actor state owned by the
 /// one screen that asks for a fix, not a shared service.
 public struct YadoSearchEnvironment: Sendable {
-    public let client: JalanAPIClient
+    public let client: YadoSearchAPIClient
     public let areaCatalog: AreaCatalog
     public let stationSearch = StationSearchService()
     /// Every outbound jalan.net link goes through this, so a booking made from
     /// the app is credited. It needs no key of its own — the IDs are public.
     public let affiliate = JalanAffiliate.littleApps
 
-    public init(configuration: JalanAPIClient.Configuration) {
-        let client = JalanAPIClient(configuration: configuration)
+    public init(configuration: YadoSearchAPIClient.Configuration) {
+        let client = YadoSearchAPIClient(configuration: configuration)
         self.client = client
         areaCatalog = AreaCatalog(client: client)
     }
 
-    /// Reads the key baked into the bundle at project-generation time.
+    /// Resolves the proxy's address from the launch arguments and the bundle.
     ///
     /// Traps when there is none. Every screen in the app needs the API, so a
-    /// build without a key is a broken build, not a state worth rendering — and
-    /// a crash on the first launch is how it gets noticed before it ships.
-    public init(bundle: Bundle) {
-        guard let configuration = JalanAPIClient.Configuration.fromBundle(bundle) else {
+    /// build that does not know where to find it is a broken build rather than
+    /// a state worth rendering — and a crash on the first launch is how that
+    /// gets noticed before it ships.
+    public init(bundle: Bundle, defaults: UserDefaults = .standard) {
+        guard let baseURL = APIHost.baseURL(bundle: bundle, defaults: defaults) else {
             fatalError(
                 """
-                JalanAPIKey is missing from Info.plist. Export TUIST_JALAN_API_KEY \
-                (see .envrc) and run `tuist generate` again.
+                No API host. Run the `YadoSearch (Local)` scheme, pass \
+                `-APIHost host:port` as a launch argument, or set API_HOST in \
+                Project.swift and run `tuist generate` again.
                 """
             )
         }
-        self.init(configuration: configuration)
+        self.init(configuration: YadoSearchAPIClient.Configuration(baseURL: baseURL))
     }
 }
 
 public extension EnvironmentValues {
-    /// Previews and tests get a client with no key: it reaches the network and
-    /// is turned away, which is a far better failure for them than a trap.
+    /// Previews and tests get a client pointed at a proxy running locally: it
+    /// either answers or the request fails, which is a far better failure for
+    /// them than a trap.
     @Entry var yadoSearch = YadoSearchEnvironment(
-        configuration: JalanAPIClient.Configuration(applicationKey: "")
+        configuration: YadoSearchAPIClient.Configuration(
+            baseURL: URL(string: "http://localhost:8080") ?? URL(filePath: "/")
+        )
     )
 }

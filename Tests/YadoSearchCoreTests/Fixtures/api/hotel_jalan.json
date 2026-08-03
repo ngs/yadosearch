@@ -1,0 +1,84 @@
+{
+  "counterparts": {
+    "rakuten": {
+      "access": [
+        {
+          "detail": "JR東京駅丸の内南口直結。東京メトロ丸ノ内線東京駅より徒歩約3分。",
+          "label": "アクセス"
+        },
+        {
+          "detail": "東京",
+          "label": "最寄り駅"
+        }
+      ],
+      "address": "東京都千代田区丸の内1-9-1",
+      "area": {
+        "prefecture": "東京都"
+      },
+      "catchCopy": "【JR東京駅丸の内南口直結】東京駅のクラシックホテル",
+      "coordinate": {
+        "latitude": 35.68067269,
+        "longitude": 139.7657632
+      },
+      "detailUrl": "https://img.travel.rakuten.co.jp/image/tr/api/hs/dQ4dX/?f_no=137869",
+      "id": "137869",
+      "minimumCharge": 26413,
+      "name": "東京ステーションホテル",
+      "nameKana": "とうきょうすてーしょんほてる",
+      "pictureUrl": "https://img.travel.rakuten.co.jp/share/HOTEL/137869/137869.jpg",
+      "postalCode": "100-0005",
+      "provider": "rakuten",
+      "review": {
+        "average": 4.84,
+        "count": 906
+      }
+    }
+  },
+  "hotel": {
+    "access": [
+      {
+        "detail": "車以外／モノレール、JR（浜松町駅経由）　約30分",
+        "label": "羽田空港より"
+      },
+      {
+        "detail": "車以外／成田エクスプレス　約60分",
+        "label": "成田空港より"
+      },
+      {
+        "detail": "東京",
+        "label": "最寄り駅１"
+      },
+      {
+        "detail": "東京",
+        "label": "最寄り駅２"
+      },
+      {
+        "detail": "車／ご宿泊のお客様は、ご一泊当たり２,1００円で地下駐車場をご利用いただけます。\u003cBR\u003e●１４：００～翌１４：００（以降３０分毎６５０円）\u003cBR\u003e●車高制限：２．９ｍ（車寄せは２．３m)\u003cBR\u003e●台数に限りがございます。",
+        "label": "補足"
+      }
+    ],
+    "address": "東京都千代田区丸の内１－９－１",
+    "area": {
+      "large": "銀座・日本橋・東京駅周辺",
+      "prefecture": "東京都",
+      "region": "首都圏",
+      "small": "東京・神田・日本橋"
+    },
+    "caption": "国指定重要文化財である歴史的建造物やかつての文豪が愛したStoryなど大正の時代からのアカデミックな伝統が息づく場所でありながら、現代のホテルに求められる機能性も満たす、洗練されたOMOTENASHI。",
+    "catchCopy": "【JR東京駅丸の内南口直結】東京駅のクラシックホテル",
+    "checkIn": "15:00",
+    "checkOut": "12:00",
+    "coordinate": {
+      "latitude": 35.68066108957904,
+      "longitude": 139.76571509593765
+    },
+    "detailUrl": "https://ck.jp.ap.valuecommerce.com/servlet/referral?sid=1\u0026pid=2\u0026vc_url=https%3A%2F%2Fwww.jalan.net%2Fyad387456%2F%3FadultNum%3D2%26dateUndecided%3D1%26roomCount%3D1%26stayCount%3D1",
+    "id": "387456",
+    "kind": "ホテル",
+    "lastUpdate": "2014-06-02",
+    "name": "東京ステーションホテル",
+    "pictureUrl": "https://www.jalan.net/jalan/images/pictM/Y6/Y387456/Y387456526.jpg",
+    "postalCode": "100-0005",
+    "provider": "jalan"
+  }
+}
