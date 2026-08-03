@@ -16,7 +16,7 @@ public func searchErrorMessage(for error: Error) -> String {
     case let .service(message) where !message.isEmpty:
         return message
     case .service, .malformedResponse:
-        return "サーバーからの応答を読み取れませんでした。"
+        return String(localized: "サーバーからの応答を読み取れませんでした。")
     case let .transport(description):
         return description
     }

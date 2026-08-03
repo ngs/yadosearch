@@ -15,10 +15,10 @@ enum SearchMode: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .keyword: "キーワード"
-        case .nearby: "現在地"
-        case .area: "地域"
-        case .station: "駅"
+        case .keyword: String(localized: "キーワード")
+        case .nearby: String(localized: "現在地")
+        case .area: String(localized: "地域")
+        case .station: String(localized: "駅")
         }
     }
 
@@ -373,13 +373,13 @@ private extension SearchView {
         case .keyword:
             let trimmed = keyword.trimmingCharacters(in: .whitespacesAndNewlines)
             guard !trimmed.isEmpty else { return nil }
-            return (.name(trimmed), "「\(trimmed)」")
+            return (.name(trimmed), String(localized: "「\(trimmed)」"))
         case .nearby:
             guard let coordinate = location.coordinate else { return nil }
             // The place name, when there is one, is what makes this search
             // recognisable in the recent list a week later.
-            let origin = location.placeName ?? "現在地"
-            return (.around(coordinate, radius: radius), "\(origin)から\(radius.label)")
+            let origin = location.placeName ?? String(localized: "現在地")
+            return (.around(coordinate, radius: radius), String(localized: "\(origin)から\(radius.label)"))
         case .area:
             guard let chosenArea else { return nil }
             return (.area(chosenArea.selection), chosenArea.name)
@@ -387,7 +387,7 @@ private extension SearchView {
             guard let chosenStation else { return nil }
             return (
                 .around(chosenStation.coordinate, radius: radius),
-                "\(chosenStation.name)から\(radius.label)"
+                String(localized: "\(chosenStation.name)から\(radius.label)")
             )
         }
     }
@@ -396,11 +396,11 @@ private extension SearchView {
 extension SearchRadius {
     var label: String {
         switch self {
-        case .aboutOneKilometre: "約1km"
-        case .aboutTwoAndAHalfKilometres: "約2.5km"
-        case .aboutFiveKilometres: "約5km"
-        case .aboutSevenKilometres: "約7km"
-        case .aboutTenKilometres: "約10km"
+        case .aboutOneKilometre: String(localized: "約1km")
+        case .aboutTwoAndAHalfKilometres: String(localized: "約2.5km")
+        case .aboutFiveKilometres: String(localized: "約5km")
+        case .aboutSevenKilometres: String(localized: "約7km")
+        case .aboutTenKilometres: String(localized: "約10km")
         }
     }
 }

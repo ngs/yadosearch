@@ -19,7 +19,7 @@ Four search axes, carried over from that release: by inn name, near you, by area
 - **Project generation**: Tuist (`Project.swift`) + SwiftPM (`Package.swift`)
 - **Code quality**: SwiftLint / Periphery / RuboCop (for the Fastfile)
 - **CI/CD**: GitHub Actions + fastlane
-- **Localization**: Japanese only, written as literals (see "Known gaps")
+- **Localization**: Japanese and English, through `Resources/Localizable.xcstrings`
 
 ### Modules
 
@@ -151,7 +151,12 @@ Rakuten Travel is back, by way of the proxy — the 2010 release switched betwee
 
 In general:
 
-- **Japanese only.** Development region is `ja` and UI strings are literals. Adding English means a String Catalog in the UI package plus `bundle: .module` at every call site. Reverse-geocoded place names are the exception — they follow the device language.
+- **Japanese is the source language, and the Japanese string is the key.** `Text("お気に入り")` stays as it is; `Resources/Localizable.xcstrings` maps that key to itself in `ja` and to "Favourites" in `en`.
+  - **The catalogue lives in the app target, not in the UI package.** SwiftUI resolves a `LocalizedStringKey` against `Bundle.main` unless told otherwise, so a catalogue in the app bundle serves every module without `bundle: .module` at hundreds of call sites. The cost is that previews and `swift test` see no catalogue and fall back to the key, which is the Japanese text — the same thing they showed before.
+  - **Anything typed `String` needs `String(localized:)`.** `Text` and friends take a `LocalizedStringKey` and look themselves up; a plain `String` does not. That is why `Amenity.title`, `Provider.title`, `SearchRadius.label`, the `SavedSearch` titles and `searchErrorMessage(for:)` all wrap their literals. Core can do this because `String(localized:)` is Foundation, and it reads `Bundle.main` too.
+  - **Interpolation changes the key.** `Text("\(count)件")` looks up `%lld件`, not `\(count)件`; a `String` interpolation is `%@`. When a translation reorders two arguments it has to use positional specifiers (`%1$@`).
+  - `Resources/InfoPlist.xcstrings` carries the display name and the location prompt.
+  - Reverse-geocoded place names follow the device language on their own. **What the proxy returns — inn names, area names, service error messages — is Japanese whatever the device is set to**, because that is all the upstream services have.
 - **The app icon is still being tuned.** `Resources/AppIcon.icon` is an Icon Composer package (`icon.json` plus `Assets/onsen.svg`) — edit it there, not by hand. There is no `AppIcon.appiconset` any more; the `.icon` supersedes it, and `actool` still emits the legacy PNGs from it.
   - The layer's `fill` in `icon.json` is what colours the glyph. `actool` treats the SVG as a monochrome vector and ignores fills inside it, so changing the SVG's own `fill` does nothing.
   - Rendering it without a full build: `xcrun actool Resources/AppIcon.icon --compile <dir> --platform iphoneos --minimum-deployment-target 26.0 --app-icon AppIcon --include-all-app-icons --output-partial-info-plist <dir>/partial.plist`. A plain `xcodebuild build` caches the compiled catalogue and will not pick up an icon change.

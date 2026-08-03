@@ -36,9 +36,9 @@ struct GuestPartyEditor: View {
 extension GuestParty {
     /// "大人2名・子ども1名" — the one-line summary for a collapsed row.
     var summary: String {
-        var parts = ["大人\(adults)名"]
+        var parts = [String(localized: "大人\(adults)名")]
         if childCount > 0 {
-            parts.append("子ども\(childCount)名")
+            parts.append(String(localized: "子ども\(childCount)名"))
         }
         return parts.joined(separator: "・")
     }

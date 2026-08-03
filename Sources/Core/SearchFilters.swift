@@ -15,11 +15,11 @@ public enum HotelSortOrder: Int, Sendable, Hashable, CaseIterable, Identifiable,
 
     public var title: String {
         switch self {
-        case .unspecified: "指定なし"
-        case .kana: "50音順"
-        case .rateAscending: "参考料金の安い順"
-        case .rateDescending: "参考料金の高い順"
-        case .popularity: "じゃらんnet人気順"
+        case .unspecified: String(localized: "指定なし")
+        case .kana: String(localized: "50音順")
+        case .rateAscending: String(localized: "参考料金の安い順")
+        case .rateDescending: String(localized: "参考料金の高い順")
+        case .popularity: String(localized: "じゃらんnet人気順")
         }
     }
 }
@@ -36,11 +36,11 @@ public enum HotelType: Int, Sendable, Hashable, CaseIterable, Identifiable, Coda
 
     public var title: String {
         switch self {
-        case .japaneseInn: "旅館"
-        case .pensionOrGuesthouse: "ペンション・民宿・ロッジ"
-        case .rentalVillaOrCondominium: "貸し別荘・コンドミニアム"
-        case .hotel: "ホテル・ビジネスホテル"
-        case .publicLodging: "公共の宿"
+        case .japaneseInn: String(localized: "旅館")
+        case .pensionOrGuesthouse: String(localized: "ペンション・民宿・ロッジ")
+        case .rentalVillaOrCondominium: String(localized: "貸し別荘・コンドミニアム")
+        case .hotel: String(localized: "ホテル・ビジネスホテル")
+        case .publicLodging: String(localized: "公共の宿")
         }
     }
 }
@@ -151,7 +151,9 @@ public enum Amenity: String, Sendable, Hashable, CaseIterable, Identifiable, Cod
         case creditCards = "クレジットカード"
 
         public var id: String { rawValue }
-        public var title: String { rawValue }
+        /// The raw value is the Japanese name, and doubles as the key the
+        /// String Catalog translates.
+        public var title: String { String(localized: String.LocalizationValue(rawValue)) }
 
         public var amenities: [Amenity] {
             Amenity.allCases.filter { $0.group == self }
@@ -190,75 +192,75 @@ public enum Amenity: String, Sendable, Hashable, CaseIterable, Identifiable, Cod
 
     public var title: String {
         switch self {
-        case .publicBath: "内湯・大浴場"
-        case .hotSpring: "温泉"
-        case .privateBath: "貸切風呂・貸切露天"
-        case .viewBath: "展望風呂"
-        case .openAirBath: "露天風呂"
-        case .sauna: "サウナ"
-        case .jacuzzi: "ジャグジー"
-        case .massage: "マッサージ"
-        case .esthetics: "エステ設備"
-        case .freeFlowingSpring: "天然温泉掛け流し"
-        case .cloudySpring: "にごり湯"
-        case .nonSmokingRoom: "禁煙ルーム"
-        case .inRoomInternet: "部屋でインターネットOK"
-        case .roomWithOpenAirBath: "露天風呂付き客室"
-        case .highClass: "じゃらんハイクラス掲載の宿"
-        case .pointDiscount: "ポイント割引OKの宿"
-        case .suiteOrDetachedRoom: "特別室・離れ・スイート"
-        case .bathAndToilet: "バス・トイレ付き"
-        case .tableTennis: "卓球あり"
-        case .skiRental: "貸しスキー"
-        case .snowboardRental: "貸しボード"
-        case .outdoorPool: "屋外プール"
-        case .indoorPool: "屋内プール"
-        case .fitnessGym: "フィットネスジム"
-        case .sportsHall: "体育館"
-        case .sportsField: "グラウンド"
-        case .barbecue: "バーベキュー施設"
-        case .banquetHall: "宴会場"
-        case .withinFiveMinutesOfStation: "駅から徒歩5分"
-        case .withinFiveMinutesOfBeach: "ビーチから徒歩5分"
-        case .withinFiveMinutesOfSlope: "ゲレンデから徒歩5分"
-        case .withinFiveMinutesOfConvenienceStore: "コンビニまで徒歩5分"
-        case .breakfastInRoom: "部屋で朝食"
-        case .dinnerInRoom: "部屋で夕食"
-        case .breakfastInPrivateRoom: "個室で朝食"
-        case .dinnerInPrivateRoom: "個室で夕食"
-        case .earlyCheckIn: "チェックイン14時以前"
-        case .lateCheckOut: "チェックアウト11時以降"
-        case .freeParking: "駐車場無料"
-        case .shuttleService: "送迎あり"
-        case .petsAllowed: "ペットOK"
-        case .planWithoutMeals: "食事なしプランあり"
-        case .breakfastOnlyPlan: "朝食のみプランあり"
-        case .dinnerOnlyPlan: "夕食のみプランあり"
-        case .twoMealsPlan: "朝夕食付プランあり"
-        case .singleRoom: "シングルルームあり"
-        case .twinRoom: "ツインルームあり"
-        case .doubleRoom: "ダブルルームあり"
-        case .tripleRoom: "トリプルルームあり"
-        case .fourBedRoom: "4ベッドルームあり"
-        case .japaneseStyleRoom: "和室あり"
-        case .japaneseWesternRoom: "和洋室あり"
-        case .childRate: "子供料金設定あり"
-        case .elementarySchoolRate: "小学生料金設定あり"
-        case .preschoolerBedAndMeal: "幼児向けに布団・食事ともにあり"
-        case .preschoolerNeither: "幼児向けに布団・食事ともになし"
-        case .preschoolerMealOnly: "幼児向けに食事のみあり"
-        case .preschoolerBedOnly: "幼児向けに布団のみあり"
-        case .creditCard: "クレジットカード利用可"
+        case .publicBath: String(localized: "内湯・大浴場")
+        case .hotSpring: String(localized: "温泉")
+        case .privateBath: String(localized: "貸切風呂・貸切露天")
+        case .viewBath: String(localized: "展望風呂")
+        case .openAirBath: String(localized: "露天風呂")
+        case .sauna: String(localized: "サウナ")
+        case .jacuzzi: String(localized: "ジャグジー")
+        case .massage: String(localized: "マッサージ")
+        case .esthetics: String(localized: "エステ設備")
+        case .freeFlowingSpring: String(localized: "天然温泉掛け流し")
+        case .cloudySpring: String(localized: "にごり湯")
+        case .nonSmokingRoom: String(localized: "禁煙ルーム")
+        case .inRoomInternet: String(localized: "部屋でインターネットOK")
+        case .roomWithOpenAirBath: String(localized: "露天風呂付き客室")
+        case .highClass: String(localized: "じゃらんハイクラス掲載の宿")
+        case .pointDiscount: String(localized: "ポイント割引OKの宿")
+        case .suiteOrDetachedRoom: String(localized: "特別室・離れ・スイート")
+        case .bathAndToilet: String(localized: "バス・トイレ付き")
+        case .tableTennis: String(localized: "卓球あり")
+        case .skiRental: String(localized: "貸しスキー")
+        case .snowboardRental: String(localized: "貸しボード")
+        case .outdoorPool: String(localized: "屋外プール")
+        case .indoorPool: String(localized: "屋内プール")
+        case .fitnessGym: String(localized: "フィットネスジム")
+        case .sportsHall: String(localized: "体育館")
+        case .sportsField: String(localized: "グラウンド")
+        case .barbecue: String(localized: "バーベキュー施設")
+        case .banquetHall: String(localized: "宴会場")
+        case .withinFiveMinutesOfStation: String(localized: "駅から徒歩5分")
+        case .withinFiveMinutesOfBeach: String(localized: "ビーチから徒歩5分")
+        case .withinFiveMinutesOfSlope: String(localized: "ゲレンデから徒歩5分")
+        case .withinFiveMinutesOfConvenienceStore: String(localized: "コンビニまで徒歩5分")
+        case .breakfastInRoom: String(localized: "部屋で朝食")
+        case .dinnerInRoom: String(localized: "部屋で夕食")
+        case .breakfastInPrivateRoom: String(localized: "個室で朝食")
+        case .dinnerInPrivateRoom: String(localized: "個室で夕食")
+        case .earlyCheckIn: String(localized: "チェックイン14時以前")
+        case .lateCheckOut: String(localized: "チェックアウト11時以降")
+        case .freeParking: String(localized: "駐車場無料")
+        case .shuttleService: String(localized: "送迎あり")
+        case .petsAllowed: String(localized: "ペットOK")
+        case .planWithoutMeals: String(localized: "食事なしプランあり")
+        case .breakfastOnlyPlan: String(localized: "朝食のみプランあり")
+        case .dinnerOnlyPlan: String(localized: "夕食のみプランあり")
+        case .twoMealsPlan: String(localized: "朝夕食付プランあり")
+        case .singleRoom: String(localized: "シングルルームあり")
+        case .twinRoom: String(localized: "ツインルームあり")
+        case .doubleRoom: String(localized: "ダブルルームあり")
+        case .tripleRoom: String(localized: "トリプルルームあり")
+        case .fourBedRoom: String(localized: "4ベッドルームあり")
+        case .japaneseStyleRoom: String(localized: "和室あり")
+        case .japaneseWesternRoom: String(localized: "和洋室あり")
+        case .childRate: String(localized: "子供料金設定あり")
+        case .elementarySchoolRate: String(localized: "小学生料金設定あり")
+        case .preschoolerBedAndMeal: String(localized: "幼児向けに布団・食事ともにあり")
+        case .preschoolerNeither: String(localized: "幼児向けに布団・食事ともになし")
+        case .preschoolerMealOnly: String(localized: "幼児向けに食事のみあり")
+        case .preschoolerBedOnly: String(localized: "幼児向けに布団のみあり")
+        case .creditCard: String(localized: "クレジットカード利用可")
         case .cardJCB: "JCB"
         case .cardVisa: "VISA"
         case .cardMastercard: "Mastercard"
         case .cardAmex: "American Express"
-        case .cardUC: "UCカード"
-        case .cardDC: "DCカード"
-        case .cardNICOS: "NICOSカード"
-        case .cardDiners: "ダイナースクラブ"
-        case .cardSaison: "セゾンカード"
-        case .cardUFJ: "UFJカード"
+        case .cardUC: String(localized: "UCカード")
+        case .cardDC: String(localized: "DCカード")
+        case .cardNICOS: String(localized: "NICOSカード")
+        case .cardDiners: String(localized: "ダイナースクラブ")
+        case .cardSaison: String(localized: "セゾンカード")
+        case .cardUFJ: String(localized: "UFJカード")
         }
     }
 }
@@ -311,9 +313,12 @@ public struct SearchFilters: Sendable, Hashable, Codable {
     /// "8,000〜20,000円", or one open end, or `nil` when the budget is not set.
     public var budgetSummary: String? {
         switch (minimumRate, maximumRate) {
-        case let (minimum?, maximum?): "\(minimum.groupedDigits)〜\(maximum.groupedDigits)円"
-        case let (minimum?, nil): "\(minimum.groupedDigits)円〜"
-        case let (nil, maximum?): "〜\(maximum.groupedDigits)円"
+        case let (minimum?, maximum?):
+            String(localized: "\(minimum.groupedDigits)〜\(maximum.groupedDigits)円")
+        case let (minimum?, nil):
+            String(localized: "\(minimum.groupedDigits)円〜")
+        case let (nil, maximum?):
+            String(localized: "〜\(maximum.groupedDigits)円")
         case (nil, nil): nil
         }
     }

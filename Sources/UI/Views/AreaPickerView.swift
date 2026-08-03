@@ -100,7 +100,7 @@ struct AreaPickerView: View {
                             ),
                             name: largeArea.name
                         ),
-                        title: "\(largeArea.name)全体でさがす"
+                        title: String(localized: "\(largeArea.name)全体でさがす")
                     )
                 }
                 Section("小エリア") {
@@ -134,7 +134,7 @@ struct AreaPickerView: View {
     private func list(title: String, whole: ChosenArea, rows: [Row]) -> some View {
         List {
             Section {
-                chooseButton(whole, title: "\(title)全体でさがす")
+                chooseButton(whole, title: String(localized: "\(title)全体でさがす"))
             }
             Section {
                 ForEach(rows) { row in
@@ -146,9 +146,12 @@ struct AreaPickerView: View {
     }
 
     private func chooseButton(_ area: ChosenArea, title: String) -> some View {
-        Button(title) {
+        // Already localised by the caller, which builds it around an area name.
+        Button {
             onChoose(area)
             dismiss()
+        } label: {
+            Text(verbatim: title)
         }
     }
 }

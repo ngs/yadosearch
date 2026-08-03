@@ -93,9 +93,10 @@ struct HotelListView: View {
                 model.totals[provider].map { "\(provider.title) \($0)" }
             }
             .joined(separator: " / ")
+        let count = model.listings.count
         return breakdown.isEmpty
-            ? "\(model.listings.count)件"
-            : "\(model.listings.count)件（\(breakdown)）"
+            ? String(localized: "\(count)件")
+            : String(localized: "\(count)件（\(breakdown)）")
     }
 
     @ViewBuilder

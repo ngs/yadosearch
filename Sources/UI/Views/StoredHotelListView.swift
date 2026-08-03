@@ -81,8 +81,8 @@ struct StoredHotelListView: View {
 extension StoredHotel.Kind {
     var title: String {
         switch self {
-        case .favorite: "お気に入り"
-        case .history: "履歴"
+        case .favorite: String(localized: "お気に入り")
+        case .history: String(localized: "履歴")
         }
     }
 
@@ -95,15 +95,15 @@ extension StoredHotel.Kind {
 
     var emptyTitle: String {
         switch self {
-        case .favorite: "お気に入りはまだありません"
-        case .history: "見た宿はまだありません"
+        case .favorite: String(localized: "お気に入りはまだありません")
+        case .history: String(localized: "見た宿はまだありません")
         }
     }
 
     var emptyDescription: String {
         switch self {
-        case .favorite: "宿の詳細画面のハートを押すと、ここに残ります。"
-        case .history: "宿の詳細画面を開くと、ここに残ります。"
+        case .favorite: String(localized: "宿の詳細画面のハートを押すと、ここに残ります。")
+        case .history: String(localized: "宿の詳細画面を開くと、ここに残ります。")
         }
     }
 }

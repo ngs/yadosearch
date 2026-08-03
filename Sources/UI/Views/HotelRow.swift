@@ -92,8 +92,8 @@ extension Provider {
     /// How each site names itself.
     var title: String {
         switch self {
-        case .jalan: "じゃらん"
-        case .rakuten: "楽天トラベル"
+        case .jalan: String(localized: "じゃらん")
+        case .rakuten: String(localized: "楽天トラベル")
         }
     }
 }

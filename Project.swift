@@ -59,6 +59,8 @@ let project = Project(
             infoPlist: .extendingDefault(with: [
                 "ITSAppUsesNonExemptEncryption": .boolean(false),
                 "CFBundleName": .string("YadoSearch"),
+                // Localised in Resources/InfoPlist.xcstrings, along with the
+                // location permission prompt.
                 "CFBundleDisplayName": .string("宿さがし"),
                 "CFBundleVersion": .string("$(CURRENT_PROJECT_VERSION)"),
                 "CFBundleShortVersionString": .string("$(MARKETING_VERSION)"),
