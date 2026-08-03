@@ -4,19 +4,19 @@ import ProjectDescription
 /// never shipped called itself 3.0 in its Info.plist; this one takes that
 /// version number for real.
 let version = "3.0.0"
-let copyright = "© 2014-2026 Atsushi Nagase. All rights reserved."
+let copyright = "© 2010-2026 LittleApps Inc. All rights reserved."
 
 let buildNumber = Environment.buildNumber.getString(default: "0")
 
-/// The Jalan Web Service application key. Never committed: `Scripts/generate.sh`
-/// sources `.env` and exports it, and CI supplies it from a repository secret.
+/// The Jalan Web Service application key. Never committed: direnv exports it
+/// from `.env` via `.envrc`, and CI supplies it from a repository secret.
 /// Generating without one produces a perfectly good build that tells the user
 /// the key is missing instead of issuing requests that would all be rejected.
 let jalanAPIKey = Environment.jalanApiKey.getString(default: "")
 
 let project = Project(
     name: "YadoSearch",
-    organizationName: "Atsushi Nagase",
+    organizationName: "LittleApps Inc.",
     options: .options(
         defaultKnownRegions: ["ja", "en"],
         developmentRegion: "ja"
