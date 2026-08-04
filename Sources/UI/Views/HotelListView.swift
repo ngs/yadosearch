@@ -25,7 +25,15 @@ struct HotelListView: View {
         .navigationBarTitleDisplayMode(.inline)
         #endif
         .task {
-            guard model == nil else { return }
+            // Re-entered on every appearance. A tab switch away cancels the
+            // previous entry's load mid-flight, which leaves the phase at
+            // `.loading` — that is the signal to run it again.
+            if let model {
+                if model.phase == .loading {
+                    await model.load()
+                }
+                return
+            }
             let model = HotelSearchViewModel(
                 client: yadoSearch.client,
                 target: search.target,

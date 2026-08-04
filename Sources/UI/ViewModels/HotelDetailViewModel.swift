@@ -111,6 +111,24 @@ public final class HotelDetailViewModel {
         await loadPlans()
     }
 
+    /// Picks up whatever a cancelled load left unfinished.
+    ///
+    /// SwiftUI cancels the view's `.task` the moment the screen goes off
+    /// screen — switching tabs is enough — and a load cut down mid-flight
+    /// leaves no detail and a plans spinner that never stops. The screen calls
+    /// this on every appearance; a page that finished passes through untouched.
+    public func resumeInterrupted() async {
+        if detail == nil {
+            await loadDetail()
+        }
+        switch plansPhase {
+        case .idle, .loading:
+            await loadPlans()
+        case .loaded, .failed, .needsCheckIn:
+            break
+        }
+    }
+
     private func reload() {
         reloadTask?.cancel()
         reloadTask = Task { [weak self] in

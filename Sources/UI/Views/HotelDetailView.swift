@@ -17,6 +17,9 @@ struct HotelDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var model: HotelDetailViewModel?
     @State private var isFavorite = false
+    /// Once per page, not once per appearance: the `.task` below re-runs every
+    /// time a tab switch brings the page back, and coming back is not a visit.
+    @State private var hasRecordedVisit = false
     private let stayConditions = StayConditionsStore.shared
 
     private var name: String {
@@ -74,7 +77,14 @@ struct HotelDetailView: View {
             }
         }
         .task {
-            guard model == nil else { return }
+            // Re-entered on every appearance, and a tab switch away cancels
+            // whatever the previous entry was still loading — so an existing
+            // model is resumed, not trusted to have finished.
+            if let model {
+                await model.resumeInterrupted()
+                finishLoad(model)
+                return
+            }
             // The conditions are the ones last used, on this device or another,
             // unless their date has passed — see `StayConditionsStore`.
             stayConditions.refresh()
@@ -87,10 +97,15 @@ struct HotelDetailView: View {
             )
             self.model = model
             await model.load()
-            refreshFavorite(model)
-            if let profile = model.profile {
-                StoredHotelStore.recordVisit(profile, in: modelContext)
-            }
+            finishLoad(model)
+        }
+    }
+
+    private func finishLoad(_ model: HotelDetailViewModel) {
+        refreshFavorite(model)
+        if !hasRecordedVisit, let profile = model.profile {
+            StoredHotelStore.recordVisit(profile, in: modelContext)
+            hasRecordedVisit = true
         }
     }
 
