@@ -7,8 +7,14 @@ struct PlanRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(plan.name)
-                .font(.headline)
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                // Which site is selling it. The detail screen shows one site at
+                // a time, but the plans are the part someone reads closely and
+                // then books from, so the badge belongs on the plan too.
+                ProviderBadge(provider: plan.provider)
+                Text(plan.name)
+                    .font(.headline)
+            }
 
             if let roomName = plan.roomName {
                 Text(roomName)
