@@ -64,16 +64,27 @@ struct HotelListView: View {
     }
 
     private func list(_ model: HotelSearchViewModel) -> some View {
-        List(selection: $selectedHotel) {
+        List {
             Section {
                 ForEach(Array(model.listings.enumerated()), id: \.element.id) { index, listing in
                     if let reference = HotelReference(listing: listing) {
-                        HotelRow(listing: listing, distance: model.distance(to: listing))
-                            .tag(reference)
-                            .accessibilityIdentifier(YadoAccessibilityID.hotelRow(index))
-                            .task {
-                                await model.loadMoreIfNeeded(currentItem: listing)
-                            }
+                        // A button rather than `List(selection:)`: the list is
+                        // pushed inside the sidebar's stack, and a selection
+                        // bound from there never reaches the detail column on
+                        // the Mac — clicking a row simply did nothing.
+                        Button {
+                            selectedHotel = reference
+                        } label: {
+                            HotelRow(listing: listing, distance: model.distance(to: listing))
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .listRowBackground(rowBackground(for: reference))
+                        .accessibilityIdentifier(YadoAccessibilityID.hotelRow(index))
+                        .task {
+                            await model.loadMoreIfNeeded(currentItem: listing)
+                        }
                     }
                 }
             } header: {
@@ -97,6 +108,17 @@ struct HotelListView: View {
     /// found on both is merged into one row. How many rows are *loaded* is not
     /// here: the list pages as it is scrolled, so that number is a fact about
     /// how far you have scrolled rather than about the search.
+    /// The selected inn keeps a tint behind it, which is what `List(selection:)`
+    /// drew for free and a button has to be told to draw.
+    @ViewBuilder
+    private func rowBackground(for reference: HotelReference) -> some View {
+        if selectedHotel == reference {
+            Color.accentColor.opacity(0.15)
+        } else {
+            Color.clear
+        }
+    }
+
     private func header(_ model: HotelSearchViewModel) -> String {
         let breakdown = Provider.allCases
             .compactMap { provider in

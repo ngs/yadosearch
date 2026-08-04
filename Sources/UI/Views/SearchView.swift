@@ -60,13 +60,13 @@ struct SearchView: View {
     @State private var isPickingScope = false
     @State private var isPickingStation = false
     @State private var isEditingFilters = false
-    /// Type-erased on purpose. A typed path inside a `NavigationSplitView`
-    /// column is compared against the column's own state, and when the split
-    /// view is collapsed — iPhone — that state also carries the selected inn,
-    /// which is a different type. SwiftUI's answer to that is a `try!` on
-    /// `AnyNavigationPath.Error.comparisonTypeMismatch`, i.e. a crash, and
-    /// running a recent search while an inn was open hit it every time.
-    @State private var path = NavigationPath()
+    /// Typed, and it has to be: a `NavigationPath` in this position renders
+    /// nothing at all on the Mac — the title and the back button appear and the
+    /// destination never draws. The crash it was introduced to fix
+    /// (`AnyNavigationPath.Error.comparisonTypeMismatch` on iPhone, when a
+    /// recent search was run while an inn was open) is answered by clearing the
+    /// selected inn before pushing instead.
+    @State private var path: [SearchRoute] = []
     /// Which sites to ask. An area search cannot ask both, so this is coerced
     /// to one provider whenever the area mode is showing.
     @State private var scope: SearchScope = .both
@@ -94,27 +94,33 @@ struct SearchView: View {
         }
         .sheet(isPresented: $isEditingFilters) {
             SearchFiltersView(filters: $filters, party: $party)
+                .sheetSize()
         }
         .sheet(isPresented: $isPickingArea) {
             // Which tree to show follows from the site already chosen; there is
             // no picker that spans both, because the two schemes share no codes.
-            if scope == .rakuten {
-                RakutenAreaPickerView { chosen in
-                    chosenArea = chosen
-                }
-            } else {
-                AreaPickerView { chosen in
-                    chosenArea = chosen
+            Group {
+                if scope == .rakuten {
+                    RakutenAreaPickerView { chosen in
+                        chosenArea = chosen
+                    }
+                } else {
+                    AreaPickerView { chosen in
+                        chosenArea = chosen
+                    }
                 }
             }
+            .sheetSize()
         }
         .sheet(isPresented: $isPickingScope) {
             SearchScopePicker(scope: $scope, allowsBoth: mode != .area)
+                .sheetSize()
         }
         .sheet(isPresented: $isPickingStation) {
             StationPickerView { station in
                 chosenStation = station
             }
+            .sheetSize()
         }
     }
 
@@ -463,7 +469,7 @@ private extension SearchView {
         SearchHistoryStore.record(search, in: modelContext)
         // The inn on the right belongs to the search being left behind.
         selectedHotel = nil
-        path.append(SearchRoute.results(search))
+        path.append(.results(search))
     }
 
     private var targetAndTitle: (SearchTarget, String)? {

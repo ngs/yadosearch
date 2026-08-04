@@ -60,7 +60,7 @@ final class ScreenshotTests: XCTestCase {
     /// The results, once the photographs have loaded — an inn list of grey
     /// placeholders is not a screenshot worth having.
     private func captureResults() throws {
-        app.descendants(matching: .any)[YadoAccessibilityID.searchSubmit].firstMatch.tap()
+        choose(app.descendants(matching: .any)[YadoAccessibilityID.searchSubmit].firstMatch)
 
         let firstRow = row(0)
         guard firstRow.waitForExistence(timeout: timeout) else {
@@ -73,10 +73,11 @@ final class ScreenshotTests: XCTestCase {
 
     /// One inn: the photograph, the map, the facts.
     private func captureDetail() throws {
-        row(0).tap()
+        choose(row(0))
 
         let favorite = app.descendants(matching: .any)[YadoAccessibilityID.hotelFavorite]
         guard favorite.waitForExistence(timeout: timeout) else {
+            dumpHierarchy(named: "hierarchy-after-row.txt")
             XCTFail("The detail screen never appeared.")
             return
         }
@@ -124,11 +125,28 @@ final class ScreenshotTests: XCTestCase {
         try capture("05_favorites")
     }
 
+    /// A tap on iOS, a click on the Mac — and by coordinate, because an element
+    /// the Mac does not consider hittable still has a point in the middle of it.
+    private func choose(_ element: XCUIElement) {
+        #if os(macOS)
+        // The app has to be the active one first: a click into an inactive
+        // macOS window activates it and goes no further, so the row would take
+        // two clicks and the test only ever made one.
+        app.activate()
+        element.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).click()
+        #else
+        element.tap()
+        #endif
+    }
+
     /// Unwinds whatever the run pushed, so the top-level places are reachable
     /// again. Harmless where nothing was pushed: there is no back button then.
     private func popToRoot() {
         for _ in 0 ..< 3 {
-            let back = app.navigationBars.buttons.firstMatch
+            // By identifier, not by position: an iPad has a navigation bar per
+            // column, and the first one is not necessarily the one that was
+            // pushed.
+            let back = app.buttons["BackButton"].firstMatch
             guard back.exists, back.isHittable else { return }
             back.tap()
             settle(seconds: 1)
@@ -141,10 +159,28 @@ final class ScreenshotTests: XCTestCase {
     /// the cell, which is the one thing that can be tapped.
     private func row(_ index: Int) -> XCUIElement {
         let identifier = YadoAccessibilityID.hotelRow(index)
+        // The row is a cell containing the identified labels — which is how it
+        // is exposed on the Mac, where the labels themselves are not hittable
+        // and the cell is what a click has to land on.
+        let cell = app.cells.containing(.any, identifier: identifier).firstMatch
+        if cell.exists, cell.frame.height > 1 {
+            return cell
+        }
         let matches = app.descendants(matching: .any).matching(identifier: identifier)
-        // The photograph and the labels carry the identifier too, and none of
-        // them can be tapped; the row itself is the one that can.
-        return matches.allElementsBoundByIndex.first { $0.isHittable } ?? matches.firstMatch
+        // The photograph and the labels carry the identifier too, and so does a
+        // zero-height scroll view on the Mac — which reports itself hittable
+        // and then has no point to hit. The row is the one with a size.
+        let sized = matches.allElementsBoundByIndex.filter {
+            $0.frame.height > 1 && $0.frame.width > 1
+        }
+        // A row that can be tapped where there is one. On the Mac the list row
+        // is not exposed at all — only the labels inside it carry the
+        // identifier, and none of them is "hittable" — so the first one with a
+        // real frame is what gets clicked, which selects the row it is in.
+        // The biggest of them, not the first: the labels are stacked and some
+        // are slivers, and a click has to land on the row rather than beside it.
+        let biggest = sized.max { $0.frame.width * $0.frame.height < $1.frame.width * $1.frame.height }
+        return sized.first { $0.isHittable } ?? biggest ?? matches.firstMatch
     }
 
     /// じゃらん, the first segment. It is what the plan list can show without a

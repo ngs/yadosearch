@@ -36,6 +36,10 @@ public struct YadoSearchRootView: View {
             // now, and a tab bar that turns into a second sidebar inside it
             // would be a sidebar within a sidebar.
             .toolbar(removing: .sidebarToggle)
+            // Left to itself the column settles at ~140pt on the Mac, which
+            // wraps an inn's name into a vertical sliver. A results list needs
+            // the width of a results list.
+            .navigationSplitViewColumnWidth(min: 320, ideal: 380, max: 520)
         } detail: {
             detail
         }

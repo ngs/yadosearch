@@ -48,15 +48,23 @@ struct StoredHotelListView: View {
     }
 
     private var list: some View {
-        List(selection: $selectedHotel) {
+        List {
             ForEach(entries) { entry in
-                HotelRow(
-                    name: entry.name,
-                    area: entry.areaSummary,
-                    catchCopy: entry.catchCopy,
-                    pictureURL: entry.pictureURL
-                )
-                .tag(HotelReference(provider: entry.provider, id: entry.hotelID))
+                let reference = HotelReference(provider: entry.provider, id: entry.hotelID)
+                Button {
+                    selectedHotel = reference
+                } label: {
+                    HotelRow(
+                        name: entry.name,
+                        area: entry.areaSummary,
+                        catchCopy: entry.catchCopy,
+                        pictureURL: entry.pictureURL
+                    )
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .listRowBackground(selectedHotel == reference ? Color.accentColor.opacity(0.15) : Color.clear)
             }
             .onDelete(perform: delete)
         }
