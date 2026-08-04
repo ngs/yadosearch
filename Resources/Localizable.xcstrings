@@ -19,6 +19,23 @@
       },
       "comment": "Between the parts of a summary line: an area, a party, a set of amenities."
     },
+    "%1$@ %2$@": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ %2$@"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$@ %2$@件"
+          }
+        }
+      }
+    },
     "%1$@, %2$@": {
       "extractionState": "manual",
       "localizations": {
@@ -53,19 +70,19 @@
         }
       }
     },
-    "%1$lld inns (%2$@)": {
+    "%1$lld shown · %2$@ found": {
       "extractionState": "manual",
       "localizations": {
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "%1$lld inns (%2$@)"
+            "value": "%1$lld shown · %2$@ found"
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "%lld件（%@）"
+            "value": "表示中 %1$lld件（%2$@）"
           }
         }
       }
@@ -104,23 +121,6 @@
         }
       }
     },
-    "%lld inns": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld inns"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "%lld件"
-          }
-        }
-      }
-    },
     "%lld nights": {
       "extractionState": "manual",
       "localizations": {
@@ -155,6 +155,23 @@
         }
       }
     },
+    "%lld shown": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld shown"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "表示中 %lld件"
+          }
+        }
+      }
+    },
     "(%lld reviews)": {
       "extractionState": "manual",
       "localizations": {
@@ -168,6 +185,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "（%lld件）"
+          }
+        }
+      }
+    },
+    ", ": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": ", "
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "、"
           }
         }
       }
