@@ -1,5 +1,20 @@
 import Foundation
 import YadoSearchCore
+#if canImport(UIKit)
+import UIKit
+#endif
+
+/// Whether a chosen inn is rendered in a detail column beside its list — the
+/// Mac and the iPad — rather than pushed onto the list's own stack, which is
+/// all the iPhone has room for. The lists branch on this, and so does the
+/// root: the answer decides whether there is a detail column at all.
+var hotelOpensInDetailColumn: Bool {
+    #if os(macOS)
+    true
+    #else
+    UIDevice.current.userInterfaceIdiom == .pad
+    #endif
+}
 
 /// Enough to open an inn's page: which site it is booked through, its ID there,
 /// and — when the list had one — the record already fetched, so the page draws
@@ -27,14 +42,18 @@ struct HotelReference: Hashable {
     }
 }
 
-/// Where the left column's navigation stack can go.
+/// Where the search tab's navigation stack can go.
 ///
-/// Only results: an inn is not pushed any more, it is *selected*, and the
-/// detail column is what renders the selection. On iPhone that column is the
-/// same stack collapsed, so the inn still arrives by a push — SwiftUI's, not
-/// one spelled out here.
+/// The stack's path is `[SearchRoute]` — typed, because a `NavigationPath` in
+/// this position renders nothing on the Mac — and a typed path can only hold
+/// its own type. A `navigationDestination(item:)` push tried alongside it is
+/// not representable there, and SwiftUI swaps the screen without an animation
+/// and pops to the root on back. So the inn is a route like any other.
 enum SearchRoute: Hashable {
     /// The whole search — target, scope, filters, party and the phrase that
     /// names it. The same value the recent-search list stores and replays.
     case results(SavedSearch)
+    /// One inn, pushed from a results row. iPhone and iPad only: the Mac
+    /// renders the inn in the window's detail column instead of pushing it.
+    case hotel(HotelReference)
 }

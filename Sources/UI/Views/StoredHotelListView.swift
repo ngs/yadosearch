@@ -28,16 +28,23 @@ struct StoredHotelListView: View {
             }
             .navigationTitle(kind.title)
             #if !os(macOS)
-            // Choosing a row sets the item and this stack pushes the inn;
-            // popping clears it. On the Mac the same binding fills the
-            // window's detail column instead, so no destination there.
-            .navigationDestination(item: $selectedHotel) { hotel in
+            // A value push, like the search tab's: the row is a
+            // `NavigationLink` and this is its destination. On the Mac a row
+            // *selects* instead, and the window's detail column renders it.
+            .navigationDestination(for: HotelReference.self) { hotel in
                 HotelDetailView(reference: hotel)
             }
             #endif
             .toolbar {
-                if kind == .history, !entries.isEmpty {
+                #if !os(macOS)
+                if !entries.isEmpty {
                     ToolbarItem(placement: .primaryAction) {
+                        EditButton()
+                    }
+                }
+                #endif
+                if kind == .history, !entries.isEmpty {
+                    ToolbarItem(placement: .destructiveAction) {
                         Button("Delete all", role: .destructive) {
                             StoredHotelStore.clear(kind: .history, in: modelContext)
                         }
@@ -58,25 +65,42 @@ struct StoredHotelListView: View {
     private var list: some View {
         List {
             ForEach(entries) { entry in
-                let reference = HotelReference(provider: entry.provider, id: entry.hotelID)
-                Button {
-                    selectedHotel = reference
-                } label: {
-                    HotelRow(
-                        name: entry.name,
-                        area: entry.areaSummary,
-                        catchCopy: entry.catchCopy,
-                        pictureURL: entry.pictureURL
-                    )
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .listRowBackground(selectedHotel == reference ? Color.accentColor.opacity(0.15) : Color.clear)
+                row(for: entry)
             }
             .onDelete(perform: delete)
         }
         .listStyle(.plain)
+    }
+
+    /// One row. Pushed on the iPhone, selected on the Mac and the iPad — the
+    /// same split as the results list, and for the same reasons.
+    @ViewBuilder
+    private func row(for entry: StoredHotel) -> some View {
+        let reference = HotelReference(provider: entry.provider, id: entry.hotelID)
+        if hotelOpensInDetailColumn {
+            Button {
+                selectedHotel = reference
+            } label: {
+                storedRow(for: entry)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .listRowBackground(selectedHotel == reference ? Color.accentColor.opacity(0.15) : Color.clear)
+        } else {
+            NavigationLink(value: reference) {
+                storedRow(for: entry)
+            }
+        }
+    }
+
+    private func storedRow(for entry: StoredHotel) -> some View {
+        HotelRow(
+            name: entry.name,
+            area: entry.areaSummary,
+            catchCopy: entry.catchCopy,
+            pictureURL: entry.pictureURL
+        )
     }
 
     private func delete(at offsets: IndexSet) {

@@ -72,23 +72,11 @@ struct HotelListView: View {
             Section {
                 ForEach(Array(model.listings.enumerated()), id: \.element.id) { index, listing in
                     if let reference = HotelReference(listing: listing) {
-                        // A button rather than `List(selection:)`: the list is
-                        // pushed inside the sidebar's stack, and a selection
-                        // bound from there never reaches the detail column on
-                        // the Mac — clicking a row simply did nothing.
-                        Button {
-                            selectedHotel = reference
-                        } label: {
-                            HotelRow(listing: listing, distance: model.distance(to: listing))
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                .contentShape(Rectangle())
-                        }
-                        .buttonStyle(.plain)
-                        .listRowBackground(rowBackground(for: reference))
-                        .accessibilityIdentifier(YadoAccessibilityID.hotelRow(index))
-                        .task {
-                            await model.loadMoreIfNeeded(currentItem: listing)
-                        }
+                        row(reference: reference, listing: listing, model: model)
+                            .accessibilityIdentifier(YadoAccessibilityID.hotelRow(index))
+                            .task {
+                                await model.loadMoreIfNeeded(currentItem: listing)
+                            }
                     }
                 }
             } header: {
@@ -103,6 +91,33 @@ struct HotelListView: View {
         .listStyle(.plain)
         .refreshable {
             await model.load()
+        }
+    }
+
+    /// One row. Two shapes on purpose: on the iPhone the inn is pushed, and
+    /// `NavigationLink(value:)` is the only push a typed path can carry — a
+    /// `navigationDestination(item:)` alongside it swaps the screen without
+    /// an animation and pops to the root on back. On the Mac and the iPad the
+    /// inn is not pushed at all: a row *selects*, and the window's detail
+    /// column renders the selection. (`List(selection:)` could not do that
+    /// either — a selection bound from a pushed list never reached the detail
+    /// column.)
+    @ViewBuilder
+    private func row(reference: HotelReference, listing: HotelListing, model: HotelSearchViewModel) -> some View {
+        if hotelOpensInDetailColumn {
+            Button {
+                selectedHotel = reference
+            } label: {
+                HotelRow(listing: listing, distance: model.distance(to: listing))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .listRowBackground(rowBackground(for: reference))
+        } else {
+            NavigationLink(value: SearchRoute.hotel(reference)) {
+                HotelRow(listing: listing, distance: model.distance(to: listing))
+            }
         }
     }
 

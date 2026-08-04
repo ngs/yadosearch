@@ -89,16 +89,10 @@ struct SearchView: View {
                     switch route {
                     case let .results(search):
                         HotelListView(search: search, selectedHotel: $selectedHotel)
+                    case let .hotel(reference):
+                        HotelDetailView(reference: reference)
                     }
                 }
-                #if !os(macOS)
-                // Choosing a row sets the item and the stack pushes the inn;
-                // popping clears it. On the Mac the same binding fills the
-                // window's detail column instead, so no destination there.
-                .navigationDestination(item: $selectedHotel) { hotel in
-                    HotelDetailView(reference: hotel)
-                }
-                #endif
         }
         .sheet(isPresented: $isEditingFilters) {
             SearchFiltersView(filters: $filters, party: $party)
