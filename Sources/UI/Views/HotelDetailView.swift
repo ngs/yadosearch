@@ -17,6 +17,7 @@ struct HotelDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var model: HotelDetailViewModel?
     @State private var isFavorite = false
+    private let stayConditions = StayConditionsStore.shared
 
     private var name: String {
         model?.profile?.name ?? model?.listing?.name ?? ""
@@ -73,10 +74,14 @@ struct HotelDetailView: View {
         }
         .task {
             guard model == nil else { return }
+            // The conditions are the ones last used, on this device or another,
+            // unless their date has passed — see `StayConditionsStore`.
+            stayConditions.refresh()
             let model = HotelDetailViewModel(
                 provider: reference.provider,
                 listing: reference.listing,
-                client: yadoSearch.client
+                client: yadoSearch.client,
+                stay: stayConditions.conditions
             )
             self.model = model
             await model.load()
@@ -249,7 +254,15 @@ private extension HotelDetailView {
     func plansSection(_ model: HotelDetailViewModel) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             sectionTitle("Plans")
-            StayConditionsEditor(stay: Binding(get: { model.stay }, set: { model.stay = $0 }))
+            StayConditionsEditor(stay: Binding(
+                get: { model.stay },
+                set: { conditions in
+                    model.stay = conditions
+                    // Remembered as they are set, so the next inn — and the
+                    // next device — opens on the same stay.
+                    stayConditions.update(conditions)
+                }
+            ))
             plans(model)
         }
         .accessibilityIdentifier(YadoAccessibilityID.hotelPlans)

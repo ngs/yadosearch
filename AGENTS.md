@@ -123,14 +123,31 @@ Suites that assert on the last request a stub received are `.serialized` — Swi
 
 ## iCloud sync
 
-Favourites, visit history and recent searches mirror through the CloudKit private database `iCloud.org.ngsdev.iphone.Yado`.
+Favourites, visit history and recent searches mirror through the CloudKit private database `iCloud.org.ngsdev.iphone.Yado`. **The stay conditions do not**: they go through iCloud's key-value store instead (`StayConditionsStore`), because they are one small record rather than a table, and `NSUbiquitousKeyValueStore` is what that is for.
 
 - **Mirroring constraints**: every persisted property must be optional or defaulted, and `@Attribute(.unique)` is forbidden. Both compile fine and then crash at container creation, so `CloudKitSchemaTests` pins them. Deduplication is done by an explicit fetch in `StoredHotelStore` / `SearchHistoryStore`, not by a constraint.
 - `YadoSearchModelContainer.make(inMemory:)` walks a ladder: CloudKit → local → in-memory. A build without the entitlement (CI, and any simulator not signed into iCloud) simply lands on a lower rung, so nothing here may assume sync is on.
 - `aps-environment` comes from `$(APS_ENVIRONMENT)`, set per configuration in `Project.swift` (Debug `development`, Release `production`). A Release build claiming `development` registers against the APNs sandbox, where CloudKit's pushes never arrive — the app would then only sync when opened.
 - The portal side is already set up: `org.ngsdev.iphone.Yado` has the iCloud (CloudKit) and Push Notifications capabilities, with `iCloud.org.ngsdev.iphone.Yado` assigned. The identifier is pinned in `CloudKitSchemaTests`; if it ever moves, the entitlements file has to move with it or signing fails.
-- The match profiles already carry the capabilities, so `provision.yml` does not need re-running. A profile is a snapshot of the entitlements at issue time, which is why this was once outstanding; the Release builds now on App Store Connect were signed with `MATCH_READONLY=true` and accepted as `VALID` with the iCloud and APNs entitlements, which they could not have been against a stale profile.
+- **The key-value store needed no re-provisioning.** `com.apple.developer.ubiquity-kvstore-identifier` was added to the entitlements for `StayConditionsStore`, and a profile is a snapshot of the entitlements at issue time — but **key-value storage is not a capability of its own**: it comes with iCloud, which the App ID has had all along. The profiles already carry it as a wildcard, which is the thing to check rather than the portal:
+
+  ```bash
+  security cms -D -i "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles/<uuid>.mobileprovision" > /tmp/p.plist
+  plutil -p /tmp/p.plist | grep -iE "ubiquity-kvstore|icloud-services"
+  #   "com.apple.developer.icloud-services" => "*"
+  #   "com.apple.developer.ubiquity-kvstore-identifier" => "3Y8APYUG2G.*"
+  ```
+- The match profiles already carry the CloudKit and APNs capabilities, so `provision.yml` did not need re-running for those. A profile is a snapshot of the entitlements at issue time, which is why this was once outstanding; the Release builds now on App Store Connect were signed with `MATCH_READONLY=true` and accepted as `VALID` with the iCloud and APNs entitlements, which they could not have been against a stale profile.
 - Push is only ever the silent kind. The app has no notification code at all — `NSPersistentCloudKitContainer` uses the pushes to learn that another device changed something. Without them sync still works, but only when the app is opened.
+
+## The stay conditions
+
+`StayConditions` — the check-in date, the nights, the rooms and the party — is what the vacancy search asks with, and it is remembered rather than re-entered. `StayConditionsStore` (Platform) writes it to `UserDefaults` **and** to `NSUbiquitousKeyValueStore`, as JSON under one key.
+
+- **iCloud is read first, `UserDefaults` second.** The local copy is what answers on a device with iCloud off, or before the first sync arrives; a write goes to both.
+- **A check-in date before today clears the record, on both sides.** Yesterday's conditions describe a stay nobody can book, and searching them silently reports no vacancy for a night that has already gone. The rule is a whole-day comparison, so a stay starting earlier today still counts as today's.
+- Another device's write arrives as `NSUbiquitousKeyValueStore.didChangeExternallyNotification`, and is subject to the same staleness rule.
+- The store is read (and re-checked) when an inn's page opens, which is the only screen that asks about vacancy.
 
 ## Search state
 
