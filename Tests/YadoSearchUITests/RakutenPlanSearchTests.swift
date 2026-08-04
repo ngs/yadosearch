@@ -35,6 +35,25 @@ struct RakutenPlanSearchTests {
         try await Task.sleep(for: .milliseconds(300))
     }
 
+    @Test("An inn opened from favourites — an ID and nothing else — still loads")
+    func opensFromAnIdentifierAlone() async throws {
+        let hotel = """
+        {"hotel":{"provider":"rakuten","id":"137869","name":"Inn","area":{"prefecture":"東京都"}}}
+        """
+        StubProxyServer.install(.init(pages: [0: hotel, 1: hotel]), host: Self.host)
+        // No listing: a favourite is a name, a picture and an ID.
+        let model = HotelDetailViewModel(
+            provider: .rakuten,
+            hotelID: "137869",
+            client: StubProxyServer.client(host: Self.host)
+        )
+
+        await model.load()
+
+        #expect(model.hotelID == "137869")
+        #expect(model.profile?.name == "Inn")
+    }
+
     @Test("Choosing a check-in date replaces the prompt with the plans")
     func datePickedLoadsPlans() async throws {
         StubProxyServer.install(.init(pages: [0: Self.onePlan, 1: Self.onePlan]), host: Self.host)

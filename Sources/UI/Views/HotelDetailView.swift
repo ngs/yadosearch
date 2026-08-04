@@ -79,6 +79,7 @@ struct HotelDetailView: View {
             stayConditions.refresh()
             let model = HotelDetailViewModel(
                 provider: reference.provider,
+                hotelID: reference.id,
                 listing: reference.listing,
                 client: yadoSearch.client,
                 stay: stayConditions.conditions

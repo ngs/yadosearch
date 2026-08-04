@@ -48,14 +48,26 @@ public final class HotelDetailViewModel {
 
     private let client: YadoSearchAPIClient
     private var reloadTask: Task<Void, Never>?
+    /// The ID the page was opened with, on the provider it was opened on.
+    ///
+    /// Everything else knows an ID only through a listing or a fetched detail,
+    /// and a favourite has neither — it is a name, a picture and an ID. Without
+    /// this the first fetch had nothing to ask about and the page stayed empty.
+    private let openedID: String?
+    /// The provider that ID belongs to. IDs collide between the two sites, so
+    /// it is only an answer while the page is still showing that one.
+    private let openedProvider: Provider
 
     public init(
         provider: Provider,
+        hotelID: String? = nil,
         listing: HotelListing? = nil,
         client: YadoSearchAPIClient,
         stay: StayConditions = StayConditions()
     ) {
         self.provider = provider
+        openedID = hotelID
+        openedProvider = provider
         self.listing = listing
         self.client = client
         self.stay = stay
@@ -64,7 +76,9 @@ public final class HotelDetailViewModel {
     /// The inn's ID on the provider currently selected. `nil` while the detail
     /// is still loading and the list knew of no offer from that side.
     public var hotelID: String? {
-        detail?.profile(for: provider)?.id ?? listing?.offer(from: provider)?.id
+        detail?.profile(for: provider)?.id
+            ?? listing?.offer(from: provider)?.id
+            ?? (provider == openedProvider ? openedID : nil)
     }
 
     /// The record to draw the page from: the selected provider's account of the
