@@ -69,6 +69,7 @@ struct HotelDetailView: View {
                     SafariLink(destination: url) {
                         Label("Book", systemImage: "calendar.badge.plus")
                     }
+                    .accessibilityIdentifier(YadoAccessibilityID.hotelBooking)
                 }
             }
         }
@@ -113,20 +114,28 @@ private extension HotelDetailView {
     func providerPicker(_ model: HotelDetailViewModel) -> some View {
         let providers = model.availableProviders
         if providers.count > 1 {
-            Picker("Booking site", selection: Binding(
-                get: { model.provider },
-                set: { provider in
-                    model.provider = provider
-                    refreshFavorite(model)
-                }
-            )) {
+            // Buttons rather than a `Picker(.segmented)`: on the Mac the
+            // segmented control simply would not change its selection — clicks,
+            // keyboard, coordinate taps, none of them moved it — so an inn
+            // opened on 楽天 could not be read on じゃらん at all.
+            HStack(spacing: 8) {
+                Text("Booking site")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
                 ForEach(providers) { provider in
-                    Text(provider.title)
-                        .tag(provider)
-                        .accessibilityIdentifier(YadoAccessibilityID.hotelProvider(provider.rawValue))
+                    Button {
+                        model.provider = provider
+                        refreshFavorite(model)
+                    } label: {
+                        Text(provider.title)
+                            .font(.subheadline.weight(model.provider == provider ? .semibold : .regular))
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(model.provider == provider ? provider.tint : .secondary)
+                    .accessibilityIdentifier(YadoAccessibilityID.hotelProvider(provider.rawValue))
                 }
             }
-            .pickerStyle(.segmented)
         }
     }
 
@@ -330,7 +339,9 @@ private extension HotelDetailView {
         }
     }
 
-    func sectionTitle(_ text: String) -> some View {
+    /// `LocalizedStringKey`, not `String`: every caller passes a literal, and a
+    /// plain `String` would put it on screen untranslated.
+    func sectionTitle(_ text: LocalizedStringKey) -> some View {
         Text(text)
             .font(.title3.weight(.semibold))
     }

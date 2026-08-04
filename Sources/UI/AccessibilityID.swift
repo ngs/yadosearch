@@ -21,6 +21,8 @@ public enum YadoAccessibilityID {
     /// quotes guide prices without a date; 楽天 has no undated mode and asks
     /// for one instead — a correct screen and a dull photograph.
     public static func hotelProvider(_ provider: String) -> String { "hotel.provider.\(provider)" }
+    /// The booking button in the detail screen's toolbar.
+    public static let hotelBooking = "hotel.booking"
     /// The heart in the detail screen's toolbar.
     public static let hotelFavorite = "hotel.favorite"
     /// The plan list on the detail screen, which is what "scrolled far enough"

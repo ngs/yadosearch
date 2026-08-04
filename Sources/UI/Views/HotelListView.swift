@@ -17,6 +17,7 @@ struct HotelListView: View {
                 content(model)
             } else {
                 ProgressView()
+                    .centredInColumn()
             }
         }
         .navigationTitle(search.title)
@@ -41,7 +42,10 @@ struct HotelListView: View {
     private func content(_ model: HotelSearchViewModel) -> some View {
         switch model.phase {
         case .loading:
+            // The column is as wide as the window lets it be, so a spinner left
+            // to its own size sits in the top-left corner of it.
             ProgressView("Searching…")
+                .centredInColumn()
         case let .failed(message):
             ContentUnavailableView {
                 Label("The search failed", systemImage: "exclamationmark.triangle")
