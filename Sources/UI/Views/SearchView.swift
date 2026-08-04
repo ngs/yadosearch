@@ -60,7 +60,13 @@ struct SearchView: View {
     @State private var isPickingScope = false
     @State private var isPickingStation = false
     @State private var isEditingFilters = false
-    @State private var path: [SearchRoute] = []
+    /// Type-erased on purpose. A typed path inside a `NavigationSplitView`
+    /// column is compared against the column's own state, and when the split
+    /// view is collapsed — iPhone — that state also carries the selected inn,
+    /// which is a different type. SwiftUI's answer to that is a `try!` on
+    /// `AnyNavigationPath.Error.comparisonTypeMismatch`, i.e. a crash, and
+    /// running a recent search while an inn was open hit it every time.
+    @State private var path = NavigationPath()
     /// Which sites to ask. An area search cannot ask both, so this is coerced
     /// to one provider whenever the area mode is showing.
     @State private var scope: SearchScope = .both
@@ -73,6 +79,12 @@ struct SearchView: View {
         NavigationStack(path: $path) {
             form
                 .navigationTitle("YadoSearch")
+                .task {
+                    // Twins arrive by sync rather than by use, so the list is
+                    // tidied when it is shown rather than only when it is
+                    // written to.
+                    SearchHistoryStore.deduplicate(in: modelContext)
+                }
                 .navigationDestination(for: SearchRoute.self) { route in
                     switch route {
                     case let .results(search):
@@ -449,7 +461,9 @@ private extension SearchView {
     /// back-and-forward.
     func run(_ search: SavedSearch) {
         SearchHistoryStore.record(search, in: modelContext)
-        path.append(.results(search))
+        // The inn on the right belongs to the search being left behind.
+        selectedHotel = nil
+        path.append(SearchRoute.results(search))
     }
 
     private var targetAndTitle: (SearchTarget, String)? {

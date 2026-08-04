@@ -91,15 +91,13 @@ struct HotelListView: View {
         }
     }
 
-    /// "51 shown · Jalan 344, Rakuten Travel 1,271 found".
+    /// "Jalan 344, Rakuten Travel 1,271".
     ///
-    /// Two different counts, and saying so is the point: the first is how many
-    /// rows are on screen — the list pages as it is scrolled, and an inn found
-    /// on both sites is one row — while the others are how many each site says
-    /// it has. They cannot be added up, and "51 inns (Jalan 344 / Rakuten
-    /// 1,271)" read as if they should be.
+    /// What each site says it has for the query, counted before the same inn
+    /// found on both is merged into one row. How many rows are *loaded* is not
+    /// here: the list pages as it is scrolled, so that number is a fact about
+    /// how far you have scrolled rather than about the search.
     private func header(_ model: HotelSearchViewModel) -> String {
-        let shown = model.listings.count
         let breakdown = Provider.allCases
             .compactMap { provider in
                 model.totals[provider].map { total in
@@ -108,8 +106,8 @@ struct HotelListView: View {
             }
             .joined(separator: String(localized: ", "))
         return breakdown.isEmpty
-            ? String(localized: "\(shown) shown")
-            : String(localized: "\(shown) shown · \(breakdown) found")
+            ? String(localized: "\(model.listings.count) shown")
+            : breakdown
     }
 
     @ViewBuilder

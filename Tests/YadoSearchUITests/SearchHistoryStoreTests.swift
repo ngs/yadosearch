@@ -48,6 +48,31 @@ struct SearchHistoryStoreTests {
 
     /// A proximity search gains its place name only once the geocoder answers,
     /// so the title of an existing entry has to be refreshed.
+    @Test("Twins from another device collapse into the newest, at the top")
+    func mergesSyncedDuplicates() throws {
+        let context = makeContext()
+        let twin = search()
+        // What CloudKit mirroring can produce: the same search, inserted twice,
+        // because a fingerprint cannot be a unique attribute in a mirrored
+        // container. Neither insert goes through `record`.
+        context.insert(StoredSearch(search: twin, searchedAt: Date(timeIntervalSince1970: 1_000)))
+        context.insert(StoredSearch(search: twin, searchedAt: Date(timeIntervalSince1970: 2_000)))
+        context.insert(StoredSearch(
+            search: search(prefecture: "010000", title: "北海道"),
+            searchedAt: Date(timeIntervalSince1970: 1_500)
+        ))
+        try context.save()
+
+        SearchHistoryStore.deduplicate(in: context)
+
+        let remaining = entries(in: context)
+        #expect(remaining.count == 2)
+        #expect(remaining.filter { $0.fingerprint == twin.id }.count == 1)
+        // The survivor is the newer of the two, which is what puts it above the
+        // search that happened between them.
+        #expect(remaining.first?.fingerprint == twin.id)
+    }
+
     @Test("A changed title updates the existing entry")
     func refreshesTheTitle() throws {
         let context = makeContext()
