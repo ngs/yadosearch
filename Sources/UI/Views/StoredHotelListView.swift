@@ -27,6 +27,14 @@ struct StoredHotelListView: View {
                 }
             }
             .navigationTitle(kind.title)
+            #if !os(macOS)
+            // Choosing a row sets the item and this stack pushes the inn;
+            // popping clears it. On the Mac the same binding fills the
+            // window's detail column instead, so no destination there.
+            .navigationDestination(item: $selectedHotel) { hotel in
+                HotelDetailView(reference: hotel)
+            }
+            #endif
             .toolbar {
                 if kind == .history, !entries.isEmpty {
                     ToolbarItem(placement: .primaryAction) {

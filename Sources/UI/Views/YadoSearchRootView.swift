@@ -1,49 +1,71 @@
 import SwiftUI
 import YadoSearchPlatform
 
-/// The app's four top-level places — the same four the 2010 release had —
-/// beside the inn currently being read.
+/// The app's four top-level places — the same four the 2010 release had.
 ///
-/// Two columns rather than one stack: the tabs and whatever each of them has
-/// pushed stay on the left, and the inn opens on the right, so choosing another
-/// inn from a list of results does not take the list away. On iPhone the split
-/// view collapses and the same choice pushes, which is what it always did.
+/// Two shapes, chosen at compile time, because no one arrangement survives
+/// both platforms:
+///
+/// - **iPhone / iPad**: a `TabView` at the root, each tab owning its own
+///   `NavigationStack`, the inn pushed within it by
+///   `navigationDestination(item:)`. Nesting the `TabView` inside a
+///   `NavigationSplitView`'s sidebar — the previous shape — left a selection
+///   binding with nowhere to push to, so tapping a result did nothing.
+/// - **Mac**: three columns — places, what they lead to, the inn — because a
+///   `NavigationStack` push inside a `TabView` inside a split view's *sidebar*
+///   draws nothing there: title and back button and no content, whatever the
+///   destination is. Verified against the running app; do not fold the two
+///   shapes back into one without re-checking that.
 public struct YadoSearchRootView: View {
-    /// The inn on the right. One piece of state for all four tabs: the detail
-    /// column belongs to the window, not to whichever list happened to fill it.
+    #if os(macOS)
+    /// One of the four places. Never nil in practice — the sidebar always has
+    /// a selection — but the split view wants an optional.
+    @State private var place: Place? = .search
+    /// The inn on the right. One piece of state for all four places: the
+    /// detail column belongs to the window, not to whichever list filled it.
     @State private var selectedHotel: HotelReference?
-    @State private var columns = NavigationSplitViewVisibility.doubleColumn
+    @State private var columns = NavigationSplitViewVisibility.all
+    #else
+    // One selection per tab, not one for the window: each tab's stack pushes
+    // its own inn, and a shared item would make every stack push at once.
+    @State private var searchHotel: HotelReference?
+    @State private var favoriteHotel: HotelReference?
+    @State private var historyHotel: HotelReference?
+    #endif
 
     public init() {}
 
+    #if os(macOS)
     public var body: some View {
         NavigationSplitView(columnVisibility: $columns) {
-            TabView {
-                Tab("Search", systemImage: "magnifyingglass") {
-                    SearchView(selectedHotel: $selectedHotel)
-                }
-                Tab(StoredHotel.Kind.favorite.title, systemImage: "heart") {
-                    StoredHotelListView(kind: .favorite, selectedHotel: $selectedHotel)
-                }
-                Tab(StoredHotel.Kind.history.title, systemImage: "clock") {
-                    StoredHotelListView(kind: .history, selectedHotel: $selectedHotel)
-                }
-                Tab("Settings", systemImage: "gearshape") {
-                    SettingsView()
+            List(selection: $place) {
+                ForEach(Place.allCases) { place in
+                    Label(place.title, systemImage: place.systemImage)
+                        .tag(place)
                 }
             }
-            // No `.sidebarAdaptable` any more: the sidebar is the split view's
-            // now, and a tab bar that turns into a second sidebar inside it
-            // would be a sidebar within a sidebar.
-            .toolbar(removing: .sidebarToggle)
-            // Left to itself the column settles at ~140pt on the Mac, which
-            // wraps an inn's name into a vertical sliver. A results list needs
-            // the width of a results list.
-            .navigationSplitViewColumnWidth(min: 320, ideal: 380, max: 520)
+            .navigationTitle("YadoSearch")
+            .navigationSplitViewColumnWidth(min: 180, ideal: 200, max: 260)
+        } content: {
+            content
+                .navigationSplitViewColumnWidth(min: 320, ideal: 380, max: 520)
         } detail: {
             detail
         }
-        .navigationSplitViewStyle(.balanced)
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        switch place ?? .search {
+        case .search:
+            SearchView(selectedHotel: $selectedHotel)
+        case .favorites:
+            StoredHotelListView(kind: .favorite, selectedHotel: $selectedHotel)
+        case .history:
+            StoredHotelListView(kind: .history, selectedHotel: $selectedHotel)
+        case .settings:
+            SettingsView()
+        }
     }
 
     @ViewBuilder
@@ -61,7 +83,58 @@ public struct YadoSearchRootView: View {
             }
         }
     }
+    #else
+    public var body: some View {
+        TabView {
+            Tab("Search", systemImage: "magnifyingglass") {
+                SearchView(selectedHotel: $searchHotel)
+            }
+            Tab(StoredHotel.Kind.favorite.title, systemImage: "heart") {
+                StoredHotelListView(kind: .favorite, selectedHotel: $favoriteHotel)
+            }
+            Tab(StoredHotel.Kind.history.title, systemImage: "clock") {
+                StoredHotelListView(kind: .history, selectedHotel: $historyHotel)
+            }
+            Tab("Settings", systemImage: "gearshape") {
+                SettingsView()
+            }
+        }
+        // A tab bar on iPhone; on iPad the same tabs can spread into a
+        // sidebar, which is what the platform does with content apps now.
+        .tabViewStyle(.sidebarAdaptable)
+    }
+    #endif
 }
+
+#if os(macOS)
+/// The four top-level places, in the order the 2010 release had them.
+enum Place: String, CaseIterable, Identifiable, Hashable {
+    case search
+    case favorites
+    case history
+    case settings
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .search: String(localized: "Search")
+        case .favorites: StoredHotel.Kind.favorite.title
+        case .history: StoredHotel.Kind.history.title
+        case .settings: String(localized: "Settings")
+        }
+    }
+
+    var systemImage: String {
+        switch self {
+        case .search: "magnifyingglass"
+        case .favorites: StoredHotel.Kind.favorite.systemImage
+        case .history: StoredHotel.Kind.history.systemImage
+        case .settings: "gearshape"
+        }
+    }
+}
+#endif
 
 #Preview {
     YadoSearchRootView()
