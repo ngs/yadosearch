@@ -15,11 +15,11 @@ public enum HotelSortOrder: Int, Sendable, Hashable, CaseIterable, Identifiable,
 
     public var title: String {
         switch self {
-        case .unspecified: String(localized: "指定なし")
-        case .kana: String(localized: "50音順")
-        case .rateAscending: String(localized: "参考料金の安い順")
-        case .rateDescending: String(localized: "参考料金の高い順")
-        case .popularity: String(localized: "じゃらんnet人気順")
+        case .unspecified: String(localized: "Any")
+        case .kana: String(localized: "Kana order")
+        case .rateAscending: String(localized: "Guide price, low to high")
+        case .rateDescending: String(localized: "Guide price, high to low")
+        case .popularity: String(localized: "Jalan net popularity")
         }
     }
 }
@@ -36,11 +36,11 @@ public enum HotelType: Int, Sendable, Hashable, CaseIterable, Identifiable, Coda
 
     public var title: String {
         switch self {
-        case .japaneseInn: String(localized: "旅館")
-        case .pensionOrGuesthouse: String(localized: "ペンション・民宿・ロッジ")
-        case .rentalVillaOrCondominium: String(localized: "貸し別荘・コンドミニアム")
-        case .hotel: String(localized: "ホテル・ビジネスホテル")
-        case .publicLodging: String(localized: "公共の宿")
+        case .japaneseInn: String(localized: "Ryokan")
+        case .pensionOrGuesthouse: String(localized: "Pension, guesthouse or lodge")
+        case .rentalVillaOrCondominium: String(localized: "Villa or condominium")
+        case .hotel: String(localized: "Hotel or business hotel")
+        case .publicLodging: String(localized: "Public lodging")
         }
     }
 }
@@ -141,14 +141,14 @@ public enum Amenity: String, Sendable, Hashable, CaseIterable, Identifiable, Cod
     public var id: String { rawValue }
 
     public enum Group: String, Sendable, Hashable, CaseIterable, Identifiable, Codable {
-        case bath = "風呂"
-        case room = "部屋・宿"
-        case facilities = "施設・遊び"
-        case location = "立地"
-        case service = "サービス"
-        case mealsAndRooms = "食事・部屋タイプ"
-        case children = "子ども対応"
-        case creditCards = "クレジットカード"
+        case bath = "Bath"
+        case room = "Room and property"
+        case facilities = "Facilities and activities"
+        case location = "Location"
+        case service = "Service"
+        case mealsAndRooms = "Meals and room types"
+        case children = "For children"
+        case creditCards = "Credit cards"
 
         public var id: String { rawValue }
         /// The raw value is the Japanese name, and doubles as the key the
@@ -192,75 +192,75 @@ public enum Amenity: String, Sendable, Hashable, CaseIterable, Identifiable, Cod
 
     public var title: String {
         switch self {
-        case .publicBath: String(localized: "内湯・大浴場")
-        case .hotSpring: String(localized: "温泉")
-        case .privateBath: String(localized: "貸切風呂・貸切露天")
-        case .viewBath: String(localized: "展望風呂")
-        case .openAirBath: String(localized: "露天風呂")
-        case .sauna: String(localized: "サウナ")
-        case .jacuzzi: String(localized: "ジャグジー")
-        case .massage: String(localized: "マッサージ")
-        case .esthetics: String(localized: "エステ設備")
-        case .freeFlowingSpring: String(localized: "天然温泉掛け流し")
-        case .cloudySpring: String(localized: "にごり湯")
-        case .nonSmokingRoom: String(localized: "禁煙ルーム")
-        case .inRoomInternet: String(localized: "部屋でインターネットOK")
-        case .roomWithOpenAirBath: String(localized: "露天風呂付き客室")
-        case .highClass: String(localized: "じゃらんハイクラス掲載の宿")
-        case .pointDiscount: String(localized: "ポイント割引OKの宿")
-        case .suiteOrDetachedRoom: String(localized: "特別室・離れ・スイート")
-        case .bathAndToilet: String(localized: "バス・トイレ付き")
-        case .tableTennis: String(localized: "卓球あり")
-        case .skiRental: String(localized: "貸しスキー")
-        case .snowboardRental: String(localized: "貸しボード")
-        case .outdoorPool: String(localized: "屋外プール")
-        case .indoorPool: String(localized: "屋内プール")
-        case .fitnessGym: String(localized: "フィットネスジム")
-        case .sportsHall: String(localized: "体育館")
-        case .sportsField: String(localized: "グラウンド")
-        case .barbecue: String(localized: "バーベキュー施設")
-        case .banquetHall: String(localized: "宴会場")
-        case .withinFiveMinutesOfStation: String(localized: "駅から徒歩5分")
-        case .withinFiveMinutesOfBeach: String(localized: "ビーチから徒歩5分")
-        case .withinFiveMinutesOfSlope: String(localized: "ゲレンデから徒歩5分")
-        case .withinFiveMinutesOfConvenienceStore: String(localized: "コンビニまで徒歩5分")
-        case .breakfastInRoom: String(localized: "部屋で朝食")
-        case .dinnerInRoom: String(localized: "部屋で夕食")
-        case .breakfastInPrivateRoom: String(localized: "個室で朝食")
-        case .dinnerInPrivateRoom: String(localized: "個室で夕食")
-        case .earlyCheckIn: String(localized: "チェックイン14時以前")
-        case .lateCheckOut: String(localized: "チェックアウト11時以降")
-        case .freeParking: String(localized: "駐車場無料")
-        case .shuttleService: String(localized: "送迎あり")
-        case .petsAllowed: String(localized: "ペットOK")
-        case .planWithoutMeals: String(localized: "食事なしプランあり")
-        case .breakfastOnlyPlan: String(localized: "朝食のみプランあり")
-        case .dinnerOnlyPlan: String(localized: "夕食のみプランあり")
-        case .twoMealsPlan: String(localized: "朝夕食付プランあり")
-        case .singleRoom: String(localized: "シングルルームあり")
-        case .twinRoom: String(localized: "ツインルームあり")
-        case .doubleRoom: String(localized: "ダブルルームあり")
-        case .tripleRoom: String(localized: "トリプルルームあり")
-        case .fourBedRoom: String(localized: "4ベッドルームあり")
-        case .japaneseStyleRoom: String(localized: "和室あり")
-        case .japaneseWesternRoom: String(localized: "和洋室あり")
-        case .childRate: String(localized: "子供料金設定あり")
-        case .elementarySchoolRate: String(localized: "小学生料金設定あり")
-        case .preschoolerBedAndMeal: String(localized: "幼児向けに布団・食事ともにあり")
-        case .preschoolerNeither: String(localized: "幼児向けに布団・食事ともになし")
-        case .preschoolerMealOnly: String(localized: "幼児向けに食事のみあり")
-        case .preschoolerBedOnly: String(localized: "幼児向けに布団のみあり")
-        case .creditCard: String(localized: "クレジットカード利用可")
+        case .publicBath: String(localized: "Indoor or large communal bath")
+        case .hotSpring: String(localized: "Hot spring")
+        case .privateBath: String(localized: "Private bath")
+        case .viewBath: String(localized: "Bath with a view")
+        case .openAirBath: String(localized: "Open-air bath")
+        case .sauna: String(localized: "Sauna")
+        case .jacuzzi: String(localized: "Jacuzzi")
+        case .massage: String(localized: "Massage")
+        case .esthetics: String(localized: "Spa treatments")
+        case .freeFlowingSpring: String(localized: "Free-flowing natural hot spring")
+        case .cloudySpring: String(localized: "Cloudy hot spring")
+        case .nonSmokingRoom: String(localized: "Non-smoking room")
+        case .inRoomInternet: String(localized: "Internet in the room")
+        case .roomWithOpenAirBath: String(localized: "Room with an open-air bath")
+        case .highClass: String(localized: "Jalan High Class inn")
+        case .pointDiscount: String(localized: "Point discounts accepted")
+        case .suiteOrDetachedRoom: String(localized: "Suite or detached room")
+        case .bathAndToilet: String(localized: "Private bath and toilet")
+        case .tableTennis: String(localized: "Table tennis")
+        case .skiRental: String(localized: "Ski rental")
+        case .snowboardRental: String(localized: "Snowboard rental")
+        case .outdoorPool: String(localized: "Outdoor pool")
+        case .indoorPool: String(localized: "Indoor pool")
+        case .fitnessGym: String(localized: "Fitness gym")
+        case .sportsHall: String(localized: "Gymnasium")
+        case .sportsField: String(localized: "Sports ground")
+        case .barbecue: String(localized: "Barbecue facilities")
+        case .banquetHall: String(localized: "Banquet hall")
+        case .withinFiveMinutesOfStation: String(localized: "5 minutes' walk from a station")
+        case .withinFiveMinutesOfBeach: String(localized: "5 minutes' walk from a beach")
+        case .withinFiveMinutesOfSlope: String(localized: "5 minutes' walk from the slopes")
+        case .withinFiveMinutesOfConvenienceStore: String(localized: "5 minutes' walk from a convenience store")
+        case .breakfastInRoom: String(localized: "Breakfast in the room")
+        case .dinnerInRoom: String(localized: "Dinner in the room")
+        case .breakfastInPrivateRoom: String(localized: "Breakfast in a private room")
+        case .dinnerInPrivateRoom: String(localized: "Dinner in a private room")
+        case .earlyCheckIn: String(localized: "Check-in from 14:00 or earlier")
+        case .lateCheckOut: String(localized: "Check-out at 11:00 or later")
+        case .freeParking: String(localized: "Free parking")
+        case .shuttleService: String(localized: "Shuttle service")
+        case .petsAllowed: String(localized: "Pets allowed")
+        case .planWithoutMeals: String(localized: "Room-only plans")
+        case .breakfastOnlyPlan: String(localized: "Breakfast-only plans")
+        case .dinnerOnlyPlan: String(localized: "Dinner-only plans")
+        case .twoMealsPlan: String(localized: "Breakfast and dinner plans")
+        case .singleRoom: String(localized: "Single rooms")
+        case .twinRoom: String(localized: "Twin rooms")
+        case .doubleRoom: String(localized: "Double rooms")
+        case .tripleRoom: String(localized: "Triple rooms")
+        case .fourBedRoom: String(localized: "Four-bed rooms")
+        case .japaneseStyleRoom: String(localized: "Japanese-style rooms")
+        case .japaneseWesternRoom: String(localized: "Japanese-Western rooms")
+        case .childRate: String(localized: "Child rates")
+        case .elementarySchoolRate: String(localized: "Primary school rates")
+        case .preschoolerBedAndMeal: String(localized: "Preschooler bed and meals")
+        case .preschoolerNeither: String(localized: "Preschooler, neither bed nor meals")
+        case .preschoolerMealOnly: String(localized: "Preschooler meals only")
+        case .preschoolerBedOnly: String(localized: "Preschooler bed only")
+        case .creditCard: String(localized: "Credit cards accepted")
         case .cardJCB: "JCB"
         case .cardVisa: "VISA"
         case .cardMastercard: "Mastercard"
         case .cardAmex: "American Express"
-        case .cardUC: String(localized: "UCカード")
-        case .cardDC: String(localized: "DCカード")
-        case .cardNICOS: String(localized: "NICOSカード")
-        case .cardDiners: String(localized: "ダイナースクラブ")
-        case .cardSaison: String(localized: "セゾンカード")
-        case .cardUFJ: String(localized: "UFJカード")
+        case .cardUC: String(localized: "UC Card")
+        case .cardDC: String(localized: "DC Card")
+        case .cardNICOS: String(localized: "NICOS Card")
+        case .cardDiners: String(localized: "Diners Club")
+        case .cardSaison: String(localized: "Saison Card")
+        case .cardUFJ: String(localized: "UFJ Card")
         }
     }
 }
@@ -314,11 +314,11 @@ public struct SearchFilters: Sendable, Hashable, Codable {
     public var budgetSummary: String? {
         switch (minimumRate, maximumRate) {
         case let (minimum?, maximum?):
-            String(localized: "\(minimum.groupedDigits)〜\(maximum.groupedDigits)円")
+            String(localized: "¥\(minimum.groupedDigits)–\(maximum.groupedDigits)")
         case let (minimum?, nil):
-            String(localized: "\(minimum.groupedDigits)円〜")
+            String(localized: "From ¥\(minimum.groupedDigits)")
         case let (nil, maximum?):
-            String(localized: "〜\(maximum.groupedDigits)円")
+            String(localized: "Up to ¥\(maximum.groupedDigits)")
         case (nil, nil): nil
         }
     }
@@ -329,7 +329,7 @@ public struct SearchFilters: Sendable, Hashable, Codable {
         return amenities
             .sorted { $0.rawValue < $1.rawValue }
             .map(\.title)
-            .joined(separator: "・")
+            .joined(separator: String(localized: " · "))
     }
 }
 

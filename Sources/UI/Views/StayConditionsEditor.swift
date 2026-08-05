@@ -9,7 +9,7 @@ struct StayConditionsEditor: View {
     /// "No date" means "whatever is on offer", and that is the default.
     private var checkInDate: Binding<Date> {
         Binding(
-            get: { stay.checkIn ?? .now },
+            get: { stay.checkIn ?? StayConditions.nextAvailableCheckIn() },
             set: { stay.checkIn = $0 }
         )
     }
@@ -17,23 +17,23 @@ struct StayConditionsEditor: View {
     private var hasCheckInDate: Binding<Bool> {
         Binding(
             get: { stay.checkIn != nil },
-            set: { stay.checkIn = $0 ? Date.now : nil }
+            set: { stay.checkIn = $0 ? StayConditions.nextAvailableCheckIn() : nil }
         )
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Toggle("日付を指定", isOn: hasCheckInDate)
+            Toggle("Set a date", isOn: hasCheckInDate)
             if stay.checkIn != nil {
                 DatePicker(
-                    "チェックイン",
+                    "Check-in",
                     selection: checkInDate,
-                    in: Date.now...,
+                    in: Calendar.current.startOfDay(for: .now)...,
                     displayedComponents: .date
                 )
             }
-            Stepper("\(stay.nights)泊", value: $stay.nights, in: 1...30)
-            Stepper("\(stay.rooms)部屋", value: $stay.rooms, in: 1...10)
+            Stepper("\(stay.nights) nights", value: $stay.nights, in: 1...30)
+            Stepper("\(stay.rooms) rooms", value: $stay.rooms, in: 1...10)
             GuestPartyEditor(party: $stay.party)
         }
         .font(.callout)

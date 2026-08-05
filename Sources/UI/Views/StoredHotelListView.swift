@@ -7,6 +7,8 @@ import YadoSearchPlatform
 /// sense.
 struct StoredHotelListView: View {
     let kind: StoredHotel.Kind
+    /// What the detail column shows, shared with every other list.
+    @Binding var selectedHotel: HotelReference?
 
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \StoredHotel.savedAt, order: .reverse) private var stored: [StoredHotel]
@@ -25,18 +27,28 @@ struct StoredHotelListView: View {
                 }
             }
             .navigationTitle(kind.title)
+            #if !os(macOS)
+            // A value push, like the search tab's: the row is a
+            // `NavigationLink` and this is its destination. On the Mac a row
+            // *selects* instead, and the window's detail column renders it.
+            .navigationDestination(for: HotelReference.self) { hotel in
+                HotelDetailView(reference: hotel)
+            }
+            #endif
             .toolbar {
-                if kind == .history, !entries.isEmpty {
+                #if !os(macOS)
+                if !entries.isEmpty {
                     ToolbarItem(placement: .primaryAction) {
-                        Button("すべて削除", role: .destructive) {
+                        EditButton()
+                    }
+                }
+                #endif
+                if kind == .history, !entries.isEmpty {
+                    ToolbarItem(placement: .destructiveAction) {
+                        Button("Delete all", role: .destructive) {
                             StoredHotelStore.clear(kind: .history, in: modelContext)
                         }
                     }
-                }
-            }
-            .navigationDestination(for: SearchRoute.self) { route in
-                if case let .hotel(reference) = route {
-                    HotelDetailView(reference: reference)
                 }
             }
         }
@@ -53,20 +65,42 @@ struct StoredHotelListView: View {
     private var list: some View {
         List {
             ForEach(entries) { entry in
-                NavigationLink(value: SearchRoute.hotel(
-                    HotelReference(provider: entry.provider, id: entry.hotelID)
-                )) {
-                    HotelRow(
-                        name: entry.name,
-                        area: entry.areaSummary,
-                        catchCopy: entry.catchCopy,
-                        pictureURL: entry.pictureURL
-                    )
-                }
+                row(for: entry)
             }
             .onDelete(perform: delete)
         }
         .listStyle(.plain)
+    }
+
+    /// One row. Pushed on the iPhone, selected on the Mac and the iPad — the
+    /// same split as the results list, and for the same reasons.
+    @ViewBuilder
+    private func row(for entry: StoredHotel) -> some View {
+        let reference = HotelReference(provider: entry.provider, id: entry.hotelID)
+        if hotelOpensInDetailColumn {
+            Button {
+                selectedHotel = reference
+            } label: {
+                storedRow(for: entry)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .listRowBackground(selectedHotel == reference ? Color.accentColor.opacity(0.15) : Color.clear)
+        } else {
+            NavigationLink(value: reference) {
+                storedRow(for: entry)
+            }
+        }
+    }
+
+    private func storedRow(for entry: StoredHotel) -> some View {
+        HotelRow(
+            name: entry.name,
+            area: entry.areaSummary,
+            catchCopy: entry.catchCopy,
+            pictureURL: entry.pictureURL
+        )
     }
 
     private func delete(at offsets: IndexSet) {
@@ -81,8 +115,8 @@ struct StoredHotelListView: View {
 extension StoredHotel.Kind {
     var title: String {
         switch self {
-        case .favorite: String(localized: "お気に入り")
-        case .history: String(localized: "履歴")
+        case .favorite: String(localized: "Favourites")
+        case .history: String(localized: "History")
         }
     }
 
@@ -95,15 +129,15 @@ extension StoredHotel.Kind {
 
     var emptyTitle: String {
         switch self {
-        case .favorite: String(localized: "お気に入りはまだありません")
-        case .history: String(localized: "見た宿はまだありません")
+        case .favorite: String(localized: "No favourites yet")
+        case .history: String(localized: "No inns viewed yet")
         }
     }
 
     var emptyDescription: String {
         switch self {
-        case .favorite: String(localized: "宿の詳細画面のハートを押すと、ここに残ります。")
-        case .history: String(localized: "宿の詳細画面を開くと、ここに残ります。")
+        case .favorite: String(localized: "Tap the heart on an inn's page and it will stay here.")
+        case .history: String(localized: "Open an inn's page and it will stay here.")
         }
     }
 }

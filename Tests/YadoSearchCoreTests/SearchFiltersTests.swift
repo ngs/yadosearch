@@ -89,23 +89,23 @@ struct SearchFiltersTests {
     @Test("Summarises the budget, both ends and one")
     func summarisesBudget() {
         #expect(SearchFilters().budgetSummary == nil)
-        #expect(SearchFilters(minimumRate: 8_000, maximumRate: 20_000).budgetSummary == "8,000〜20,000円")
-        #expect(SearchFilters(minimumRate: 10_000).budgetSummary == "10,000円〜")
-        #expect(SearchFilters(maximumRate: 10_000).budgetSummary == "〜10,000円")
+        #expect(SearchFilters(minimumRate: 8_000, maximumRate: 20_000).budgetSummary == "¥8,000–20,000")
+        #expect(SearchFilters(minimumRate: 10_000).budgetSummary == "From ¥10,000")
+        #expect(SearchFilters(maximumRate: 10_000).budgetSummary == "Up to ¥10,000")
     }
 
     /// Every chosen amenity is named — the list is never abbreviated.
     @Test("Summarises the amenities in full")
     func summarisesAmenities() throws {
         #expect(SearchFilters().amenitySummary == nil)
-        #expect(SearchFilters(amenities: [.hotSpring]).amenitySummary == "温泉")
+        #expect(SearchFilters(amenities: [.hotSpring]).amenitySummary == "Hot spring")
 
         let many = SearchFilters(
             amenities: [.hotSpring, .sauna, .petsAllowed, .freeParking, .nonSmokingRoom]
         )
         let summary = try #require(many.amenitySummary)
 
-        #expect(summary.split(separator: "・").count == 5)
+        #expect(summary.split(separator: "·").count == 5)
         #expect(!summary.contains("ほか"))
         for amenity in many.amenities {
             #expect(summary.contains(amenity.title))
@@ -148,5 +148,20 @@ struct SearchFiltersTests {
 
         #expect(party.adults == 1)
         #expect(party.elementarySchoolChildren == 0)
+    }
+}
+
+@Suite("Stay conditions")
+struct StayConditionsTests {
+    @Test("A date starts at tomorrow, because 楽天 rarely sells tonight")
+    func checkInStartsTomorrow() {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(identifier: "Asia/Tokyo") ?? .gmt
+        let now = Date(timeIntervalSince1970: 1_800_000_000)
+
+        let checkIn = StayConditions.nextAvailableCheckIn(from: now, calendar: calendar)
+
+        #expect(calendar.dateComponents([.day], from: calendar.startOfDay(for: now), to: checkIn).day == 1)
+        #expect(calendar.startOfDay(for: checkIn) == checkIn)
     }
 }

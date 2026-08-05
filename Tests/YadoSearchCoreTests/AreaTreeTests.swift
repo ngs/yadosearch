@@ -63,3 +63,57 @@ struct AreaTreeTests {
         #expect(request.jalanSmallArea == nil)
     }
 }
+
+@Suite("Rakuten area tree")
+struct RakutenAreaTreeTests {
+    /// Captured live, for the same reason as Jalan's: the example committed
+    /// alongside the contract is one prefecture deep. `/v1/areas/rakuten` is
+    /// Rakuten's own response passed through, so this is also what pins the
+    /// shape it actually arrives in.
+    private func tree() throws -> RakutenAreaTree {
+        try JSONDecoder()
+            .decode(RakutenAreaTreeResponse.self, from: APIFixture.data("areas_rakuten_full"))
+            .areaTree
+    }
+
+    /// One large class holds the whole country, which is why the picker starts
+    /// at the middle classes instead of showing a list of one.
+    @Test("The whole country hangs off one large class")
+    func oneLargeClass() throws {
+        let tree = try tree()
+
+        #expect(tree.largeClasses.count == 1)
+        #expect(tree.largeClasses.first?.id == "japan")
+        #expect(tree.largeClasses.first?.middleClasses.count == 47)
+    }
+
+    @Test("Every level is coded and named")
+    func everyLevelIsCoded() throws {
+        for large in try tree().largeClasses {
+            #expect(!large.id.isEmpty)
+            for middle in large.middleClasses {
+                #expect(!middle.id.isEmpty)
+                #expect(!middle.name.isEmpty)
+                #expect(!middle.smallClasses.isEmpty)
+                for small in middle.smallClasses {
+                    #expect(!small.id.isEmpty)
+                    #expect(small.detailClasses.allSatisfy { !$0.id.isEmpty })
+                }
+            }
+        }
+    }
+
+    /// The rule the picker is built around: a small class with detail classes
+    /// cannot be searched as it is, and most of them have none.
+    @Test("Only a small class without detail classes is searchable")
+    func searchableSmallClasses() throws {
+        let smallClasses = try tree().largeClasses
+            .flatMap(\.middleClasses)
+            .flatMap(\.smallClasses)
+        let withDetail = smallClasses.filter { !$0.detailClasses.isEmpty }
+
+        #expect(!withDetail.isEmpty)
+        #expect(withDetail.allSatisfy { !$0.isSearchable })
+        #expect(smallClasses.filter(\.isSearchable).count == smallClasses.count - withDetail.count)
+    }
+}

@@ -54,7 +54,7 @@ struct StoredHotelStoreTests {
 
         #expect(saved.hotelID == "300002")
         #expect(saved.kind == .favorite)
-        #expect(saved.areaSummary == "東京都・江東")
+        #expect(saved.areaSummary == "東京都 · 江東")
         #expect(saved.pictureURL != nil)
         #expect(saved.coordinate?.latitude == 35.6813)
     }

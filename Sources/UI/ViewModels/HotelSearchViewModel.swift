@@ -30,6 +30,7 @@ public final class HotelSearchViewModel {
     public private(set) var isLoadingMore = false
 
     public let target: SearchTarget
+    public let scope: SearchScope
     public let filters: SearchFilters
     public let party: GuestParty?
 
@@ -40,11 +41,13 @@ public final class HotelSearchViewModel {
     public init(
         client: YadoSearchAPIClient,
         target: SearchTarget,
+        scope: SearchScope = .both,
         filters: SearchFilters = SearchFilters(),
         party: GuestParty? = nil
     ) {
         self.client = client
         self.target = target
+        self.scope = scope
         self.filters = filters
         self.party = party
     }
@@ -99,6 +102,7 @@ public final class HotelSearchViewModel {
             let response = try await client.searchHotels(
                 HotelSearchRequest(
                     target: target,
+                    scope: scope,
                     filters: filters,
                     party: party,
                     page: page,
@@ -114,6 +118,12 @@ public final class HotelSearchViewModel {
             providerErrors = response.errors ?? [:]
             nextPage = Self.pageAfter(page, requested: page * pageSize, response: response)
             phase = .loaded
+        } catch is CancellationError {
+            // The task died with the screen, not the search — a tab switch
+            // cancels the view's `.task` mid-flight. Leave the phase and the
+            // page counter as they are; the next appearance resumes them.
+        } catch let error as URLError where error.code == .cancelled {
+            // The same death, reported URLSession's way.
         } catch {
             // A failed follow-up page must not throw away the rows already shown.
             if listings.isEmpty {

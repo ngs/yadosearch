@@ -19,7 +19,9 @@ struct SafariLink<Label: View>: View {
     let url: URL
     let label: Label
 
-    #if !os(macOS)
+    #if os(macOS)
+    @Environment(\.openURL) private var openURL
+    #else
     @State private var isPresented = false
     #endif
 
@@ -30,7 +32,14 @@ struct SafariLink<Label: View>: View {
 
     var body: some View {
         #if os(macOS)
-        Link(destination: url) { label }
+        // A `Link` in a toolbar draws as link-blue text-or-icon, out of step
+        // with every button beside it. A button that opens the URL is the same
+        // action and looks like the toolbar it is in.
+        Button {
+            openURL(url)
+        } label: {
+            label
+        }
         #else
         Button {
             isPresented = true

@@ -48,14 +48,26 @@ public final class HotelDetailViewModel {
 
     private let client: YadoSearchAPIClient
     private var reloadTask: Task<Void, Never>?
+    /// The ID the page was opened with, on the provider it was opened on.
+    ///
+    /// Everything else knows an ID only through a listing or a fetched detail,
+    /// and a favourite has neither — it is a name, a picture and an ID. Without
+    /// this the first fetch had nothing to ask about and the page stayed empty.
+    private let openedID: String?
+    /// The provider that ID belongs to. IDs collide between the two sites, so
+    /// it is only an answer while the page is still showing that one.
+    private let openedProvider: Provider
 
     public init(
         provider: Provider,
+        hotelID: String? = nil,
         listing: HotelListing? = nil,
         client: YadoSearchAPIClient,
         stay: StayConditions = StayConditions()
     ) {
         self.provider = provider
+        openedID = hotelID
+        openedProvider = provider
         self.listing = listing
         self.client = client
         self.stay = stay
@@ -64,7 +76,9 @@ public final class HotelDetailViewModel {
     /// The inn's ID on the provider currently selected. `nil` while the detail
     /// is still loading and the list knew of no offer from that side.
     public var hotelID: String? {
-        detail?.profile(for: provider)?.id ?? listing?.offer(from: provider)?.id
+        detail?.profile(for: provider)?.id
+            ?? listing?.offer(from: provider)?.id
+            ?? (provider == openedProvider ? openedID : nil)
     }
 
     /// The record to draw the page from: the selected provider's account of the
@@ -97,6 +111,24 @@ public final class HotelDetailViewModel {
         await loadPlans()
     }
 
+    /// Picks up whatever a cancelled load left unfinished.
+    ///
+    /// SwiftUI cancels the view's `.task` the moment the screen goes off
+    /// screen — switching tabs is enough — and a load cut down mid-flight
+    /// leaves no detail and a plans spinner that never stops. The screen calls
+    /// this on every appearance; a page that finished passes through untouched.
+    public func resumeInterrupted() async {
+        if detail == nil {
+            await loadDetail()
+        }
+        switch plansPhase {
+        case .idle, .loading:
+            await loadPlans()
+        case .loaded, .failed, .needsCheckIn:
+            break
+        }
+    }
+
     private func reload() {
         reloadTask?.cancel()
         reloadTask = Task { [weak self] in
@@ -121,19 +153,16 @@ public final class HotelDetailViewModel {
         }
         guard let id = hotelID else { return }
 
+        let request = StayRequest(
+            checkIn: stay.checkIn,
+            nights: stay.nights,
+            rooms: stay.rooms,
+            adults: stay.party.adults
+        )
+
         plansPhase = .loading
         do {
-            let page = try await client.plans(
-                provider: provider,
-                hotelID: id,
-                stay: StayRequest(
-                    checkIn: stay.checkIn,
-                    nights: stay.nights,
-                    rooms: stay.rooms,
-                    adults: stay.party.adults
-                ),
-                count: 30
-            )
+            let page = try await fetchPlans(provider: provider, id: id, request: request)
             guard !Task.isCancelled else { return }
             plans = page.plans
             numberOfPlans = page.total
@@ -142,7 +171,34 @@ public final class HotelDetailViewModel {
             guard !Task.isCancelled else { return }
             plans = []
             numberOfPlans = 0
-            plansPhase = .failed(searchErrorMessage(for: error))
+            // "Nothing on offer" arrives as a failure from Rakuten and as an
+            // empty page from Jalan. It is the same answer, and the screen
+            // already has wording for it.
+            if let apiError = error as? APIError, apiError.meansNoResults {
+                plansPhase = .loaded
+            } else {
+                plansPhase = .failed(searchErrorMessage(for: error))
+            }
+        }
+    }
+
+    /// Asks once, and asks again if 楽天 said it was busy.
+    ///
+    /// Its rate limit is shared and easy to trip — reading two inns in quick
+    /// succession is enough — and it clears in about a second. One retry turns
+    /// most of those into the answer the user asked for; a second would only
+    /// make the screen sit there longer.
+    private func fetchPlans(
+        provider: Provider,
+        id: String,
+        request: StayRequest
+    ) async throws -> PlanPage {
+        do {
+            return try await client.plans(provider: provider, hotelID: id, stay: request, count: 30)
+        } catch let error as APIError where error.meansRateLimited {
+            try await Task.sleep(for: .milliseconds(1_200))
+            try Task.checkCancellation()
+            return try await client.plans(provider: provider, hotelID: id, stay: request, count: 30)
         }
     }
 }

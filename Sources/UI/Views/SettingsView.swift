@@ -19,6 +19,12 @@ struct SettingsView: View {
         URL(string: "https://www.jalan.net/") ?? URL(filePath: "/")
     }
 
+    /// Not affiliate-wrapped, and not meant to be: this is where to read about
+    /// the inn, not where to book it. Only the proxy builds booking links.
+    private var rakutenURL: URL {
+        URL(string: "https://travel.rakuten.co.jp/") ?? URL(filePath: "/")
+    }
+
     private var version: String {
         let bundle = Bundle.main
         let short = bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—"
@@ -29,11 +35,11 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("データ") {
+                Section("Data") {
                     Button {
                         Task { await refreshAreas() }
                     } label: {
-                        LabeledContent("地域データを更新") {
+                        LabeledContent("Refresh the area data") {
                             if isRefreshingAreas {
                                 ProgressView()
                             }
@@ -48,19 +54,20 @@ struct SettingsView: View {
                 }
 
                 Section {
-                    LabeledContent("バージョン", value: version)
+                    LabeledContent("Version", value: version)
                     // The App Store record this ships as an update to — the one
                     // 宿さがし 2.0.4 was published under in 2010.
-                    Link("App Store でレビューを書く", destination: reviewURL)
-                    Link("じゃらん net", destination: jalanURL)
+                    Link("Write a review on the App Store", destination: reviewURL)
+                    Link("Jalan net", destination: jalanURL)
+                    Link("Rakuten Travel", destination: rakutenURL)
                 } header: {
-                    Text("このアプリについて")
+                    Text("About")
                 } footer: {
-                    Text("宿の情報は「じゃらん Web サービス」から取得しています。掲載内容の正確性についてはじゃらん net をご確認ください。宿の予約ページへのリンクにはアフィリエイトプログラムを利用しています。")
+                    Text("Inn information comes from Jalan Web Service and Rakuten Web Service. Please check those sites for accuracy. Links to booking pages use affiliate programmes.")
                 }
             }
             .formStyle(.grouped)
-            .navigationTitle("設定")
+            .navigationTitle("Settings")
         }
     }
 
@@ -70,7 +77,7 @@ struct SettingsView: View {
         do {
             let tree = try await yadoSearch.areaCatalog.refresh()
             let count = tree.regions.flatMap(\.prefectures).count
-            areaRefreshMessage = String(localized: "\(count)都道府県分を更新しました。")
+            areaRefreshMessage = String(localized: "Refreshed \(count) prefectures.")
         } catch {
             areaRefreshMessage = searchErrorMessage(for: error)
         }

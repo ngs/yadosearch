@@ -36,16 +36,16 @@ struct StationPickerView: View {
                     placeholder
                 }
             }
-            .navigationTitle("駅をえらぶ")
+            .navigationTitle("Choose a station")
             #if !os(macOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("キャンセル") { dismiss() }
+                    Button("Cancel") { dismiss() }
                 }
             }
-            .searchable(text: $query, prompt: "駅名")
+            .searchable(text: $query, prompt: "Station name")
             .onChange(of: query) { _, newValue in
                 model?.search(newValue)
             }
@@ -63,7 +63,7 @@ struct StationPickerView: View {
             ProgressView()
         } else if let message = model?.errorMessage {
             ContentUnavailableView {
-                Label("駅を検索できませんでした", systemImage: "exclamationmark.triangle")
+                Label("Could not search for stations", systemImage: "exclamationmark.triangle")
             } description: {
                 Text(message)
             }
@@ -71,9 +71,9 @@ struct StationPickerView: View {
             ContentUnavailableView.search(text: query)
         } else {
             ContentUnavailableView {
-                Label("駅名を入力", systemImage: "tram")
+                Label("Type a station name", systemImage: "tram")
             } description: {
-                Text("「東京」「京都」のように駅名を入力すると候補が出ます。")
+                Text("Type a station name — 東京 or 京都, say — to see suggestions.")
             }
         }
     }

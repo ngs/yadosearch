@@ -4,8 +4,11 @@ import Testing
 
 @Suite("Saved searches")
 struct SavedSearchTests {
+    /// A name search by default, because that is the shape whose scope is the
+    /// searcher's choice — an area target forces one, and every summary here
+    /// would then start with the site's name.
     private func search(
-        target: SearchTarget = .area(AreaSelection(prefectureID: "130000")),
+        target: SearchTarget = .name("熱海"),
         filters: SearchFilters = SearchFilters(),
         party: GuestParty? = nil,
         title: String = "東京都"
@@ -67,6 +70,12 @@ struct SavedSearchTests {
         let targets: [SearchTarget] = [
             .name("星野"),
             .area(AreaSelection(regionID: "15", prefectureID: "130000", largeAreaID: "136700")),
+            .rakutenArea(RakutenAreaSelection(
+                largeClassCode: "japan",
+                middleClassCode: "hokkaido",
+                smallClassCode: "sapporo",
+                detailClassCode: "A"
+            )),
             .around(GeoCoordinate(latitude: 35.0, longitude: 139.0), radius: .aboutOneKilometre)
         ]
 
@@ -90,10 +99,10 @@ struct SavedSearchTests {
         )
 
         #expect(none.conditionsSummary.isEmpty)
-        #expect(some.conditionsSummary.contains("参考料金の安い順"))
-        #expect(some.conditionsSummary.contains("旅館"))
-        #expect(some.conditionsSummary.contains("8,000〜20,000円"))
-        #expect(some.conditionsSummary.contains("温泉"))
+        #expect(some.conditionsSummary.contains("Guide price, low to high"))
+        #expect(some.conditionsSummary.contains("Ryokan"))
+        #expect(some.conditionsSummary.contains("¥8,000–20,000"))
+        #expect(some.conditionsSummary.contains("Hot spring"))
     }
 
     @Test("Every amenity is named, however many there are")
@@ -109,7 +118,7 @@ struct SavedSearchTests {
 
     @Test("An open-ended budget reads as open-ended")
     func summarisesOpenEndedBudgets() {
-        #expect(search(filters: SearchFilters(minimumRate: 10_000)).conditionsSummary == "10,000円〜")
-        #expect(search(filters: SearchFilters(maximumRate: 10_000)).conditionsSummary == "〜10,000円")
+        #expect(search(filters: SearchFilters(minimumRate: 10_000)).conditionsSummary == "From ¥10,000")
+        #expect(search(filters: SearchFilters(maximumRate: 10_000)).conditionsSummary == "Up to ¥10,000")
     }
 }

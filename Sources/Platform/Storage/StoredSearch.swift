@@ -48,6 +48,9 @@ public enum SearchHistoryStore {
 
     /// Records a search, moving it to the top if it has been run before.
     public static func record(_ search: SavedSearch, in context: ModelContext) {
+        // Twins can arrive from another device: the fingerprint is not a unique
+        // constraint, because CloudKit mirroring forbids those.
+        deduplicate(in: context)
         if let existing = entry(fingerprint: search.id, in: context) {
             existing.searchedAt = .now
             // The title can drift — a proximity search gains a place name once
@@ -58,6 +61,37 @@ public enum SearchHistoryStore {
             context.insert(StoredSearch(search: search))
         }
         trim(in: context)
+        try? context.save()
+    }
+
+    /// Collapses searches that share a fingerprint into the newest of them.
+    ///
+    /// Two rows for the same conditions are not two searches, and the pair
+    /// cannot be prevented at write time: `@Attribute(.unique)` crashes a
+    /// CloudKit-mirrored container, so a device syncing a search it ran
+    /// independently inserts a second row for it. The survivor keeps the latest
+    /// `searchedAt`, which is what puts it at the top of the list.
+    public static func deduplicate(in context: ModelContext) {
+        var newest: [String: StoredSearch] = [:]
+        var duplicates: [StoredSearch] = []
+
+        for entry in all(in: context) {
+            guard let kept = newest[entry.fingerprint] else {
+                newest[entry.fingerprint] = entry
+                continue
+            }
+            if entry.searchedAt > kept.searchedAt {
+                newest[entry.fingerprint] = entry
+                duplicates.append(kept)
+            } else {
+                duplicates.append(entry)
+            }
+        }
+
+        guard !duplicates.isEmpty else { return }
+        for duplicate in duplicates {
+            context.delete(duplicate)
+        }
         try? context.save()
     }
 

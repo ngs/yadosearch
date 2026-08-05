@@ -46,14 +46,10 @@ struct HotelRow: View {
 
                 HStack(spacing: 6) {
                     ForEach(providers) { provider in
-                        Text(provider.title)
-                            .font(.caption2)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(.quaternary, in: .capsule)
+                        ProviderBadge(provider: provider)
                     }
                     if let lowestCharge {
-                        Text("\(lowestCharge.formattedYen)〜")
+                        Text("From \(lowestCharge.formattedYen)")
                             .font(.caption.weight(.semibold))
                             .monospacedDigit()
                     }
@@ -83,7 +79,7 @@ extension AreaNames {
     var summary: String? {
         [prefecture, large]
             .compactMap { $0 }
-            .joined(separator: "・")
+            .joined(separator: String(localized: " · "))
             .nonEmptyText
     }
 }
@@ -92,8 +88,8 @@ extension Provider {
     /// How each site names itself.
     var title: String {
         switch self {
-        case .jalan: String(localized: "じゃらん")
-        case .rakuten: String(localized: "楽天トラベル")
+        case .jalan: String(localized: "Jalan")
+        case .rakuten: String(localized: "Rakuten Travel")
         }
     }
 }

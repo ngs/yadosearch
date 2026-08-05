@@ -7,8 +7,14 @@ struct PlanRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
-            Text(plan.name)
-                .font(.headline)
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
+                // Which site is selling it. The detail screen shows one site at
+                // a time, but the plans are the part someone reads closely and
+                // then books from, so the badge belongs on the plan too.
+                ProviderBadge(provider: plan.provider)
+                Text(plan.name)
+                    .font(.headline)
+            }
 
             if let roomName = plan.roomName {
                 Text(roomName)
@@ -28,7 +34,7 @@ struct PlanRow: View {
             .foregroundStyle(.tertiary)
 
             if let facilities = plan.facilities, !facilities.isEmpty {
-                Text(facilities.joined(separator: "・"))
+                Text(facilities.joined(separator: String(localized: " · ")))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
@@ -42,13 +48,13 @@ struct PlanRow: View {
                     Text(rate.formattedYen)
                         .font(.title3.weight(.semibold))
                         .monospacedDigit()
-                    if let rateType = plan.rateType ?? (plan.totalRate == nil ? nil : "合計") {
+                    if let rateType = plan.rateType ?? (plan.totalRate == nil ? nil : "total") {
                         Text(rateType)
                             .font(.caption)
                             .foregroundStyle(.secondary)
                     }
                     if plan.partial == true {
-                        Text("一部の日のみ")
+                        Text("some nights only")
                             .font(.caption)
                             .foregroundStyle(.tertiary)
                     }

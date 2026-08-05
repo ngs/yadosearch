@@ -17,6 +17,10 @@ struct HotelDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var model: HotelDetailViewModel?
     @State private var isFavorite = false
+    /// Once per page, not once per appearance: the `.task` below re-runs every
+    /// time a tab switch brings the page back, and coming back is not a visit.
+    @State private var hasRecordedVisit = false
+    private let stayConditions = StayConditionsStore.shared
 
     private var name: String {
         model?.profile?.name ?? model?.listing?.name ?? ""
@@ -56,33 +60,52 @@ struct HotelDetailView: View {
                     isFavorite = StoredHotelStore.toggleFavorite(profile, in: modelContext)
                 } label: {
                     Label(
-                        isFavorite ? "お気に入りから削除" : "お気に入りに追加",
+                        isFavorite ? "Remove from favourites" : "Add to favourites",
                         systemImage: isFavorite ? "heart.fill" : "heart"
                     )
                 }
+                .accessibilityIdentifier(YadoAccessibilityID.hotelFavorite)
                 .disabled(model?.profile == nil)
             }
             if let url = model?.bookingURL {
                 ToolbarItem(placement: .primaryAction) {
                     SafariLink(destination: url) {
-                        Label("予約する", systemImage: "calendar.badge.plus")
+                        Label("Book", systemImage: "calendar.badge.plus")
                     }
+                    .accessibilityIdentifier(YadoAccessibilityID.hotelBooking)
                 }
             }
         }
         .task {
-            guard model == nil else { return }
+            // Re-entered on every appearance, and a tab switch away cancels
+            // whatever the previous entry was still loading — so an existing
+            // model is resumed, not trusted to have finished.
+            if let model {
+                await model.resumeInterrupted()
+                finishLoad(model)
+                return
+            }
+            // The conditions are the ones last used, on this device or another,
+            // unless their date has passed — see `StayConditionsStore`.
+            stayConditions.refresh()
             let model = HotelDetailViewModel(
                 provider: reference.provider,
+                hotelID: reference.id,
                 listing: reference.listing,
-                client: yadoSearch.client
+                client: yadoSearch.client,
+                stay: stayConditions.conditions
             )
             self.model = model
             await model.load()
-            refreshFavorite(model)
-            if let profile = model.profile {
-                StoredHotelStore.recordVisit(profile, in: modelContext)
-            }
+            finishLoad(model)
+        }
+    }
+
+    private func finishLoad(_ model: HotelDetailViewModel) {
+        refreshFavorite(model)
+        if !hasRecordedVisit, let profile = model.profile {
+            StoredHotelStore.recordVisit(profile, in: modelContext)
+            hasRecordedVisit = true
         }
     }
 
@@ -106,18 +129,28 @@ private extension HotelDetailView {
     func providerPicker(_ model: HotelDetailViewModel) -> some View {
         let providers = model.availableProviders
         if providers.count > 1 {
-            Picker("予約サイト", selection: Binding(
-                get: { model.provider },
-                set: { provider in
-                    model.provider = provider
-                    refreshFavorite(model)
-                }
-            )) {
+            // Buttons rather than a `Picker(.segmented)`: on the Mac the
+            // segmented control simply would not change its selection — clicks,
+            // keyboard, coordinate taps, none of them moved it — so an inn
+            // opened on 楽天 could not be read on じゃらん at all.
+            HStack(spacing: 8) {
+                Text("Booking site")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
                 ForEach(providers) { provider in
-                    Text(provider.title).tag(provider)
+                    Button {
+                        model.provider = provider
+                        refreshFavorite(model)
+                    } label: {
+                        Text(provider.title)
+                            .font(.subheadline.weight(model.provider == provider ? .semibold : .regular))
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(model.provider == provider ? provider.tint : .secondary)
+                    .accessibilityIdentifier(YadoAccessibilityID.hotelProvider(provider.rawValue))
                 }
             }
-            .pickerStyle(.segmented)
         }
     }
 
@@ -149,7 +182,7 @@ private extension HotelDetailView {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                     if let count = review.count {
-                        Text("（\(count)件）")
+                        Text("(\(count) reviews)")
                             .font(.caption)
                             .foregroundStyle(.tertiary)
                     }
@@ -179,7 +212,7 @@ private extension HotelDetailView {
                 .allowsHitTesting(false)
 
                 if let url = mapsURL(name: name, coordinate: coordinate) {
-                    Link("マップで開く", destination: url)
+                    Link("Open in Maps", destination: url)
                         .font(.footnote)
                 }
             }
@@ -190,24 +223,24 @@ private extension HotelDetailView {
     func factsSection(_ model: HotelDetailViewModel) -> some View {
         let profile = model.profile
         VStack(alignment: .leading, spacing: 8) {
-            sectionTitle("基本情報")
+            sectionTitle("Details")
             if let address = profile?.address ?? model.listing?.address {
-                LabeledContent("住所") {
+                LabeledContent("Address") {
                     Text(profile?.postalCode.map { "〒\($0)\n\(address)" } ?? address)
                         .multilineTextAlignment(.trailing)
                 }
             }
             if let checkIn = profile?.checkIn {
-                LabeledContent("チェックイン", value: checkIn)
+                LabeledContent("Check-in", value: checkIn)
             }
             if let checkOut = profile?.checkOut {
-                LabeledContent("チェックアウト", value: checkOut)
+                LabeledContent("Check-out", value: checkOut)
             }
             if let area = (profile?.area ?? model.listing?.area)?.summary {
-                LabeledContent("エリア", value: area)
+                LabeledContent("Region", value: area)
             }
             if let telephone = profile?.detail?.telephone {
-                LabeledContent("電話", value: telephone)
+                LabeledContent("Phone", value: telephone)
             }
         }
     }
@@ -217,7 +250,7 @@ private extension HotelDetailView {
         let access = model.profile?.access ?? model.listing?.access ?? []
         if !access.isEmpty {
             VStack(alignment: .leading, spacing: 8) {
-                sectionTitle("アクセス")
+                sectionTitle("Getting there")
                 ForEach(access) { line in
                     VStack(alignment: .leading, spacing: 2) {
                         Text(line.label)
@@ -235,7 +268,7 @@ private extension HotelDetailView {
     func captionSection(_ model: HotelDetailViewModel) -> some View {
         if let caption = model.profile?.caption {
             VStack(alignment: .leading, spacing: 8) {
-                sectionTitle("この宿について")
+                sectionTitle("About this inn")
                 Text(caption)
                     .font(.callout)
             }
@@ -245,10 +278,19 @@ private extension HotelDetailView {
     @ViewBuilder
     func plansSection(_ model: HotelDetailViewModel) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            sectionTitle("宿泊プラン")
-            StayConditionsEditor(stay: Binding(get: { model.stay }, set: { model.stay = $0 }))
+            sectionTitle("Plans")
+            StayConditionsEditor(stay: Binding(
+                get: { model.stay },
+                set: { conditions in
+                    model.stay = conditions
+                    // Remembered as they are set, so the next inn — and the
+                    // next device — opens on the same stay.
+                    stayConditions.update(conditions)
+                }
+            ))
             plans(model)
         }
+        .accessibilityIdentifier(YadoAccessibilityID.hotelPlans)
     }
 
     @ViewBuilder
@@ -260,17 +302,24 @@ private extension HotelDetailView {
         case .needsCheckIn:
             // Rakuten has no undated mode at all, so there is nothing to show
             // until a date is picked. Jalan answers either way.
-            Text("楽天トラベルの空室を見るには宿泊日を選んでください。")
+            Text("Choose a check-in date to see vacancy on Rakuten Travel.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
         case let .failed(message):
-            // A plan search with nothing available answers with an error, so this
-            // is an ordinary outcome rather than a fault worth alarming about.
-            Text(message)
+            // Rakuten's rate limit is the common one here, and it passes on its
+            // own — so the line comes with a way to ask again rather than
+            // leaving the screen stuck on it.
+            VStack(alignment: .leading, spacing: 8) {
+                Text(message)
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                Button("Try again") {
+                    Task { await model.loadPlans() }
+                }
                 .font(.footnote)
-                .foregroundStyle(.secondary)
+            }
         case .loaded where model.plans.isEmpty:
-            Text("この条件で予約できるプランは見つかりませんでした。")
+            Text("No bookable plans were found for these conditions.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
         case .loaded:
@@ -296,7 +345,7 @@ private extension HotelDetailView {
     func bookingButton(_ model: HotelDetailViewModel) -> some View {
         if let url = model.bookingURL {
             SafariLink(destination: url) {
-                Text("\(model.provider.title)で予約")
+                Text("Book on \(model.provider.title)")
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 6)
             }
@@ -305,7 +354,9 @@ private extension HotelDetailView {
         }
     }
 
-    func sectionTitle(_ text: String) -> some View {
+    /// `LocalizedStringKey`, not `String`: every caller passes a literal, and a
+    /// plain `String` would put it on screen untranslated.
+    func sectionTitle(_ text: LocalizedStringKey) -> some View {
         Text(text)
             .font(.title3.weight(.semibold))
     }

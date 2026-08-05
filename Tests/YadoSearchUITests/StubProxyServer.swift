@@ -10,18 +10,38 @@ final class StubProxyServer: URLProtocol {
     struct Script: Sendable {
         var pages: [Int: String]
         var failingPages: Set<Int>
+        /// What a failing page answers with. Rakuten's refusals are what this
+        /// is for: "Data Not Found" for an empty result, "(status 429)" for its
+        /// rate limit — both of which the app has to read rather than repeat.
+        var failureBody: String
+        /// How many of the first requests fail before the script starts
+        /// answering. Rakuten's rate limit is what this is for: it clears on
+        /// its own, so a retry is expected to succeed where the first try did
+        /// not.
+        var transientFailures: Int
 
-        init(pages: [Int: String], failingPages: Set<Int> = []) {
+        init(
+            pages: [Int: String],
+            failingPages: Set<Int> = [],
+            failureBody: String = #"{"error":"テスト用のエラーです。"}"#,
+            transientFailures: Int = 0
+        ) {
             self.pages = pages
             self.failingPages = failingPages
+            self.failureBody = failureBody
+            self.transientFailures = transientFailures
         }
     }
 
-    private static let script = Mutex<Script>(Script(pages: [:]))
+    /// One script per host, not one for the whole process: suites run in
+    /// parallel, and a single script means whichever suite installed last
+    /// answers everyone's requests.
+    private static let scripts = Mutex<[String: Script]>([:])
     static let host = "stub.yadosearch.test"
+    private static let domain = ".yadosearch.test"
 
-    static func install(_ newScript: Script) {
-        script.withLock { $0 = newScript }
+    static func install(_ newScript: Script, host: String = host) {
+        scripts.withLock { $0[host] = newScript }
     }
 
     static var session: URLSession {
@@ -31,6 +51,11 @@ final class StubProxyServer: URLProtocol {
     }
 
     static var client: YadoSearchAPIClient {
+        client(host: host)
+    }
+
+    /// A client for one suite's own host, so its script is only ever its own.
+    static func client(host: String) -> YadoSearchAPIClient {
         YadoSearchAPIClient(
             configuration: YadoSearchAPIClient.Configuration(
                 baseURL: URL(string: "https://\(host)") ?? URL(filePath: "/")
@@ -40,7 +65,7 @@ final class StubProxyServer: URLProtocol {
     }
 
     override static func canInit(with request: URLRequest) -> Bool {
-        request.url?.host == host
+        request.url?.host?.hasSuffix(domain) ?? false
     }
 
     override static func canonicalRequest(for request: URLRequest) -> URLRequest {
@@ -60,11 +85,18 @@ final class StubProxyServer: URLProtocol {
             .value
             .flatMap(Int.init) ?? 1
 
-        let current = Self.script.withLock { $0 }
+        let host = url.host() ?? ""
+        let current = Self.scripts.withLock { scripts -> Script in
+            let script = scripts[host] ?? Script(pages: [:])
+            if script.transientFailures > 0 {
+                scripts[host]?.transientFailures -= 1
+            }
+            return script
+        }
         let body: String
         let status: Int
-        if current.failingPages.contains(page) {
-            body = #"{"error":"テスト用のエラーです。"}"#
+        if current.transientFailures > 0 || current.failingPages.contains(page) {
+            body = current.failureBody
             status = 400
         } else {
             body = current.pages[page] ?? Self.emptyResults
@@ -111,7 +143,7 @@ extension StubProxyServer {
             {"name":"テスト旅館\(identifier)",\
             "address":"東京都千代田区丸の内1-\(identifier)",\
             "area":{"region":"首都圏","prefecture":"東京都","large":"東京駅周辺","small":"丸の内"},\
-            "kind":"旅館","catchCopy":"駅から近い宿\(identifier)",\
+            "kind":"Ryokan","catchCopy":"駅から近い宿\(identifier)",\
             "coordinate":{"latitude":35.681236,"longitude":\(longitude)},\
             "offers":[\(offers)]}
             """

@@ -19,13 +19,13 @@ Four search axes, carried over from that release: by inn name, near you, by area
 - **Project generation**: Tuist (`Project.swift`) + SwiftPM (`Package.swift`)
 - **Code quality**: SwiftLint / Periphery / RuboCop (for the Fastfile)
 - **CI/CD**: GitHub Actions + fastlane
-- **Localization**: Japanese and English, through `Resources/Localizable.xcstrings`
+- **Localization**: English (source) and Japanese, through `Resources/Localizable.xcstrings`
 
 ### Modules
 
 | Module | Path | Contents |
 |---|---|---|
-| `YadoSearchCore` | `Sources/Core/` | `Sources/Core/API/` — the proxy's contract as Codable types plus `YadoSearchAPIClient`; `SearchTarget`/`SearchFilters`/`GuestParty`/`SavedSearch`, `AreaTree`, `GeoCoordinate`. **Foundation only, no dependencies.** |
+| `YadoSearchCore` | `Sources/Core/` | `Sources/Core/API/` — the proxy's contract as Codable types plus `YadoSearchAPIClient`; `SearchTarget`/`SearchScope`/`SearchFilters`/`GuestParty`/`SavedSearch`, `AreaTree`/`RakutenAreaTree`, `GeoCoordinate`. **Foundation only, no dependencies.** |
 | `YadoSearchPlatform` | `Sources/Platform/` | SwiftData `StoredHotel` (favourites and visit history in one table) and `StoredSearch` (recent searches), area-tree disk cache, Core Location, MapKit station search and reverse geocoding |
 | `YadoSearchUI` | `Sources/UI/` | SwiftUI views and view models |
 
@@ -44,6 +44,7 @@ Everything goes through the proxy. **Neither じゃらん nor 楽天 is reached 
 | One inn, plus its match on the other provider | `GET /v1/hotels/{provider}/{id}` |
 | Plans and vacancy for one inn | `GET /v1/hotels/{provider}/{id}/plans` |
 | Jalan's area hierarchy | `GET /v1/areas/jalan` |
+| Rakuten's area classification | `GET /v1/areas/rakuten` |
 
 `openapi.json` in the proxy repository is the contract, and `Sources/Core/API/APIModels.swift` is that contract in Swift. The decoding tests read the proxy's own committed examples (`internal/httpapi/testdata/examples/`), so a change on that side shows up as a failure here.
 
@@ -59,12 +60,17 @@ Everything goes through the proxy. **Neither じゃらん nor 楽天 is reached 
 - **`Provider` must be `CodingKeyRepresentable`.** `totals`, `errors` and `counterparts` are all `[Provider: …]`, and without that conformance a dictionary whose key is neither `String` nor `Int` decodes from a JSON *array* of alternating keys and values. It compiles either way and fails at runtime, so `Provider.swift` carries the reason.
 - **One provider failing is not an error.** A response carries `results` and an `errors` map together — a side can rate-limit (楽天 429 is easy to hit) or refuse while the other answers. The results screen shows both.
 - **Errors are the body, not the status.** A refused request is `{"error": "…"}`, often verbatim from the upstream service in Japanese, which is why `searchErrorMessage(for:)` passes service messages through.
-- **`count` is per provider.** Asking for 30 can return fewer merged rows, because the same inn found on both sides is one row. Paging is decided from the per-provider totals, not from the row count.
+- **`count` is per provider.** Asking for 30 can return fewer merged rows, because the same inn found on both sides is one row. Paging is decided from the per-provider totals, not from the row count. The results header says both numbers and labels them — "51 shown · じゃらん 344件、楽天トラベル 1,271件" — because they are not parts of one sum: the first is the rows loaded so far, the others are what each site says it has before any merging.
 - **Filters reach じゃらん only.** `amenities`, `hotelType`, `minRate`/`maxRate`, `order` have no 楽天 equivalent, so a filtered search returns a narrowed じゃらん half and an unnarrowed 楽天 half. The list says so.
-- **Area search is single-provider by construction.** じゃらん's hierarchy and 楽天's classification share no codes, so sending じゃらん codes searches じゃらん alone.
+- **Which sites answer is chosen, not assumed.** `SearchScope` (じゃらん / 楽天 / 両方) rides on `SavedSearch` and is sent as `providers`. **It only narrows** — the target still decides what is reachable at all, so `providers` alongside area codes of the other scheme searches nobody. `HotelSearchRequest` leaves the parameter off for an area target for exactly that reason: the codes already name the site, and two places to say it is two places to disagree.
+- **Area search is single-provider by construction.** じゃらん's hierarchy and 楽天's classification share no codes, so an area target carries one or the other — `.area(AreaSelection)` or `.rakutenArea(RakutenAreaSelection)` — and `SearchTarget.requiredScope` is what forces the scope to match. The area picker is a different screen per site (`AreaPickerView` / `RakutenAreaPickerView`), and switching sites discards the area already picked.
+- **楽天 cannot be searched above its small class.** A query stopping at the middle class is refused (`specify valid anyone set of parameters from classcodes[…]`), and a small class that has detail classes needs one (`specify valid detailClassCode`). So `RakutenAreaSelection` requires the top three levels, `RakutenAreaTree.SmallClass.isSearchable` is what the picker branches on, and **there is no 楽天 equivalent of "東京都全体"**. Only 5 of its 312 small classes have detail classes.
 - **楽天 has no undated mode.** `checkIn` is required for its plans; じゃらん without one quotes guide prices. Selecting 楽天 with no date prompts for one instead of reporting a failure.
+- **楽天 reports "nothing matched" as a failure.** A plan search it cannot fill answers `{"error":"Data Not Found"}` behind a 502, where じゃらん answers 200 and `"total": 0`. Shown verbatim it reads as a broken app, so `APIError.meansNoResults` turns it back into an empty result — which is why picking a date on 楽天 and getting nothing now says "該当するプランが見つかりませんでした" rather than "Data Not Found". `meansRateLimited` does the same for `rakuten:  (status 429)`, which is transient: the plan search retries once after ~1.2 s, and only says so — with a retry button — if the second attempt fails too. **Its limit is shared and easy to trip**: reading two inns in quick succession is enough, and sampling six inns in a row on the live proxy returned three 429s.
+- **A check-in date starts at tomorrow.** 楽天 answers a same-day plan search with "Data Not Found" at most inns, so a toggle that defaulted to today made the vacancy search look broken whichever inn it was opened on. `StayConditions.nextAvailableCheckIn()` is that default; the picker still allows today.
 - Name search still refuses above 200 matches, with じゃらん's own wording.
 - **Radius is metres now.** `SearchRadius` still carries じゃらん's old opaque codes as raw values (so stored searches keep decoding), but what is sent is `approximateMetres`. **楽天 caps its own search at 3 km.**
+- **`/v1/areas/rakuten` is 楽天's own response, passed through.** The proxy declares no schema for it — the only thing it can promise is what 楽天 said — so `RakutenAreaTreeResponse` decodes 楽天's shape: every level is an object behind a single-key wrapper (`{"largeClass": {…}}`), not the array-of-single-key-objects the rest of `formatVersion=1` uses. `Fixtures/api/areas_rakuten_full.json` is captured live, and it is what pins that.
 
 ## Affiliate links
 
@@ -117,21 +123,39 @@ Suites that assert on the last request a stub received are `.serialized` — Swi
 
 ## iCloud sync
 
-Favourites, visit history and recent searches mirror through the CloudKit private database `iCloud.org.ngsdev.iphone.Yado`.
+Favourites, visit history and recent searches mirror through the CloudKit private database `iCloud.org.ngsdev.iphone.Yado`. **The stay conditions do not**: they go through iCloud's key-value store instead (`StayConditionsStore`), because they are one small record rather than a table, and `NSUbiquitousKeyValueStore` is what that is for.
 
 - **Mirroring constraints**: every persisted property must be optional or defaulted, and `@Attribute(.unique)` is forbidden. Both compile fine and then crash at container creation, so `CloudKitSchemaTests` pins them. Deduplication is done by an explicit fetch in `StoredHotelStore` / `SearchHistoryStore`, not by a constraint.
 - `YadoSearchModelContainer.make(inMemory:)` walks a ladder: CloudKit → local → in-memory. A build without the entitlement (CI, and any simulator not signed into iCloud) simply lands on a lower rung, so nothing here may assume sync is on.
 - `aps-environment` comes from `$(APS_ENVIRONMENT)`, set per configuration in `Project.swift` (Debug `development`, Release `production`). A Release build claiming `development` registers against the APNs sandbox, where CloudKit's pushes never arrive — the app would then only sync when opened.
 - The portal side is already set up: `org.ngsdev.iphone.Yado` has the iCloud (CloudKit) and Push Notifications capabilities, with `iCloud.org.ngsdev.iphone.Yado` assigned. The identifier is pinned in `CloudKitSchemaTests`; if it ever moves, the entitlements file has to move with it or signing fails.
-- The match profiles already carry the capabilities, so `provision.yml` does not need re-running. A profile is a snapshot of the entitlements at issue time, which is why this was once outstanding; the Release builds now on App Store Connect were signed with `MATCH_READONLY=true` and accepted as `VALID` with the iCloud and APNs entitlements, which they could not have been against a stale profile.
+- **The key-value store needed no re-provisioning.** `com.apple.developer.ubiquity-kvstore-identifier` was added to the entitlements for `StayConditionsStore`, and a profile is a snapshot of the entitlements at issue time — but **key-value storage is not a capability of its own**: it comes with iCloud, which the App ID has had all along. The profiles already carry it as a wildcard, which is the thing to check rather than the portal:
+
+  ```bash
+  security cms -D -i "$HOME/Library/Developer/Xcode/UserData/Provisioning Profiles/<uuid>.mobileprovision" > /tmp/p.plist
+  plutil -p /tmp/p.plist | grep -iE "ubiquity-kvstore|icloud-services"
+  #   "com.apple.developer.icloud-services" => "*"
+  #   "com.apple.developer.ubiquity-kvstore-identifier" => "3Y8APYUG2G.*"
+  ```
+- The match profiles already carry the CloudKit and APNs capabilities, so `provision.yml` did not need re-running for those. A profile is a snapshot of the entitlements at issue time, which is why this was once outstanding; the Release builds now on App Store Connect were signed with `MATCH_READONLY=true` and accepted as `VALID` with the iCloud and APNs entitlements, which they could not have been against a stale profile.
 - Push is only ever the silent kind. The app has no notification code at all — `NSPersistentCloudKitContainer` uses the pushes to learn that another device changed something. Without them sync still works, but only when the app is opened.
+
+## The stay conditions
+
+`StayConditions` — the check-in date, the nights, the rooms and the party — is what the vacancy search asks with, and it is remembered rather than re-entered. `StayConditionsStore` (Platform) writes it to `UserDefaults` **and** to `NSUbiquitousKeyValueStore`, as JSON under one key.
+
+- **iCloud is read first, `UserDefaults` second.** The local copy is what answers on a device with iCloud off, or before the first sync arrives; a write goes to both.
+- **A check-in date before today clears the record, on both sides.** Yesterday's conditions describe a stay nobody can book, and searching them silently reports no vacancy for a night that has already gone. The rule is a whole-day comparison, so a stay starting earlier today still counts as today's.
+- Another device's write arrives as `NSUbiquitousKeyValueStore.didChangeExternallyNotification`, and is subject to the same staleness rule.
+- The store is read (and re-checked) when an inn's page opens, which is the only screen that asks about vacancy.
 
 ## Search state
 
-`SavedSearch` (Core) is the whole search — target, filters, party, and the title. It is what the results screen is pushed with, what the recents list stores as JSON, and what re-running a recent search replays.
+`SavedSearch` (Core) is the whole search — target, scope, filters, party, and the title. It is what the results screen is pushed with, what the recents list stores as JSON, and what re-running a recent search replays.
 
 - The title is carried, not derived: "東京都千代田区から約2.5km" needs the reverse-geocoded name that existed at the time, and an area name cannot be recovered from its code.
 - `SavedSearch.id` is a fingerprint of the *conditions* with the title excluded, so re-running a search moves one row rather than adding a twin. It is built from a flattened struct with the amenities sorted — encoding `SearchFilters` directly would fingerprint two equal filter sets differently, because a `Set` serialises in iteration order.
+- The scope is part of that fingerprint, so the same name searched on じゃらん and on 楽天 are two rows. Everything recorded before there was a choice has no `scope` in its stored JSON; `SavedSearch.init(from:)` reads that as `.both` rather than letting the row fail to decode and vanish.
 - Reverse geocoding uses `MKReverseGeocodingRequest` (`CLGeocoder` is deprecated as of iOS 26) and prefers `MKAddressRepresentations.cityWithContext(.short)`. It runs *after* the fix and never blocks it: the coordinate is what the search needs, the name is only read.
 
 ## Conventions
@@ -144,18 +168,20 @@ Favourites, visit history and recent searches mirror through the CloudKit privat
 
 Against the 2010 release specifically:
 
-Rakuten Travel is back, by way of the proxy — the 2010 release switched between the two services, and the merged search restores that.
+Rakuten Travel is back, by way of the proxy — the 2010 release switched between the two services, and the merged search restores that. The switch is back too, as `SearchScope`: the difference is that "両方" is now a third option rather than the only behaviour.
 
 - **No line-by-line station picker, no sightseeing-spot search.** The 2010 app bundled `eki.sqlite` (stations, lines) and a spot database. Station search here resolves a coordinate through MapKit instead, which carries no data to maintain but loses the 路線→駅 drill-down.
 - Sharing (ShareKit/Evernote), AdSense and Google Analytics are deliberately not carried over.
 
 In general:
 
-- **Japanese is the source language, and the Japanese string is the key.** `Text("お気に入り")` stays as it is; `Resources/Localizable.xcstrings` maps that key to itself in `ja` and to "Favourites" in `en`.
-  - **The catalogue lives in the app target, not in the UI package.** SwiftUI resolves a `LocalizedStringKey` against `Bundle.main` unless told otherwise, so a catalogue in the app bundle serves every module without `bundle: .module` at hundreds of call sites. The cost is that previews and `swift test` see no catalogue and fall back to the key, which is the Japanese text — the same thing they showed before.
-  - **Anything typed `String` needs `String(localized:)`.** `Text` and friends take a `LocalizedStringKey` and look themselves up; a plain `String` does not. That is why `Amenity.title`, `Provider.title`, `SearchRadius.label`, the `SavedSearch` titles and `searchErrorMessage(for:)` all wrap their literals. Core can do this because `String(localized:)` is Foundation, and it reads `Bundle.main` too.
-  - **Interpolation changes the key.** `Text("\(count)件")` looks up `%lld件`, not `\(count)件`; a `String` interpolation is `%@`. When a translation reorders two arguments it has to use positional specifiers (`%1$@`).
+- **English is the source language, and the English string is the key.** `Text("Favourites")` is what the code says; `Resources/Localizable.xcstrings` maps that key to itself in `en` and to "お気に入り" in `ja`. It was the other way round until the base language was switched, and the switch was made by inverting the catalogue rather than by re-translating: every Japanese key became its own English translation, and the Japanese it used to be became the `ja` value.
+  - **The catalogue lives in the app target, not in the UI package.** SwiftUI resolves a `LocalizedStringKey` against `Bundle.main` unless told otherwise, so a catalogue in the app bundle serves every module without `bundle: .module` at hundreds of call sites. The cost is that previews and `swift test` see no catalogue and fall back to the key — which is now the English text, and is what the tests assert.
+  - **Anything typed `String` needs `String(localized:)`.** `Text` and friends take a `LocalizedStringKey` and look themselves up; a plain `String` does not. That is why `Amenity.title`, `Provider.title`, `SearchRadius.label`, the `SavedSearch` titles, `searchErrorMessage(for:)` and even the `" · "` that joins a summary all wrap their literals. Core can do this because `String(localized:)` is Foundation, and it reads `Bundle.main` too.
+  - **Interpolation changes the key.** `Text("\(count) inns")` looks up `%lld inns`, not `\(count) inns`; a `String` interpolation is `%@`. When a translation reorders two arguments it has to use positional specifiers (`%1$@`).
+  - **One key, one meaning.** Japanese drew distinctions English collapses: 検索条件 and こだわり were both "Conditions", さがす and 宿をさがす both "Search", エリア and 地域 both "Area". A shared key would have given each pair one Japanese translation, so they are "Conditions"/"Amenities", "Search"/"Find inns" and "Region"/"Area".
   - `Resources/InfoPlist.xcstrings` carries the display name and the location prompt.
+  - **The colour assets resolve the same way.** `JalanTint` and `RakutenTint` are colorsets in `Resources/Assets.xcassets`, and `Provider.tint` reads them as `Color("JalanTint")` — no `bundle:`, so `Bundle.main`, because the catalogue is in the app target and the views are in a package. `ProviderBadge` is the one place that draws them; a preview in the package renders the fallback rather than the colour. **`CFBundleDisplayName` is "YadoSearch" in the plist and 宿さがし in `ja`** — the Japanese name is the one the App Store record has carried since 2010, and it comes from the catalogue rather than from `Project.swift`.
   - Reverse-geocoded place names follow the device language on their own. **What the proxy returns — inn names, area names, service error messages — is Japanese whatever the device is set to**, because that is all the upstream services have.
 - **The app icon is still being tuned.** `Resources/AppIcon.icon` is an Icon Composer package (`icon.json` plus `Assets/onsen.svg`) — edit it there, not by hand. There is no `AppIcon.appiconset` any more; the `.icon` supersedes it, and `actool` still emits the legacy PNGs from it.
   - The layer's `fill` in `icon.json` is what colours the glyph. `actool` treats the SVG as a monochrome vector and ignores fills inside it, so changing the SVG's own `fill` does nothing.

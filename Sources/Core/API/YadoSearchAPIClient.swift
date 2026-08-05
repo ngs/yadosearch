@@ -14,6 +14,7 @@ import Foundation
 /// | One inn, plus its match on the other provider | `/v1/hotels/{provider}/{id}` |
 /// | Plans and vacancy for one inn | `/v1/hotels/{provider}/{id}/plans` |
 /// | Jalan's area hierarchy | `/v1/areas/jalan` |
+/// | Rakuten's area classification | `/v1/areas/rakuten` |
 public struct YadoSearchAPIClient: Sendable {
     public struct Configuration: Sendable, Hashable {
         public var baseURL: URL
@@ -59,6 +60,11 @@ public struct YadoSearchAPIClient: Sendable {
         return response.areaTree
     }
 
+    public func rakutenAreaTree() async throws -> RakutenAreaTree {
+        let response: RakutenAreaTreeResponse = try await get("/v1/areas/rakuten")
+        return response.areaTree
+    }
+
     // MARK: - Transport
 
     private func get<Value: Decodable>(_ path: String, query: [URLQueryItem] = []) async throws -> Value {
@@ -97,6 +103,88 @@ public struct YadoSearchAPIClient: Sendable {
 
 private struct ErrorResponse: Decodable {
     let error: String
+}
+
+/// `/v1/areas/rakuten` is Rakuten's own response, passed through unaltered —
+/// the proxy declares no schema for it, on the grounds that the only thing it
+/// can promise is what Rakuten said. So this decodes Rakuten's shape: every
+/// level is an object behind a single-key wrapper (`{"largeClass": {…}}`), not
+/// the array of single-key objects that the rest of `formatVersion=1` uses.
+///
+/// A level with no children omits the key rather than sending an empty array,
+/// which is what makes every array here optional.
+struct RakutenAreaTreeResponse: Decodable {
+    struct DetailWrapper: Decodable {
+        let detailClass: DetailClass
+    }
+
+    struct DetailClass: Decodable {
+        let detailClassCode: String
+        let detailClassName: String
+    }
+
+    struct SmallWrapper: Decodable {
+        let smallClass: SmallClass
+    }
+
+    struct SmallClass: Decodable {
+        let smallClassCode: String
+        let smallClassName: String
+        let detailClasses: [DetailWrapper]?
+    }
+
+    struct MiddleWrapper: Decodable {
+        let middleClass: MiddleClass
+    }
+
+    struct MiddleClass: Decodable {
+        let middleClassCode: String
+        let middleClassName: String
+        let smallClasses: [SmallWrapper]?
+    }
+
+    struct LargeWrapper: Decodable {
+        let largeClass: LargeClass
+    }
+
+    struct LargeClass: Decodable {
+        let largeClassCode: String
+        let largeClassName: String
+        let middleClasses: [MiddleWrapper]?
+    }
+
+    struct Classes: Decodable {
+        let largeClasses: [LargeWrapper]
+    }
+
+    let areaClasses: Classes
+
+    var areaTree: RakutenAreaTree {
+        RakutenAreaTree(largeClasses: areaClasses.largeClasses.map { large in
+            RakutenAreaTree.LargeClass(
+                id: large.largeClass.largeClassCode,
+                name: large.largeClass.largeClassName,
+                middleClasses: (large.largeClass.middleClasses ?? []).map { middle in
+                    RakutenAreaTree.MiddleClass(
+                        id: middle.middleClass.middleClassCode,
+                        name: middle.middleClass.middleClassName,
+                        smallClasses: (middle.middleClass.smallClasses ?? []).map { small in
+                            RakutenAreaTree.SmallClass(
+                                id: small.smallClass.smallClassCode,
+                                name: small.smallClass.smallClassName,
+                                detailClasses: (small.smallClass.detailClasses ?? []).map {
+                                    RakutenAreaTree.DetailClass(
+                                        id: $0.detailClass.detailClassCode,
+                                        name: $0.detailClass.detailClassName
+                                    )
+                                }
+                            )
+                        }
+                    )
+                }
+            )
+        })
+    }
 }
 
 /// `/v1/areas/jalan` wraps the tree in an `area` object, and spells the levels

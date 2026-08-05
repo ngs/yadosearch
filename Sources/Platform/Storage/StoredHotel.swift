@@ -112,7 +112,7 @@ public extension StoredHotel {
 
     /// "東京都・浅草" — the two levels that actually place an inn for a reader.
     var areaSummary: String? {
-        let summary = [prefecture, largeArea].compactMap { $0 }.joined(separator: "・")
+        let summary = [prefecture, largeArea].compactMap { $0 }.joined(separator: String(localized: " · "))
         return summary.isEmpty ? nil : summary
     }
 

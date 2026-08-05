@@ -9,20 +9,42 @@ import Foundation
 /// not give back.
 public struct SavedSearch: Sendable, Hashable, Codable, Identifiable {
     public var target: SearchTarget
+    /// Which sites to ask. Forced by the target when it is an area search, and
+    /// the searcher's choice otherwise.
+    public var scope: SearchScope
     public var filters: SearchFilters
     public var party: GuestParty?
     public var title: String
 
     public init(
         target: SearchTarget,
+        scope: SearchScope = .both,
         filters: SearchFilters = SearchFilters(),
         party: GuestParty? = nil,
         title: String
     ) {
         self.target = target
+        // An area search can only reach the provider whose codes it carries,
+        // so the target has the last word over anything passed in here.
+        self.scope = target.requiredScope ?? scope
         self.filters = filters
         self.party = party
         self.title = title
+    }
+
+    /// Every search recorded before there was a choice reached both providers,
+    /// and the stored JSON has no `scope`. Reading that as `.both` is what
+    /// keeps those entries in the recents list instead of dropping them.
+    public init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let target = try container.decode(SearchTarget.self, forKey: .target)
+        self.init(
+            target: target,
+            scope: try container.decodeIfPresent(SearchScope.self, forKey: .scope) ?? .both,
+            filters: try container.decode(SearchFilters.self, forKey: .filters),
+            party: try container.decodeIfPresent(GuestParty.self, forKey: .party),
+            title: try container.decode(String.self, forKey: .title)
+        )
     }
 
     /// Identity is what the search *does*, not what it is called: re-running the
@@ -44,6 +66,7 @@ public struct SavedSearch: Sendable, Hashable, Codable, Identifiable {
     /// two equal filter sets would fingerprint differently.
     private struct Fingerprint: Encodable {
         let target: SearchTarget
+        let scope: SearchScope
         let sortOrder: Int
         let hotelType: Int?
         let minimumRate: Int?
@@ -53,6 +76,7 @@ public struct SavedSearch: Sendable, Hashable, Codable, Identifiable {
 
         init(_ search: SavedSearch) {
             target = search.target
+            scope = search.scope
             sortOrder = search.filters.sortOrder.rawValue
             hotelType = search.filters.hotelType?.rawValue
             minimumRate = search.filters.minimumRate
@@ -68,6 +92,11 @@ public extension SavedSearch {
     /// recents row. Empty when nothing was.
     var conditionsSummary: String {
         var parts: [String] = []
+        // Which site, but only when it is not both: "じゃらん・旅館" is worth a
+        // line, "両方・旅館" is noise on nearly every row.
+        if scope != .both {
+            parts.append(scope.title)
+        }
         if filters.sortOrder != .unspecified {
             parts.append(filters.sortOrder.title)
         }
@@ -80,6 +109,6 @@ public extension SavedSearch {
         if let amenities = filters.amenitySummary {
             parts.append(amenities)
         }
-        return parts.joined(separator: "・")
+        return parts.joined(separator: String(localized: " · "))
     }
 }
