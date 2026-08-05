@@ -19,7 +19,9 @@ struct SafariLink<Label: View>: View {
     let url: URL
     let label: Label
 
-    #if !os(macOS)
+    #if os(macOS)
+    @Environment(\.openURL) private var openURL
+    #else
     @State private var isPresented = false
     #endif
 
@@ -27,8 +29,6 @@ struct SafariLink<Label: View>: View {
         self.url = url
         self.label = label()
     }
-
-    @Environment(\.openURL) private var openURL
 
     var body: some View {
         #if os(macOS)
