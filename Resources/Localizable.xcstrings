@@ -3521,6 +3521,40 @@
         }
       }
     },
+    "YadoSearch finds inns in Japan, so there is nothing to search for around this location. Search by area or by inn name instead.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "YadoSearch finds inns in Japan, so there is nothing to search for around this location. Search by area or by inn name instead."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "宿さがしが検索できるのは日本国内の宿のため、この現在地の周辺では宿が見つかりません。エリアや宿名から検索してください。"
+          }
+        }
+      }
+    },
+    "Your location is outside Japan": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Your location is outside Japan"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "現在地が日本国外です"
+          }
+        }
+      }
+    },
     "about 10km": {
       "extractionState": "manual",
       "localizations": {

@@ -112,10 +112,25 @@ public final class HotelSearchViewModel {
             // The proxy matches inns across providers within one response, not
             // across pages, so the same inn can arrive again on a later page
             // under a different pairing. Dropping repeats keeps the list honest.
+            let providerErrors = response.errors ?? [:]
+            if response.results.isEmpty, response.totals.isEmpty, !providerErrors.isEmpty {
+                // Neither provider answered. With nothing yet on screen an
+                // empty list would read as "no inns here", when what actually
+                // happened is a refusal the providers explained; with rows
+                // already loaded, those rows — and the totals they came with —
+                // stay, and the refusal goes where one side failing goes: the
+                // footer.
+                if listings.isEmpty {
+                    phase = .failed(Self.combinedFailureMessage(providerErrors))
+                }
+                self.providerErrors = providerErrors
+                nextPage = nil
+                return
+            }
             let known = Set(listings.map(\.id))
             listings += response.results.filter { !known.contains($0.id) }
             totals = response.totals
-            providerErrors = response.errors ?? [:]
+            self.providerErrors = providerErrors
             nextPage = Self.pageAfter(page, requested: page * pageSize, response: response)
             phase = .loaded
         } catch is CancellationError {
@@ -131,6 +146,16 @@ public final class HotelSearchViewModel {
             }
             nextPage = nil
         }
+    }
+
+    /// Both refusals, one under the other — the same shape the list's footer
+    /// gives them when only one side failed.
+    private static func combinedFailureMessage(_ errors: [Provider: String]) -> String {
+        Provider.allCases
+            .compactMap { provider in
+                errors[provider].map { String(localized: "\(provider.title): \($0)") }
+            }
+            .joined(separator: "\n")
     }
 
     /// `count` is per provider, so how much is left is a question about the

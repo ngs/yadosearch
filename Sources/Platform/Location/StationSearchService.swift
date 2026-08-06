@@ -43,7 +43,9 @@ public struct StationSearchService: Sendable {
         )
 
         let response = try await MKLocalSearch(request: request).start()
-        return response.mapItems.compactMap(Station.init(mapItem:))
+        // The region above is a hint, not a bound: MapKit will still answer with
+        // a station on another continent when nothing here matches the name.
+        return response.mapItems.compactMap(Station.init(mapItem:)).filter(\.coordinate.isInJapan)
     }
 }
 

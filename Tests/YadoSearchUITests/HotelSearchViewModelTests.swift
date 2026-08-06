@@ -85,6 +85,40 @@ struct HotelSearchViewModelTests {
         #expect(model.listings.isEmpty)
     }
 
+    /// A coordinate outside Japan is refused by both sites at once, which the
+    /// proxy reports as a 502 whose body is still the merged shape. The status
+    /// on its own would read as "HTTP 502"; what the reviewer needs to see is
+    /// what the sites said.
+    @Test("Both providers refusing is an error, not an empty list")
+    func reportsBothProvidersRefusing() async {
+        StubProxyServer.install(
+            StubProxyServer.Script(
+                pages: [:],
+                failingPages: [1],
+                failureBody: #"""
+                {"results":[],"totals":{},"errors":{"jalan":"「緯度(x)、経度(y)」に正しい値を指定してください。","rakuten":"specify valid longitude"}}
+                """#,
+                failureStatus: 502
+            )
+        )
+        let model = HotelSearchViewModel(
+            client: StubProxyServer.client,
+            target: .around(GeoCoordinate(latitude: 37.33, longitude: -122.01), radius: .aboutOneKilometre)
+        )
+
+        await model.load()
+
+        guard case let .failed(message) = model.phase else {
+            Issue.record("Expected a failure, got \(model.phase)")
+            return
+        }
+        #expect(message.contains("「緯度(x)、経度(y)」に正しい値を指定してください。"))
+        #expect(message.contains("specify valid longitude"))
+        #expect(model.listings.isEmpty)
+        #expect(!model.canLoadMore)
+        #expect(model.providerErrors.count == 2)
+    }
+
     @Test("A failed later page keeps the rows already shown")
     func keepsRowsWhenALaterPageFails() async {
         StubProxyServer.install(
@@ -103,6 +137,36 @@ struct HotelSearchViewModelTests {
 
         #expect(model.phase == .loaded)
         #expect(model.listings.count == 30)
+        #expect(!model.canLoadMore)
+    }
+
+    /// The same both-refused body on a later page must not replace what the
+    /// first page loaded: the rows and their totals stay, and the refusal is
+    /// a footer note, exactly as when one side fails.
+    @Test("Both providers refusing on a later page keeps the rows and totals")
+    func keepsTotalsWhenBothProvidersRefuseALaterPage() async {
+        StubProxyServer.install(
+            StubProxyServer.Script(
+                pages: [1: StubProxyServer.searchResults(total: 45, count: 30, firstID: 1)],
+                failingPages: [2],
+                failureBody: #"""
+                {"results":[],"totals":{},"errors":{"jalan":"「緯度(x)、経度(y)」に正しい値を指定してください。","rakuten":"specify valid longitude"}}
+                """#,
+                failureStatus: 502
+            )
+        )
+        let model = HotelSearchViewModel(
+            client: StubProxyServer.client,
+            target: .area(AreaSelection(prefectureID: "130000"))
+        )
+        await model.load()
+
+        await model.loadMoreIfNeeded(currentItem: model.listings[29])
+
+        #expect(model.phase == .loaded)
+        #expect(model.listings.count == 30)
+        #expect(model.totals[.jalan] == 45)
+        #expect(model.providerErrors.count == 2)
         #expect(!model.canLoadMore)
     }
 

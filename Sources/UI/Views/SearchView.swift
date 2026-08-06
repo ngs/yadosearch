@@ -368,6 +368,13 @@ private extension SearchView {
                     Text(location.placeName ?? coordinate.formattedDegrees)
                         .multilineTextAlignment(.trailing)
                 }
+                if !coordinate.isInJapan {
+                    Label("Your location is outside Japan", systemImage: "globe.asia.australia")
+                        .foregroundStyle(.secondary)
+                    Text("YadoSearch finds inns in Japan, so there is nothing to search for around this location. Search by area or by inn name instead.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
                 Button("Get it again", systemImage: "arrow.clockwise") {
                     location.requestLocation()
                 }
@@ -481,7 +488,9 @@ private extension SearchView {
             guard !trimmed.isEmpty else { return nil }
             return (.name(trimmed), String(localized: "“\(trimmed)”"))
         case .nearby:
-            guard let coordinate = location.coordinate else { return nil }
+            // A point outside Japan is not a search worth offering: both sites
+            // refuse it, and the refusal is all that comes back.
+            guard let coordinate = location.coordinate, coordinate.isInJapan else { return nil }
             // The place name, when there is one, is what makes this search
             // recognisable in the recent list a week later.
             let origin = location.placeName ?? String(localized: "Nearby")
