@@ -16,6 +16,20 @@ public struct GeoCoordinate: Sendable, Hashable, Codable {
 }
 
 public extension GeoCoordinate {
+    /// Whether this point is somewhere both booking services will answer about.
+    ///
+    /// Neither of them has anything outside Japan, and a proximity search on a
+    /// foreign coordinate is refused by both — so this is what a search is
+    /// checked against before it is run.
+    ///
+    /// The box is deliberately loose. It is meant to catch someone on another
+    /// continent, not to trace a border: it spans Yonaguni to Minamitorishima
+    /// and Okinotorishima to Etorofu, and takes in a fair amount of sea with
+    /// them.
+    var isInJapan: Bool {
+        (20.0 ... 46.0).contains(latitude) && (122.0 ... 154.0).contains(longitude)
+    }
+
     /// Great-circle distance in metres, accurate enough for the "how far is this
     /// inn" label at the scales the app searches over (≤ 10 km).
     func distance(to other: GeoCoordinate) -> Double {

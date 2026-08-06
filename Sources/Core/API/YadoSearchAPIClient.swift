@@ -90,6 +90,12 @@ public struct YadoSearchAPIClient: Sendable {
             if let failure = try? JSONDecoder().decode(ErrorResponse.self, from: data) {
                 throw APIError.service(message: failure.error)
             }
+            // Both providers failing turns the whole search into a 502, but the
+            // body is still the merged shape, with a per-provider message that
+            // the status code hides.
+            if let value = try? JSONDecoder().decode(Value.self, from: data) {
+                return value
+            }
             throw APIError.service(message: "HTTP \(http.statusCode)")
         }
 
