@@ -140,6 +140,36 @@ struct HotelSearchViewModelTests {
         #expect(!model.canLoadMore)
     }
 
+    /// The same both-refused body on a later page must not replace what the
+    /// first page loaded: the rows and their totals stay, and the refusal is
+    /// a footer note, exactly as when one side fails.
+    @Test("Both providers refusing on a later page keeps the rows and totals")
+    func keepsTotalsWhenBothProvidersRefuseALaterPage() async {
+        StubProxyServer.install(
+            StubProxyServer.Script(
+                pages: [1: StubProxyServer.searchResults(total: 45, count: 30, firstID: 1)],
+                failingPages: [2],
+                failureBody: #"""
+                {"results":[],"totals":{},"errors":{"jalan":"「緯度(x)、経度(y)」に正しい値を指定してください。","rakuten":"specify valid longitude"}}
+                """#,
+                failureStatus: 502
+            )
+        )
+        let model = HotelSearchViewModel(
+            client: StubProxyServer.client,
+            target: .area(AreaSelection(prefectureID: "130000"))
+        )
+        await model.load()
+
+        await model.loadMoreIfNeeded(currentItem: model.listings[29])
+
+        #expect(model.phase == .loaded)
+        #expect(model.listings.count == 30)
+        #expect(model.totals[.jalan] == 45)
+        #expect(model.providerErrors.count == 2)
+        #expect(!model.canLoadMore)
+    }
+
     @Test("Distances are measured only for a proximity search")
     func measuresDistanceFromTheSearchCentre() async {
         StubProxyServer.install(

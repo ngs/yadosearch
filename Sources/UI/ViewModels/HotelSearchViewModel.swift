@@ -113,11 +113,16 @@ public final class HotelSearchViewModel {
             // across pages, so the same inn can arrive again on a later page
             // under a different pairing. Dropping repeats keeps the list honest.
             let providerErrors = response.errors ?? [:]
-            if listings.isEmpty, response.results.isEmpty, response.totals.isEmpty, !providerErrors.isEmpty {
-                // Neither provider answered. An empty list would read as "no
-                // inns here"; what actually happened is a refusal, and the
-                // providers said why.
-                phase = .failed(Self.combinedFailureMessage(providerErrors))
+            if response.results.isEmpty, response.totals.isEmpty, !providerErrors.isEmpty {
+                // Neither provider answered. With nothing yet on screen an
+                // empty list would read as "no inns here", when what actually
+                // happened is a refusal the providers explained; with rows
+                // already loaded, those rows — and the totals they came with —
+                // stay, and the refusal goes where one side failing goes: the
+                // footer.
+                if listings.isEmpty {
+                    phase = .failed(Self.combinedFailureMessage(providerErrors))
+                }
                 self.providerErrors = providerErrors
                 nextPage = nil
                 return
