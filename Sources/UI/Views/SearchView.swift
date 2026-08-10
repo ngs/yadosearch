@@ -351,7 +351,12 @@ private extension SearchView {
         Section {
             switch location.state {
             case .idle:
-                Button("Get my location", systemImage: "location") {
+                // App Review (5.1.1(iv)) requires the button that leads to the
+                // permission prompt to say "Continue", not name the data it asks for.
+                Text("Searching around you uses your location.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                Button("Continue", systemImage: "location") {
                     location.requestLocation()
                 }
             case .locating:

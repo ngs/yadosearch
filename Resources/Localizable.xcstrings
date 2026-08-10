@@ -971,6 +971,23 @@
         }
       }
     },
+    "Continue": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continue"
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "続ける"
+          }
+        }
+      }
+    },
     "Could not get your location": {
       "extractionState": "manual",
       "localizations": {
@@ -1494,23 +1511,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "取得しなおす"
-          }
-        }
-      }
-    },
-    "Get my location": {
-      "extractionState": "manual",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Get my location"
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "現在地を取得"
           }
         }
       }
@@ -2922,6 +2922,23 @@
           "stringUnit": {
             "state": "translated",
             "value": "宿名で検索します。該当が200件を超えると、じゃらん側が結果を返さずエラーになります。"
+          }
+        }
+      }
+    },
+    "Searching around you uses your location.": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Searching around you uses your location."
+          }
+        },
+        "ja": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "周辺の宿をさがすには現在地を使います。"
           }
         }
       }
