@@ -2,7 +2,7 @@
 
 日本の宿・ホテルを探す iOS / iPadOS / macOS アプリです。[じゃらん Web サービス](https://www.jalan.net/jw/jwp0000/jww0001.do)を使い、**キーワード（宿名）・現在地・地域・駅**の4つの軸で宿を検索します。
 
-2010 年に App Store でリリースした「宿さがし」（[App Store ID 347959354](https://apps.apple.com/jp/app/id347959354)、最終 2.0.4）の後継です。2014 年に UIKit で書きかけだった v3 を捨て、リリース版の機能を引き継ぐ形で SwiftUI で作り直しました。Bundle ID は当時の `org.ngsdev.iphone.Yado` のままで、既存レコードへのアップデートとして出せます。
+2009 年 12 月に App Store でリリースした「宿さがし」（[App Store ID 347959354](https://apps.apple.com/jp/app/id347959354)、最終 2.0.4）の後継です。2014 年に UIKit で書きかけだった v3 を捨て、リリース版の機能を引き継ぐ形で SwiftUI で作り直しました。Bundle ID は当時の `org.ngsdev.iphone.Yado` のままで、既存レコードへのアップデートとして出せます。
 
 ## できること
 
@@ -162,7 +162,7 @@ GitHub Actions（`.github/workflows/`）:
 
 必要な Secrets: `APP_STORE_CONNECT_API_KEY_*`、`MATCH_GIT_URL`、`MATCH_PASSWORD`、`MATCH_DEPLOY_KEY`。じゃらんのキーは不要になりました（`JALAN_API_KEY` は削除して構いません）。
 
-## 2010 年リリース版からの差分
+## 2009 年リリース版からの差分
 
 引き継いだもの: 4タブ構成（さがす／お気に入り／履歴／設定）、地域ドリルダウン、現在地検索、フリーワード（宿名）検索、駅まわりの検索、絞り込み条件一式、ValueCommerce アフィリエイト。
 
